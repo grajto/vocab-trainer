@@ -12,6 +12,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const { deckId, mode, targetCount = 10 } = body
 
+    // Sentence is available as its own mode; mixed mode intentionally excludes it.
     const allowedModes = ['translate', 'sentence', 'abcd', 'mixed'] as const
     type Mode = (typeof allowedModes)[number]
     const isMode = (value: unknown): value is Mode =>
@@ -87,6 +88,7 @@ export async function POST(req: NextRequest) {
 
     const selectedCards = selectCardsForSession(cardsWithState, cardsWithoutState, count, 20, introToday)
 
+    // Precompute numeric card IDs once for review state creation + task payloads.
     const cardIdMap = new Map<string | number, number>()
     for (const card of selectedCards) {
       const parsedId = parseNumericId(card.cardId)
