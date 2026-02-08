@@ -2,6 +2,14 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 const APP_ACCESS_TOKEN = process.env.APP_ACCESS_TOKEN
+const APP_TOKEN_API_ALLOWLIST = [
+  '/api/session',
+  '/api/import',
+  '/api/check-sentence',
+  '/api/stats',
+  '/api/decks',
+  '/api/cards',
+]
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -10,6 +18,7 @@ export function middleware(request: NextRequest) {
   const isLoginPath = pathname === '/login'
   const isAssetPath = pathname.startsWith('/_next') || pathname.startsWith('/favicon')
   const isApiPath = pathname.startsWith('/api')
+  const isAllowlistedApi = isApiPath && APP_TOKEN_API_ALLOWLIST.some(prefix => pathname.startsWith(prefix))
 
   // Allow public paths
   if (isAssetPath || isAdminPath || isLoginPath) {
@@ -23,9 +32,12 @@ export function middleware(request: NextRequest) {
   const payloadToken = request.cookies.get('payload-token')
 
   const fetchSite = request.headers.get('sec-fetch-site')
-  const isTrustedRequest = fetchSite === 'same-origin' || fetchSite === 'same-site' || fetchSite === 'none'
+  const normalizedFetchSite = fetchSite ?? ''
+  const isTrustedRequest = normalizedFetchSite === 'same-origin' ||
+    normalizedFetchSite === 'same-site' ||
+    normalizedFetchSite === 'none'
 
-  if (APP_ACCESS_TOKEN && !payloadToken && isTrustedRequest) {
+  if (APP_ACCESS_TOKEN && !payloadToken && isTrustedRequest && (!isApiPath || isAllowlistedApi)) {
     const requestHeaders = new Headers(request.headers)
     requestHeaders.set('x-app-token', APP_ACCESS_TOKEN)
     return NextResponse.next({ request: { headers: requestHeaders } })
