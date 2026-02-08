@@ -15,7 +15,7 @@ export default async function Dashboard() {
   todayStart.setHours(0, 0, 0, 0)
 
   // Fetch stats server-side for fast initial render
-  const [sessionsToday, decks, allReviewStates] = await Promise.all([
+  const [sessionsToday, decks, allReviewStates, dueReviewStates] = await Promise.all([
     payload.find({
       collection: 'sessions',
       where: { owner: { equals: user.id }, startedAt: { greater_than_equal: todayStart.toISOString() } },
@@ -34,10 +34,16 @@ export default async function Dashboard() {
       limit: 0,
       depth: 0,
     }),
+    // Count due cards efficiently with a where clause instead of loading all into memory
+    payload.find({
+      collection: 'review-states',
+      where: { owner: { equals: user.id }, dueAt: { less_than_equal: now.toISOString() } },
+      limit: 0,
+      depth: 0,
+    }),
   ])
 
-  // Count cards due now
-  const dueNow = allReviewStates.docs.filter(rs => new Date(rs.dueAt) <= now).length
+  const dueNow = dueReviewStates.totalDocs
   const totalCards = allReviewStates.totalDocs
 
   return (

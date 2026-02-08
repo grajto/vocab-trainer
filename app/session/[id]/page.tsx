@@ -61,7 +61,7 @@ export default function SessionPage() {
       if (correct) {
         setFeedback({ correct: true, message: 'Correct' })
       } else {
-        setFeedback({ correct: false, message: currentTask.answer })
+        setFeedback({ correct: false, message: `Correct answer: ${currentTask.answer}` })
       }
 
       if (data.sessionDone) {

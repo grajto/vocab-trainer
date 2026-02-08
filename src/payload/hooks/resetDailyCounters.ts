@@ -1,8 +1,9 @@
 import type { FieldHook } from 'payload'
 
 /**
- * Lazy reset: if the last review was on a different day, reset todayCorrectCount and todayWrongCount.
- * Attached as a beforeChange hook on ReviewStates.
+ * beforeChange hook: if the last review was on a different day, reset daily counters.
+ * This is a safety net for direct Payload admin edits — the SRS logic in API endpoints
+ * already handles lazy reset via the srs.ts module.
  */
 export const resetDailyCounters: FieldHook = ({ value, siblingData }) => {
   const lastReviewed = siblingData?.lastReviewedAt
