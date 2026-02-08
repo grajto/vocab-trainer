@@ -144,6 +144,7 @@ export async function POST(req: NextRequest) {
     const tasks: Task[] = selectedCards.map(card => {
       let taskType: TaskType
       if (mode === 'mixed') {
+        // Mixed mode intentionally excludes sentence tasks to keep sessions fast without AI deps.
         const types: TaskType[] = ['translate', 'abcd']
         taskType = types[Math.floor(Math.random() * types.length)]
       } else {
