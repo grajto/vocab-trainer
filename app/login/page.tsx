@@ -52,14 +52,14 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="bg-white border border-neutral-200 rounded-xl p-6 space-y-4">
           {error && <p className="text-red-600 text-sm bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
           <div>
-            <label className="block text-xs font-medium text-neutral-500 mb-1.5">Login or email</label>
+            <label className="block text-xs font-medium text-neutral-500 mb-1.5">Username or email</label>
             <input
               type="text"
               value={login}
               onChange={e => setLogin(e.target.value)}
               required
               className="w-full border border-neutral-200 rounded-lg px-3 py-2.5 text-sm focus:border-neutral-900 focus:outline-none transition-colors"
-              placeholder="Mati12 or you@example.com"
+              placeholder="username123 or you@example.com"
             />
           </div>
           <div>
