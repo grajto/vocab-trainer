@@ -32,10 +32,9 @@ export function middleware(request: NextRequest) {
   const payloadToken = request.cookies.get('payload-token')
 
   const fetchSite = request.headers.get('sec-fetch-site')
-  const fetchSiteValue = fetchSite ?? ''
-  const isTrustedRequest = fetchSiteValue === 'same-origin' ||
-    fetchSiteValue === 'same-site' ||
-    fetchSiteValue === 'none'
+  const isTrustedRequest = fetchSite === 'same-origin' ||
+    fetchSite === 'same-site' ||
+    fetchSite === 'none'
   const shouldInjectAppToken = APP_ACCESS_TOKEN &&
     !payloadToken &&
     isTrustedRequest &&

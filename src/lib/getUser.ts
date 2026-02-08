@@ -39,12 +39,12 @@ export async function getUser() {
     return null
   }
 
-  if (owner.totalDocs !== 1) {
-    if (owner.totalDocs === 0) {
-      console.warn('App token authentication disabled: owner user missing')
-    } else {
-      console.warn('App token authentication disabled: expects exactly one owner user', { count: owner.totalDocs })
-    }
+  if (owner.totalDocs === 0) {
+    console.warn('App token authentication disabled: owner user missing')
+    return null
+  }
+  if (owner.totalDocs > 1) {
+    console.warn('App token authentication disabled: expects exactly one owner user', { count: owner.totalDocs })
     return null
   }
   return owner.docs[0]
