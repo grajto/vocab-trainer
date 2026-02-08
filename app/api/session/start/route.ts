@@ -24,7 +24,6 @@ export async function POST(req: NextRequest) {
     if (!deckId || !isMode(mode)) {
       return NextResponse.json({ error: 'deckId and mode are required' }, { status: 400 })
     }
-    const modeValue = mode
 
     const count = Math.min(Math.max(Number(targetCount), 5), 35)
     const payload = await getPayload()
@@ -99,10 +98,7 @@ export async function POST(req: NextRequest) {
     // Create review states for new cards
     for (const card of selectedCards) {
       if (!card.reviewStateId) {
-        const cardIdValue = parseCardId(card.cardId)
-        if (cardIdValue === null) {
-          return NextResponse.json({ error: 'Invalid card id' }, { status: 400 })
-        }
+        const cardIdValue = parseCardId(card.cardId) as number
         const rs = await payload.create({
           collection: 'review-states',
           data: {
@@ -147,11 +143,11 @@ export async function POST(req: NextRequest) {
 
     const tasks: Task[] = selectedCards.map(card => {
       let taskType: TaskType
-      if (modeValue === 'mixed') {
+      if (mode === 'mixed') {
         const types: TaskType[] = ['translate', 'abcd']
         taskType = types[Math.floor(Math.random() * types.length)]
       } else {
-        taskType = modeValue
+        taskType = mode
       }
 
       const task: Task = {
