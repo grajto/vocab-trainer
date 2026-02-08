@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
+const APP_ACCESS_TOKEN = process.env.APP_ACCESS_TOKEN
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  const appToken = process.env.APP_ACCESS_TOKEN
   const isAdminPath = pathname.startsWith('/admin')
   const isLoginPath = pathname === '/login'
   const isAssetPath = pathname.startsWith('/_next') || pathname.startsWith('/favicon')
@@ -14,9 +15,11 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  if (appToken) {
+  const payloadToken = request.cookies.get('payload-token')
+
+  if (APP_ACCESS_TOKEN && !payloadToken) {
     const requestHeaders = new Headers(request.headers)
-    requestHeaders.set('x-app-token', appToken)
+    requestHeaders.set('x-app-token', APP_ACCESS_TOKEN)
     return NextResponse.next({ request: { headers: requestHeaders } })
   }
 
@@ -26,8 +29,7 @@ export function middleware(request: NextRequest) {
   }
 
   // Check for Payload CMS auth cookie ('payload-token' is Payload's default cookie name)
-  const token = request.cookies.get('payload-token')
-  if (!token) {
+  if (!payloadToken) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
