@@ -133,24 +133,28 @@ export async function POST(req: NextRequest) {
 
     // Build tasks
     type TaskType = Exclude<Mode, 'mixed'>
-    const tasks = selectedCards.map(card => {
-      let taskType: TaskType = modeValue as TaskType
+    type Task = {
+      cardId: string | number
+      taskType: TaskType
+      prompt: string
+      answer: string
+      options?: string[]
+    }
+
+    const tasks: Task[] = selectedCards.map(card => {
+      let taskType: TaskType
       if (modeValue === 'mixed') {
         const types: TaskType[] = ['translate', 'abcd']
         taskType = types[Math.floor(Math.random() * types.length)]
+      } else {
+        taskType = modeValue
       }
 
-      const task = {
+      const task: Task = {
         cardId: card.cardId,
         taskType,
         prompt: card.front,
         answer: card.back,
-      } as {
-        cardId: string | number
-        taskType: TaskType
-        prompt: string
-        answer: string
-        options?: string[]
       }
 
       // For ABCD, generate options
