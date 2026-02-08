@@ -91,12 +91,11 @@ export async function POST(req: NextRequest) {
     // Precompute numeric card IDs once for review state creation + task payloads.
     const cardIdMap = new Map<string, number>()
     for (const card of selectedCards) {
-      const cardKey = String(card.cardId)
       const parsedId = parseNumericId(card.cardId)
       if (parsedId === null) {
         return NextResponse.json({ error: `Invalid cardId: ${card.cardId}` }, { status: 400 })
       }
-      cardIdMap.set(cardKey, parsedId)
+      cardIdMap.set(String(card.cardId), parsedId)
     }
 
     // Create review states for new cards
