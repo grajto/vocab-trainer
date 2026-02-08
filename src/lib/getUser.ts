@@ -14,8 +14,12 @@ export async function getUser() {
   const headerToken = headersList.get('x-app-token')
   if (!headerToken) return null
 
+  const expected = Buffer.from(appToken)
+  const actual = Buffer.from(headerToken)
+  if (expected.length !== actual.length) return null
+
   try {
-    if (!timingSafeEqual(Buffer.from(appToken), Buffer.from(headerToken))) {
+    if (!timingSafeEqual(expected, actual)) {
       return null
     }
   } catch {
@@ -36,6 +40,9 @@ export async function getUser() {
     return null
   }
 
-  if (owner.totalDocs !== 1) return null
+  if (owner.totalDocs !== 1) {
+    console.warn('App token expects exactly one owner user', { count: owner.totalDocs })
+    return null
+  }
   return owner.docs[0]
 }
