@@ -133,6 +133,7 @@ export async function POST(req: NextRequest) {
 
     // Build tasks
     type TaskType = Exclude<Mode, 'mixed'>
+    type MixedTaskType = Exclude<TaskType, 'sentence'>
     type Task = {
       cardId: number
       taskType: TaskType
@@ -145,7 +146,7 @@ export async function POST(req: NextRequest) {
       let taskType: TaskType
       if (mode === 'mixed') {
         // Mixed mode intentionally excludes sentence tasks to keep sessions fast without AI deps.
-        const types: TaskType[] = ['translate', 'abcd']
+        const types: MixedTaskType[] = ['translate', 'abcd']
         taskType = types[Math.floor(Math.random() * types.length)]
       } else {
         taskType = mode
