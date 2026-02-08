@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
     const selectedCards = selectCardsForSession(cardsWithState, cardsWithoutState, count, 20, introToday)
 
     if (selectedCards.some(card => parseCardId(card.cardId) === null)) {
-      return NextResponse.json({ error: 'Invalid card id' }, { status: 400 })
+      return NextResponse.json({ error: 'Invalid cardId' }, { status: 400 })
     }
 
     // Create review states for new cards
