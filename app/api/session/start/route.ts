@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
       const cardKey = String(card.cardId)
       const parsedId = parseNumericId(card.cardId)
       if (parsedId === null) {
-        return NextResponse.json({ error: 'Invalid cardId' }, { status: 400 })
+        return NextResponse.json({ error: `Invalid cardId: ${card.cardId}` }, { status: 400 })
       }
       cardIdMap.set(cardKey, parsedId)
     }
@@ -102,10 +102,7 @@ export async function POST(req: NextRequest) {
     // Create review states for new cards
     for (const card of selectedCards) {
       if (!card.reviewStateId) {
-        const cardIdValue = cardIdMap.get(String(card.cardId))
-        if (cardIdValue === undefined) {
-          return NextResponse.json({ error: 'Invalid cardId' }, { status: 400 })
-        }
+        const cardIdValue = cardIdMap.get(String(card.cardId))!
         const rs = await payload.create({
           collection: 'review-states',
           data: {
@@ -160,11 +157,7 @@ export async function POST(req: NextRequest) {
         taskType = mode
       }
 
-      const cardIdValue = cardIdMap.get(String(card.cardId))
-      if (cardIdValue === undefined) {
-        return NextResponse.json({ error: 'Invalid cardId' }, { status: 400 })
-      }
-
+      const cardIdValue = cardIdMap.get(String(card.cardId))!
       const task: Task = {
         cardId: cardIdValue,
         taskType,
