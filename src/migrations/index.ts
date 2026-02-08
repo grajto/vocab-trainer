@@ -1,5 +1,5 @@
-import * as migration_20260208_143100_initial from './20260208_143100_initial';
-import * as migration_20260208_204800_add_users_role from './20260208_204800_add_users_role';
+import * as migration_20260208_143100_initial from './20260208_143100_initial.ts';
+import * as migration_20260208_204800_add_users_role from './20260208_204800_add_users_role.ts';
 
 export const migrations = [
   {
