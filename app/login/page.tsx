@@ -1,10 +1,11 @@
 'use client'
 
+import Link from 'next/link'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('')
+  const [login, setLogin] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -19,7 +20,11 @@ export default function LoginPage() {
       const res = await fetch('/api/users/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(
+          login.includes('@')
+            ? { email: login, password }
+            : { username: login, password },
+        ),
         credentials: 'include',
       })
 
@@ -47,14 +52,14 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="bg-white border border-neutral-200 rounded-xl p-6 space-y-4">
           {error && <p className="text-red-600 text-sm bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
           <div>
-            <label className="block text-xs font-medium text-neutral-500 mb-1.5">Email</label>
+            <label className="block text-xs font-medium text-neutral-500 mb-1.5">Login or email</label>
             <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
+              type="text"
+              value={login}
+              onChange={e => setLogin(e.target.value)}
               required
               className="w-full border border-neutral-200 rounded-lg px-3 py-2.5 text-sm focus:border-neutral-900 focus:outline-none transition-colors"
-              placeholder="you@example.com"
+              placeholder="Mati12 or you@example.com"
             />
           </div>
           <div>
@@ -78,7 +83,7 @@ export default function LoginPage() {
         </form>
         <p className="mt-4 text-xs text-neutral-400 text-center">
           First time? Create your account at{' '}
-          <a href="/admin" className="text-neutral-900 underline underline-offset-2">/admin</a>
+          <Link href="/admin" className="text-neutral-900 underline underline-offset-2">/admin</Link>
         </p>
       </div>
     </div>

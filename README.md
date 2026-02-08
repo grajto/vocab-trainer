@@ -26,7 +26,7 @@ Copy `.env.example` to `.env.local` and fill in the values:
 |---|---|---|
 | `DATABASE_URL` | Yes | Neon Postgres connection string |
 | `PAYLOAD_SECRET` | Yes | Secret for Payload CMS encryption (min 32 chars) |
-| `PAYLOAD_PUBLIC_SERVER_URL` | No | `http://localhost:3000` locally, `https://www.vocab-trainer.pl` in prod |
+| `PAYLOAD_PUBLIC_SERVER_URL` | No | `http://localhost:3000` locally. In prod set to your domain (fallback to `VERCEL_URL` if unset) |
 | `OPENAI_API_KEY` | No | OpenAI API key for sentence validation (sentence mode works without it using stub) |
 | `APP_ACCESS_TOKEN` | No | Optional shared token; middleware injects it as `x-app-token` to enable single-user UI + API access without login (admin still requires login) |
 
@@ -37,7 +37,7 @@ Set `APP_ACCESS_TOKEN` to let the middleware inject `x-app-token` for app + cust
 ## Getting Started
 
 ```bash
-node -v # requires Node.js 20 LTS
+node -v # requires Node.js 24
 pnpm install
 cp .env.example .env.local
 # Edit .env.local with your DATABASE_URL and PAYLOAD_SECRET
@@ -48,7 +48,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ### Create first admin user
 
-Navigate to [http://localhost:3000/admin](http://localhost:3000/admin) — Payload CMS will display a "Create First User" form. After creating the account, log in at `/login`.
+Navigate to [http://localhost:3000/admin](http://localhost:3000/admin) — Payload CMS will display a "Create First User" form. After creating the account, set a username and log in at `/login` using your username or email.
 
 ## Database Migrations
 
