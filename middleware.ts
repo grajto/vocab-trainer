@@ -15,7 +15,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Check for Payload auth token
+  // Check for Payload CMS auth cookie ('payload-token' is Payload's default cookie name)
   const token = request.cookies.get('payload-token')
   if (!token) {
     return NextResponse.redirect(new URL('/login', request.url))

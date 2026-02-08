@@ -10,7 +10,7 @@ import { Sessions } from './collections/Sessions'
 import { SessionItems } from './collections/SessionItems'
 
 export default buildConfig({
-  secret: process.env.PAYLOAD_SECRET || 'default-secret-change-me',
+  secret: process.env.PAYLOAD_SECRET!,
   serverURL: process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3000',
   admin: {
     user: Users.slug,
