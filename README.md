@@ -20,114 +20,113 @@ A private vocabulary trainer with SRS (Spaced Repetition System) built with Next
 
 ## Environment Variables
 
-Copy `.env.example` to `.env` and fill in the values:
+Copy `.env.example` to `.env.local` and fill in the values:
 
 | Variable | Required | Description |
 |---|---|---|
 | `DATABASE_URL` | Yes | Neon Postgres connection string |
-| `PAYLOAD_SECRET` | Yes | Secret for Payload CMS encryption |
-| `PAYLOAD_PUBLIC_SERVER_URL` | Yes | `http://localhost:3000` locally, `https://www.vocab-trainer.pl` in prod |
+| `PAYLOAD_SECRET` | Yes | Secret for Payload CMS encryption (min 32 chars) |
+| `PAYLOAD_PUBLIC_SERVER_URL` | No | `http://localhost:3000` locally, `https://www.vocab-trainer.pl` in prod |
 | `OPENAI_API_KEY` | No | OpenAI API key for sentence validation (sentence mode works without it using stub) |
 
 ## Getting Started
 
-### 1. Install dependencies
-
 ```bash
 pnpm install
-```
-
-### 2. Set up environment
-
-```bash
-cp .env.example .env
-# Edit .env with your DATABASE_URL and PAYLOAD_SECRET
-```
-
-### 3. Run development server
-
-```bash
+cp .env.example .env.local
+# Edit .env.local with your DATABASE_URL and PAYLOAD_SECRET
 pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
 
-### 4. Create first admin user
+### Create first admin user
 
-There is **no default login or password**. On first run, navigate to [http://localhost:3000/admin](http://localhost:3000/admin) — Payload CMS will display a "Create First User" form where you set your email and password. After creating the account you can log in at `/login` with those credentials.
+Navigate to [http://localhost:3000/admin](http://localhost:3000/admin) — Payload CMS will display a "Create First User" form. After creating the account, log in at `/login`.
 
-## Database Bootstrap / Migration
+## Database Migrations
 
-No manual migrations needed; Payload CMS v3 with the Postgres adapter creates tables automatically on startup.
+Migration files live in `src/migrations/`. The initial migration creates all tables:
 
-On first run, you will see Payload creating the schema in the console logs:
+**Tables:** `users`, `decks`, `decks_tags`, `cards`, `review_states`, `sessions`, `session_items`, plus Payload internal tables (`payload_locked_documents`, `payload_preferences`, `payload_migrations`).
+
+**To apply migrations (required on first setup):**
+
+```bash
+pnpm payload migrate
 ```
-[Payload] info: Connected to Postgres successfully
-[Payload] info: Migrating...
-```
 
-If you need to regenerate migrations after schema changes:
+**To create a new migration after schema changes:**
+
 ```bash
 pnpm payload migrate:create
 pnpm payload migrate
 ```
 
-For production (Vercel), tables are created/updated automatically on the first deployment with the correct `DATABASE_URL`.
+In production (Vercel), Payload auto-creates tables on first boot if the migration table doesn't exist. You can also run `pnpm payload migrate` locally pointing to the prod DATABASE_URL.
 
 ## Deploy on Vercel
 
-1. Set these environment variables in Vercel project settings:
-   - `DATABASE_URL` - your Neon Postgres connection string
-   - `PAYLOAD_SECRET` - a strong random secret
-   - `PAYLOAD_PUBLIC_SERVER_URL` - `https://www.vocab-trainer.pl`
-   - `OPENAI_API_KEY` (optional) - for AI sentence validation
-
-2. Deploy. Payload will auto-create tables on first boot.
+Set these environment variables in Vercel project settings:
+- `DATABASE_URL` — Neon Postgres connection string
+- `PAYLOAD_SECRET` — a strong random secret (min 32 chars)
+- `PAYLOAD_PUBLIC_SERVER_URL` — `https://www.vocab-trainer.pl`
+- `OPENAI_API_KEY` (optional)
 
 ## Project Structure
 
 ```
 app/
-├── (payload)/           # Payload CMS admin & REST API
-│   ├── admin/           # Admin panel pages
-│   ├── api/             # Payload REST API routes
-│   └── layout.tsx       # Admin layout
-├── api/                 # Custom API endpoints
-│   ├── session/start/   # POST - start learning session
-│   ├── session/answer/  # POST - submit answer
-│   ├── import/          # POST - CSV import
-│   ├── check-sentence/  # POST - sentence validation
-│   ├── stats/           # GET - statistics
-│   ├── decks/           # POST - create deck
-│   └── cards/           # POST - create card
-├── decks/               # Decks management pages
-├── learn/               # Start learning session
-├── session/[id]/        # Active session UI
-├── import/              # CSV import page
-├── stats/               # Statistics page
-├── login/               # Login page
-└── page.tsx             # Dashboard
+├── (payload)/              # Payload CMS admin & REST API
+├── api/                    # Custom API endpoints
+│   ├── session/start/      # POST - start learning session  
+│   ├── session/answer/     # POST - submit answer
+│   ├── import/             # POST - CSV import
+│   ├── check-sentence/     # POST - sentence validation
+│   ├── stats/              # GET - statistics
+│   ├── decks/              # POST - create deck
+│   └── cards/              # POST - create card
+├── decks/                  # Decks management pages
+├── learn/                  # Start learning session
+├── session/[id]/           # Active session UI
+├── study/                  # Aliases for /learn and /session
+├── import/                 # CSV import page
+├── stats/                  # Statistics page
+├── login/                  # Login page
+└── page.tsx                # Dashboard
 
 src/
 ├── lib/
-│   ├── getPayload.ts    # Payload instance helper
-│   ├── getUser.ts       # Auth user helper
-│   └── srs.ts           # SRS logic (4-level system)
-└── payload/
-    ├── collections/     # Payload collection configs
-    └── payload.config.ts
+│   ├── getPayload.ts       # Payload instance helper
+│   ├── getUser.ts          # Auth user helper
+│   └── srs.ts              # SRS logic (4-level system)
+├── payload/
+│   ├── access/isOwner.ts   # Shared access control helper
+│   ├── hooks/              # Collection hooks
+│   ├── collections/        # Payload collection configs
+│   └── payload.config.ts
+└── migrations/             # Database migration files
 ```
+
+## API Endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/api/session/start` | Start a learning session (input: deckId, mode, targetCount) |
+| POST | `/api/session/answer` | Submit answer (input: sessionId, cardId, userAnswer, isCorrect) |
+| POST | `/api/check-sentence` | Validate sentence with phrase (input: requiredPhrase, sentence) |
+| POST | `/api/import` | Import CSV cards (input: deckId, csvText) |
+| GET | `/api/stats` | Get global + per-deck statistics |
+| POST | `/api/decks` | Create a deck |
+| POST | `/api/cards` | Create a card |
 
 ## SRS Logic
 
-The system uses 4 levels with the following review intervals:
-- **Level 1**: 1 day
-- **Level 2**: 3 days
-- **Level 3**: 7 days
-- **Level 4**: 21 days
+4 levels with review intervals:
+- **L1**: 1 day · **L2**: 3 days · **L3**: 7 days · **L4**: 21 days
 
 Anti-grind rules:
-- Max +1 level increase per day per card
-- Requires 2+ correct answers to level up
-- 2+ wrong answers in a day drops card to Level 1
+- Max +1 level per day per card
+- Requires 2+ correct answers to level up  
+- 2+ wrong answers in a day → Level 1
 - Daily counts reset lazily based on `lastReviewedAt`
