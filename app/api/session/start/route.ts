@@ -17,9 +17,14 @@ export async function POST(req: NextRequest) {
     const { deckId, mode, targetCount = 10 } = body
 
     const allowedModes = ['translate', 'sentence', 'abcd', 'mixed'] as const
-    if (!deckId || !mode || !allowedModes.includes(mode)) {
+    type Mode = (typeof allowedModes)[number]
+    const isMode = (value: unknown): value is Mode =>
+      allowedModes.includes(value as Mode)
+
+    if (!deckId || !isMode(mode)) {
       return NextResponse.json({ error: 'deckId and mode are required' }, { status: 400 })
     }
+    const modeValue = mode
 
     const count = Math.min(Math.max(Number(targetCount), 5), 35)
     const payload = await getPayload()
@@ -127,10 +132,10 @@ export async function POST(req: NextRequest) {
     })
 
     // Build tasks
-    type TaskType = 'translate' | 'sentence' | 'abcd'
+    type TaskType = Exclude<Mode, 'mixed'>
     const tasks = selectedCards.map(card => {
-      let taskType: TaskType = mode as TaskType
-      if (mode === 'mixed') {
+      let taskType: TaskType = modeValue as TaskType
+      if (modeValue === 'mixed') {
         const types: TaskType[] = ['translate', 'abcd']
         taskType = types[Math.floor(Math.random() * types.length)]
       }
