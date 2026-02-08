@@ -14,9 +14,11 @@ export async function getUser() {
   const headerToken = headersList.get('x-app-token')
   if (!headerToken) return null
 
-  const expected = Buffer.from(appToken)
-  const actual = Buffer.from(headerToken)
-  if (expected.length !== actual.length || !timingSafeEqual(expected, actual)) {
+  try {
+    if (!timingSafeEqual(Buffer.from(appToken), Buffer.from(headerToken))) {
+      return null
+    }
+  } catch {
     return null
   }
 
@@ -34,6 +36,6 @@ export async function getUser() {
     return null
   }
 
-  if (owner.docs.length === 0) return null
+  if (owner.totalDocs !== 1) return null
   return owner.docs[0]
 }
