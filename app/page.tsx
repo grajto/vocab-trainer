@@ -7,7 +7,7 @@ export default async function Dashboard() {
   if (!user) redirect('/login')
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <nav className="bg-white shadow px-4 py-3 flex items-center justify-between">
         <h1 className="text-xl font-bold">Vocab Trainer</h1>
         <span className="text-sm text-gray-500">{user.email}</span>
@@ -15,16 +15,16 @@ export default async function Dashboard() {
       <main className="max-w-2xl mx-auto p-4 space-y-4 mt-6">
         <h2 className="text-2xl font-bold">Dashboard</h2>
         <div className="grid grid-cols-2 gap-4">
-          <Link href="/learn" className="block p-6 bg-blue-600 text-white rounded-lg text-center font-semibold hover:bg-blue-700">
+          <Link href="/learn" className="block p-6 bg-black text-white rounded-lg text-center font-semibold hover:bg-gray-800">
             Start Learning
           </Link>
-          <Link href="/decks" className="block p-6 bg-green-600 text-white rounded-lg text-center font-semibold hover:bg-green-700">
+          <Link href="/decks" className="block p-6 bg-white text-black border border-gray-300 rounded-lg text-center font-semibold hover:bg-gray-50">
             Decks
           </Link>
-          <Link href="/import" className="block p-6 bg-purple-600 text-white rounded-lg text-center font-semibold hover:bg-purple-700">
+          <Link href="/import" className="block p-6 bg-white text-black border border-gray-300 rounded-lg text-center font-semibold hover:bg-gray-50">
             Import CSV
           </Link>
-          <Link href="/stats" className="block p-6 bg-orange-600 text-white rounded-lg text-center font-semibold hover:bg-orange-700">
+          <Link href="/stats" className="block p-6 bg-white text-black border border-gray-300 rounded-lg text-center font-semibold hover:bg-gray-50">
             Stats
           </Link>
         </div>

@@ -29,10 +29,10 @@ export default async function DeckDetailPage({ params }: { params: Promise<{ id:
   })
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <nav className="bg-white shadow px-4 py-3 flex items-center justify-between">
         <Link href="/" className="text-xl font-bold">Vocab Trainer</Link>
-        <Link href="/decks" className="text-blue-600 hover:underline">← Back to Decks</Link>
+        <Link href="/decks" className="text-gray-600 hover:text-black">← Back to Decks</Link>
       </nav>
       <main className="max-w-2xl mx-auto p-4 mt-6 space-y-6">
         <div>

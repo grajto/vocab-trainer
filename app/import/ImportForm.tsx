@@ -52,7 +52,7 @@ export function ImportForm({ decks }: { decks: Deck[] }) {
         />
         <p className="text-xs text-gray-400 mt-1">Columns: front, back, notes (optional), examples (optional)</p>
       </div>
-      <button type="submit" disabled={loading} className="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700 disabled:opacity-50">
+      <button type="submit" disabled={loading} className="w-full bg-black text-white py-2 rounded hover:bg-gray-800 disabled:opacity-50">
         {loading ? 'Importing...' : 'Import'}
       </button>
 

@@ -83,7 +83,7 @@ export function StatsView() {
               <div className="flex gap-2">
                 {([1, 2, 3, 4] as const).map(level => {
                   const count = deck.levelDistribution[level] || 0
-                  const colors = { 1: 'bg-red-200', 2: 'bg-yellow-200', 3: 'bg-blue-200', 4: 'bg-green-200' }
+                  const colors = { 1: 'bg-gray-200', 2: 'bg-gray-300', 3: 'bg-gray-400 text-white', 4: 'bg-gray-800 text-white' }
                   return (
                     <div key={level} className={`flex-1 ${colors[level]} rounded p-2 text-center text-sm`}>
                       <p className="font-bold">{count}</p>

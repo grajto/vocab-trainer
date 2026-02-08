@@ -18,7 +18,7 @@ export default async function DecksPage() {
   })
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <nav className="bg-white shadow px-4 py-3 flex items-center justify-between">
         <Link href="/" className="text-xl font-bold">Vocab Trainer</Link>
         <span className="text-sm text-gray-500">{user.email}</span>

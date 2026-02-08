@@ -38,7 +38,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-white">
       <div className="max-w-sm w-full p-6 bg-white rounded-lg shadow">
         <h1 className="text-2xl font-bold mb-6 text-center">Vocab Trainer</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -66,14 +66,14 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+            className="w-full bg-black text-white py-2 rounded hover:bg-gray-800 disabled:opacity-50"
           >
             {loading ? 'Logging in...' : 'Log in'}
           </button>
         </form>
         <p className="mt-4 text-xs text-gray-500 text-center">
           No default account exists. Create your first user at{' '}
-          <a href="/admin" className="text-blue-600 underline">/admin</a>.
+          <a href="/admin" className="text-black underline">/admin</a>.
         </p>
       </div>
     </div>
