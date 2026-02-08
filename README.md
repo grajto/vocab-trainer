@@ -32,7 +32,7 @@ Copy `.env.example` to `.env.local` and fill in the values:
 
 ### Single-user mode (optional)
 
-Set `APP_ACCESS_TOKEN` to let the middleware inject `x-app-token` for app + API requests, so the UI works without logging in. The Payload Admin panel still uses normal authentication. Single-user mode expects exactly one `owner` user; if multiple owners exist, log in normally. Remove `APP_ACCESS_TOKEN` to enforce login for UI + API routes.
+Set `APP_ACCESS_TOKEN` to let the middleware inject `x-app-token` for app + API requests (including `/api/*`), so the UI works without logging in. The Payload Admin panel still uses normal authentication. Single-user mode expects exactly one `owner` user; if multiple owners exist, log in normally. Remove `APP_ACCESS_TOKEN` to enforce login for UI + API routes.
 
 ## Getting Started
 
