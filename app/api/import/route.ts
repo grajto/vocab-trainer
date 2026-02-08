@@ -31,16 +31,16 @@ export async function POST(req: NextRequest) {
 
     // Support both JSON body with csvText and FormData
     const contentType = req.headers.get('content-type') || ''
-    let deckId: string
+    let deckIdRaw: string
     let csvText: string
 
     if (contentType.includes('application/json')) {
       const body = await req.json()
-      deckId = body.deckId
+      deckIdRaw = body.deckId
       csvText = body.csvText
     } else {
       const formData = await req.formData()
-      deckId = formData.get('deckId') as string
+      deckIdRaw = formData.get('deckId') as string
       const file = formData.get('file') as File | null
       if (file) {
         csvText = await file.text()
@@ -49,8 +49,13 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    if (!deckId || !csvText) {
+    if (!deckIdRaw || !csvText) {
       return NextResponse.json({ error: 'deckId and csvText/file are required' }, { status: 400 })
+    }
+
+    const deckId = Number(deckIdRaw)
+    if (!Number.isFinite(deckId)) {
+      return NextResponse.json({ error: 'deckId must be a number' }, { status: 400 })
     }
 
     const rows = parseCSV(csvText)

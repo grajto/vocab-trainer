@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isOwner, isAuthenticated } from '../access/isOwner'
+import { isOwner, isAuthenticated } from '../access/isOwner.ts'
 
 export const Cards: CollectionConfig = {
   slug: 'cards',

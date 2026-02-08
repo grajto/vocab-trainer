@@ -11,7 +11,8 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const { deckId, mode, targetCount = 10 } = body
 
-    if (!deckId || !mode) {
+    const allowedModes = ['translate', 'sentence', 'abcd', 'mixed'] as const
+    if (!deckId || !mode || !allowedModes.includes(mode)) {
       return NextResponse.json({ error: 'deckId and mode are required' }, { status: 400 })
     }
 
@@ -84,11 +85,12 @@ export async function POST(req: NextRequest) {
     // Create review states for new cards
     for (const card of selectedCards) {
       if (!card.reviewStateId) {
+        const cardIdValue = typeof card.cardId === 'string' ? Number(card.cardId) : card.cardId
         const rs = await payload.create({
           collection: 'review-states',
           data: {
             owner: user.id,
-            card: card.cardId,
+            card: cardIdValue,
             level: 1,
             dueAt: new Date().toISOString(),
             introducedAt: new Date().toISOString(),
@@ -117,18 +119,25 @@ export async function POST(req: NextRequest) {
     })
 
     // Build tasks
+    type TaskType = 'translate' | 'sentence' | 'abcd'
     const tasks = selectedCards.map(card => {
-      let taskType = mode
+      let taskType: TaskType = mode as TaskType
       if (mode === 'mixed') {
-        const types = ['translate', 'abcd'] as const
+        const types: TaskType[] = ['translate', 'abcd']
         taskType = types[Math.floor(Math.random() * types.length)]
       }
 
-      const task: Record<string, unknown> = {
+      const task = {
         cardId: card.cardId,
         taskType,
         prompt: card.front,
         answer: card.back,
+      } as {
+        cardId: string | number
+        taskType: TaskType
+        prompt: string
+        answer: string
+        options?: string[]
       }
 
       // For ABCD, generate options
@@ -146,13 +155,14 @@ export async function POST(req: NextRequest) {
 
     // Create session items
     for (const task of tasks) {
+      const taskCardId = Number(task.cardId as string | number)
       await payload.create({
         collection: 'session-items',
         data: {
           session: session.id,
-          card: task.cardId as string,
-          taskType: task.taskType as string,
-          promptShown: task.prompt as string,
+          card: taskCardId,
+          taskType: task.taskType,
+          promptShown: task.prompt,
         },
       })
     }
