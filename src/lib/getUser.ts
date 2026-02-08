@@ -33,7 +33,6 @@ export async function getUser() {
       where: { role: { equals: 'owner' } },
       limit: 1,
       depth: 0,
-      sort: '-createdAt',
     })
   } catch (error) {
     console.error('App token user lookup failed', error)
