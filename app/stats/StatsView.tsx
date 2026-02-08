@@ -111,7 +111,7 @@ export function StatsView() {
                 <span className="capitalize">{session.mode}</span>
               </div>
               <div className="text-right">
-                <span className="font-medium">{session.accuracy ?? 0}%</span>
+                <span className="font-medium">{session.accuracy}%</span>
                 <span className="text-gray-400 ml-2">{session.completedCount}/{session.targetCount}</span>
               </div>
             </div>

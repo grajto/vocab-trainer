@@ -3,6 +3,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 
+const FEEDBACK_DELAY_DONE = 1500
+const FEEDBACK_DELAY_CORRECT = 1000
+const FEEDBACK_DELAY_WRONG = 2500
+
 interface Task {
   cardId: string
   taskType: string
@@ -61,13 +65,13 @@ export default function SessionPage() {
       }
 
       if (data.sessionDone) {
-        setTimeout(() => setSessionDone(true), 1500)
+        setTimeout(() => setSessionDone(true), FEEDBACK_DELAY_DONE)
       } else {
         setTimeout(() => {
           setFeedback(null)
           setUserAnswer('')
           setCurrentIndex(prev => prev + 1)
-        }, correct ? 1000 : 2500)
+        }, correct ? FEEDBACK_DELAY_CORRECT : FEEDBACK_DELAY_WRONG)
       }
     } catch (err) {
       console.error('Answer submit error:', err)
