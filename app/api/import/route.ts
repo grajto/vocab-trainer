@@ -27,6 +27,11 @@ export async function POST(req: NextRequest) {
     const user = await getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+    const parseDeckId = (value: string) => {
+      const parsed = Number.parseInt(value, 10)
+      return Number.isFinite(parsed) ? parsed : null
+    }
+
     const payload = await getPayload()
 
     // Support both JSON body with csvText and FormData
@@ -53,8 +58,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'deckId and csvText/file are required' }, { status: 400 })
     }
 
-    const deckId = Number(deckIdRaw)
-    if (!Number.isFinite(deckId)) {
+    const deckId = parseDeckId(deckIdRaw)
+    if (deckId === null) {
       return NextResponse.json({ error: 'deckId must be a number' }, { status: 400 })
     }
 

@@ -92,6 +92,10 @@ export async function POST(req: NextRequest) {
 
     const selectedCards = selectCardsForSession(cardsWithState, cardsWithoutState, count, 20, introToday)
 
+    if (selectedCards.some(card => parseCardId(card.cardId) === null)) {
+      return NextResponse.json({ error: 'Invalid card id' }, { status: 400 })
+    }
+
     // Create review states for new cards
     for (const card of selectedCards) {
       if (!card.reviewStateId) {
@@ -134,7 +138,7 @@ export async function POST(req: NextRequest) {
     // Build tasks
     type TaskType = Exclude<Mode, 'mixed'>
     type Task = {
-      cardId: string | number
+      cardId: number
       taskType: TaskType
       prompt: string
       answer: string
@@ -151,7 +155,7 @@ export async function POST(req: NextRequest) {
       }
 
       const task: Task = {
-        cardId: card.cardId,
+        cardId: parseCardId(card.cardId) as number,
         taskType,
         prompt: card.front,
         answer: card.back,
@@ -172,15 +176,11 @@ export async function POST(req: NextRequest) {
 
     // Create session items
     for (const task of tasks) {
-      const taskCardId = parseCardId(task.cardId)
-      if (taskCardId === null) {
-        return NextResponse.json({ error: 'Invalid card id' }, { status: 400 })
-      }
       await payload.create({
         collection: 'session-items',
         data: {
           session: session.id,
-          card: taskCardId,
+          card: task.cardId,
           taskType: task.taskType,
           promptShown: task.prompt,
         },
