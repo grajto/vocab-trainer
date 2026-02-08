@@ -89,19 +89,23 @@ export async function POST(req: NextRequest) {
     const selectedCards = selectCardsForSession(cardsWithState, cardsWithoutState, count, 20, introToday)
 
     // Precompute numeric card IDs once for review state creation + task payloads.
-    const cardIdMap = new Map<string | number, number>()
+    const cardIdMap = new Map<string, number>()
     for (const card of selectedCards) {
+      const cardKey = String(card.cardId)
       const parsedId = parseNumericId(card.cardId)
       if (parsedId === null) {
         return NextResponse.json({ error: 'Invalid cardId' }, { status: 400 })
       }
-      cardIdMap.set(card.cardId, parsedId)
+      cardIdMap.set(cardKey, parsedId)
     }
 
     // Create review states for new cards
     for (const card of selectedCards) {
       if (!card.reviewStateId) {
-        const cardIdValue = cardIdMap.get(card.cardId) as number
+        const cardIdValue = cardIdMap.get(String(card.cardId))
+        if (cardIdValue === undefined) {
+          return NextResponse.json({ error: 'Invalid cardId' }, { status: 400 })
+        }
         const rs = await payload.create({
           collection: 'review-states',
           data: {
@@ -145,7 +149,8 @@ export async function POST(req: NextRequest) {
       options?: string[]
     }
 
-    const tasks: Task[] = selectedCards.map(card => {
+    const tasks: Task[] = []
+    for (const card of selectedCards) {
       let taskType: TaskType
       if (mode === 'mixed') {
         // Mixed mode intentionally excludes sentence tasks to keep sessions fast without AI deps.
@@ -155,8 +160,13 @@ export async function POST(req: NextRequest) {
         taskType = mode
       }
 
+      const cardIdValue = cardIdMap.get(String(card.cardId))
+      if (cardIdValue === undefined) {
+        return NextResponse.json({ error: 'Invalid cardId' }, { status: 400 })
+      }
+
       const task: Task = {
-        cardId: cardIdMap.get(card.cardId) as number,
+        cardId: cardIdValue,
         taskType,
         prompt: card.front,
         answer: card.back,
@@ -172,8 +182,8 @@ export async function POST(req: NextRequest) {
         task.options = options.sort(() => Math.random() - 0.5)
       }
 
-      return task
-    })
+      tasks.push(task)
+    }
 
     // Create session items
     for (const task of tasks) {
