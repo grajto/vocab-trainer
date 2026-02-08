@@ -18,6 +18,7 @@ export async function getUser() {
 
   const owner = await payload.find({
     collection: 'users',
+    where: { role: { equals: 'owner' } },
     limit: 1,
     depth: 0,
     sort: 'createdAt',

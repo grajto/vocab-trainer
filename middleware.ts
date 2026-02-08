@@ -5,14 +5,12 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   const appToken = process.env.APP_ACCESS_TOKEN
+  const isAdminPath = pathname.startsWith('/admin')
+  const isLoginPath = pathname === '/login'
+  const isAssetPath = pathname.startsWith('/_next') || pathname.startsWith('/favicon')
 
   // Allow public paths
-  if (
-    pathname.startsWith('/admin') ||
-    pathname === '/login' ||
-    pathname.startsWith('/_next') ||
-    pathname.startsWith('/favicon')
-  ) {
+  if (isAssetPath || isAdminPath || isLoginPath) {
     return NextResponse.next()
   }
 
