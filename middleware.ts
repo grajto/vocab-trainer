@@ -3,15 +3,35 @@ import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  
+
+  const appToken = process.env.APP_ACCESS_TOKEN
+  const isApiPath = pathname.startsWith('/api')
+
   // Allow public paths
   if (
     pathname.startsWith('/admin') ||
-    pathname.startsWith('/api') ||
     pathname === '/login' ||
     pathname.startsWith('/_next') ||
     pathname.startsWith('/favicon')
   ) {
+    return NextResponse.next()
+  }
+
+  if (appToken) {
+    const response = NextResponse.next()
+    const existing = request.cookies.get('app-access-token')?.value
+    if (existing !== appToken) {
+      response.cookies.set('app-access-token', appToken, {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+        path: '/',
+      })
+    }
+    return response
+  }
+
+  if (isApiPath) {
     return NextResponse.next()
   }
 
