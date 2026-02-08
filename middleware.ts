@@ -16,6 +16,10 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
+  if (isApiPath && !APP_ACCESS_TOKEN) {
+    return NextResponse.next()
+  }
+
   const payloadToken = request.cookies.get('payload-token')
 
   const fetchSite = request.headers.get('sec-fetch-site')
