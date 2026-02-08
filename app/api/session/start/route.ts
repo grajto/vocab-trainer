@@ -2,16 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from '@/src/lib/getPayload'
 import { getUser } from '@/src/lib/getUser'
 import { selectCardsForSession } from '@/src/lib/srs'
+import { parseNumericId } from '@/src/lib/parseNumericId'
 
 export async function POST(req: NextRequest) {
   try {
     const user = await getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-    const parseCardId = (value: string | number) => {
-      const parsed = typeof value === 'string' ? Number.parseInt(value, 10) : value
-      return Number.isFinite(parsed) ? parsed : null
-    }
 
     const body = await req.json()
     const { deckId, mode, targetCount = 10 } = body
@@ -91,14 +87,19 @@ export async function POST(req: NextRequest) {
 
     const selectedCards = selectCardsForSession(cardsWithState, cardsWithoutState, count, 20, introToday)
 
-    if (selectedCards.some(card => parseCardId(card.cardId) === null)) {
-      return NextResponse.json({ error: 'Invalid cardId' }, { status: 400 })
+    const cardIdMap = new Map<string | number, number>()
+    for (const card of selectedCards) {
+      const parsedId = parseNumericId(card.cardId)
+      if (parsedId === null) {
+        return NextResponse.json({ error: 'Invalid cardId' }, { status: 400 })
+      }
+      cardIdMap.set(card.cardId, parsedId)
     }
 
     // Create review states for new cards
     for (const card of selectedCards) {
       if (!card.reviewStateId) {
-        const cardIdValue = parseCardId(card.cardId) as number
+        const cardIdValue = cardIdMap.get(card.cardId) as number
         const rs = await payload.create({
           collection: 'review-states',
           data: {
@@ -153,7 +154,7 @@ export async function POST(req: NextRequest) {
       }
 
       const task: Task = {
-        cardId: parseCardId(card.cardId) as number,
+        cardId: cardIdMap.get(card.cardId) as number,
         taskType,
         prompt: card.front,
         answer: card.back,

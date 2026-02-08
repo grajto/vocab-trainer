@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from '@/src/lib/getPayload'
 import { getUser } from '@/src/lib/getUser'
+import { parseNumericId } from '@/src/lib/parseNumericId'
 
 function parseCSV(text: string): Array<Record<string, string>> {
   const lines = text.trim().split('\n')
@@ -26,11 +27,6 @@ export async function POST(req: NextRequest) {
   try {
     const user = await getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-    const parseDeckId = (value: string) => {
-      const parsed = Number.parseInt(value, 10)
-      return Number.isFinite(parsed) ? parsed : null
-    }
 
     const payload = await getPayload()
 
@@ -58,7 +54,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'deckId and csvText/file are required' }, { status: 400 })
     }
 
-    const deckId = parseDeckId(deckIdRaw)
+    const deckId = parseNumericId(deckIdRaw)
     if (deckId === null) {
       return NextResponse.json({ error: 'deckId must be a number' }, { status: 400 })
     }
