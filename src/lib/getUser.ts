@@ -1,3 +1,4 @@
+import { timingSafeEqual } from 'crypto'
 import { headers as getHeaders } from 'next/headers'
 import { getPayload } from './getPayload'
 
@@ -11,16 +12,27 @@ export async function getUser() {
   if (!appToken) return null
 
   const headerToken = headersList.get('x-app-token')
+  if (!headerToken) return null
 
-  if (headerToken !== appToken) return null
+  const expected = Buffer.from(appToken)
+  const actual = Buffer.from(headerToken)
+  if (expected.length !== actual.length || !timingSafeEqual(expected, actual)) {
+    return null
+  }
 
-  const owner = await payload.find({
-    collection: 'users',
-    where: { role: { equals: 'owner' } },
-    limit: 1,
-    depth: 0,
-    sort: '-createdAt',
-  })
+  let owner
+  try {
+    owner = await payload.find({
+      collection: 'users',
+      where: { role: { equals: 'owner' } },
+      limit: 1,
+      depth: 0,
+      sort: '-createdAt',
+    })
+  } catch (error) {
+    console.error('App token user lookup failed', error)
+    return null
+  }
 
   if (owner.docs.length === 0) return null
   return owner.docs[0]

@@ -30,6 +30,10 @@ Copy `.env.example` to `.env.local` and fill in the values:
 | `OPENAI_API_KEY` | No | OpenAI API key for sentence validation (sentence mode works without it using stub) |
 | `APP_ACCESS_TOKEN` | No | Optional shared token; middleware injects it as `x-app-token` to enable single-user UI access without login (admin still requires login) |
 
+### Single-user mode (optional)
+
+Set `APP_ACCESS_TOKEN` to let the middleware inject `x-app-token` for app + API requests, so the UI works without logging in. The Payload Admin panel still uses normal authentication.
+
 ## Getting Started
 
 ```bash
