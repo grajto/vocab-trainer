@@ -40,7 +40,11 @@ export async function getUser() {
   }
 
   if (owner.totalDocs !== 1) {
-    console.warn('App token expects exactly one owner user', { count: owner.totalDocs })
+    if (owner.totalDocs === 0) {
+      console.warn('App token owner user missing')
+    } else {
+      console.warn('App token expects exactly one owner user', { count: owner.totalDocs })
+    }
     return null
   }
   return owner.docs[0]

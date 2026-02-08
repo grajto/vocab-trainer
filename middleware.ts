@@ -9,6 +9,7 @@ export function middleware(request: NextRequest) {
   const isAdminPath = pathname.startsWith('/admin')
   const isLoginPath = pathname === '/login'
   const isAssetPath = pathname.startsWith('/_next') || pathname.startsWith('/favicon')
+  const isApiPath = pathname.startsWith('/api')
 
   // Allow public paths
   if (isAssetPath || isAdminPath || isLoginPath) {
@@ -17,13 +18,15 @@ export function middleware(request: NextRequest) {
 
   const payloadToken = request.cookies.get('payload-token')
 
-  if (APP_ACCESS_TOKEN && !payloadToken) {
+  const fetchSite = request.headers.get('sec-fetch-site')
+  const isTrustedRequest = fetchSite === 'same-origin' || fetchSite === 'same-site' || fetchSite === 'none'
+
+  if (APP_ACCESS_TOKEN && !payloadToken && isTrustedRequest) {
     const requestHeaders = new Headers(request.headers)
     requestHeaders.set('x-app-token', APP_ACCESS_TOKEN)
     return NextResponse.next({ request: { headers: requestHeaders } })
   }
 
-  const isApiPath = pathname.startsWith('/api')
   if (isApiPath) {
     return NextResponse.next()
   }
