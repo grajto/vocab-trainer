@@ -1,13 +1,14 @@
 import type { CollectionConfig } from 'payload'
+import { isOwner, isAuthenticated } from '../access/isOwner'
 
 export const ReviewStates: CollectionConfig = {
   slug: 'review-states',
   timestamps: true,
   access: {
-    read: ({ req: { user } }) => user ? { owner: { equals: user.id } } : false,
-    create: ({ req: { user } }) => !!user,
-    update: ({ req: { user } }) => user ? { owner: { equals: user.id } } : false,
-    delete: ({ req: { user } }) => user ? { owner: { equals: user.id } } : false,
+    read: isOwner,
+    create: isAuthenticated,
+    update: isOwner,
+    delete: isOwner,
   },
   indexes: [
     { fields: ['owner', 'card'], unique: true },

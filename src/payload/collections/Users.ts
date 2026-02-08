@@ -6,5 +6,12 @@ export const Users: CollectionConfig = {
   admin: {
     useAsTitle: 'email',
   },
-  fields: [],
+  fields: [
+    {
+      name: 'role',
+      type: 'text',
+      defaultValue: 'owner',
+      admin: { description: 'User role (single-user app, always "owner")' },
+    },
+  ],
 }

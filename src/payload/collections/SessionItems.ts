@@ -1,13 +1,14 @@
 import type { CollectionConfig } from 'payload'
+import { isAuthenticated } from '../access/isOwner'
 
 export const SessionItems: CollectionConfig = {
   slug: 'session-items',
   timestamps: true,
   access: {
-    read: ({ req }) => !!req.user,
-    create: ({ req }) => !!req.user,
-    update: ({ req }) => !!req.user,
-    delete: ({ req }) => !!req.user,
+    read: isAuthenticated,
+    create: isAuthenticated,
+    update: isAuthenticated,
+    delete: isAuthenticated,
   },
   fields: [
     { name: 'session', type: 'relationship', relationTo: 'sessions', required: true, index: true },

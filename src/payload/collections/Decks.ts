@@ -1,14 +1,15 @@
 import type { CollectionConfig } from 'payload'
+import { isOwner, isAuthenticated } from '../access/isOwner'
 
 export const Decks: CollectionConfig = {
   slug: 'decks',
   admin: { useAsTitle: 'name' },
   timestamps: true,
   access: {
-    read: ({ req: { user } }) => user ? { owner: { equals: user.id } } : false,
-    create: ({ req: { user } }) => !!user,
-    update: ({ req: { user } }) => user ? { owner: { equals: user.id } } : false,
-    delete: ({ req: { user } }) => user ? { owner: { equals: user.id } } : false,
+    read: isOwner,
+    create: isAuthenticated,
+    update: isOwner,
+    delete: isOwner,
   },
   fields: [
     { name: 'owner', type: 'relationship', relationTo: 'users', required: true },
