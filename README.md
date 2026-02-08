@@ -54,7 +54,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ### 4. Create first admin user
 
-Navigate to [http://localhost:3000/admin](http://localhost:3000/admin) and create your first user account.
+There is **no default login or password**. On first run, navigate to [http://localhost:3000/admin](http://localhost:3000/admin) — Payload CMS will display a "Create First User" form where you set your email and password. After creating the account you can log in at `/login` with those credentials.
 
 ## Database Bootstrap / Migration
 

@@ -71,6 +71,10 @@ export default function LoginPage() {
             {loading ? 'Logging in...' : 'Log in'}
           </button>
         </form>
+        <p className="mt-4 text-xs text-gray-500 text-center">
+          No default account exists. Create your first user at{' '}
+          <a href="/admin" className="text-blue-600 underline">/admin</a>.
+        </p>
       </div>
     </div>
   )
