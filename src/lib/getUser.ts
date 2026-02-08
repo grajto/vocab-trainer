@@ -31,7 +31,7 @@ export async function getUser() {
     owner = await payload.find({
       collection: 'users',
       where: { role: { equals: 'owner' } },
-      limit: 2,
+      limit: 1,
       depth: 0,
       sort: '-createdAt',
     })
@@ -40,7 +40,7 @@ export async function getUser() {
     return null
   }
 
-  if (owner.docs.length !== 1) {
+  if (owner.totalDocs !== 1) {
     console.warn('App token expects exactly one owner user', { count: owner.totalDocs })
     return null
   }
