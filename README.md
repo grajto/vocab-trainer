@@ -32,6 +32,7 @@ Copy `.env.example` to `.env.local` and fill in the values:
 ## Getting Started
 
 ```bash
+node -v # requires Node.js 20 LTS
 pnpm install
 cp .env.example .env.local
 # Edit .env.local with your DATABASE_URL and PAYLOAD_SECRET
