@@ -28,7 +28,7 @@ Copy `.env.example` to `.env.local` and fill in the values:
 | `PAYLOAD_SECRET` | Yes | Secret for Payload CMS encryption (min 32 chars) |
 | `PAYLOAD_PUBLIC_SERVER_URL` | No | `http://localhost:3000` locally, `https://www.vocab-trainer.pl` in prod |
 | `OPENAI_API_KEY` | No | OpenAI API key for sentence validation (sentence mode works without it using stub) |
-| `APP_ACCESS_TOKEN` | No | Optional shared token to enable single-user UI access without login (admin still requires login) |
+| `APP_ACCESS_TOKEN` | No | Optional shared token; middleware injects it as `x-app-token` to enable single-user UI access without login (admin still requires login) |
 
 ## Getting Started
 

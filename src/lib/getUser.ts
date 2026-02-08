@@ -23,5 +23,6 @@ export async function getUser() {
     sort: 'createdAt',
   })
 
-  return owner.docs[0] || null
+  if (owner.docs.length === 0) return null
+  return owner.docs[0]
 }

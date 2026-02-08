@@ -5,7 +5,6 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   const appToken = process.env.APP_ACCESS_TOKEN
-  const isApiPath = pathname.startsWith('/api')
 
   // Allow public paths
   if (
@@ -18,19 +17,12 @@ export function middleware(request: NextRequest) {
   }
 
   if (appToken) {
-    const response = NextResponse.next()
-    const existing = request.cookies.get('app-access-token')?.value
-    if (existing !== appToken) {
-      response.cookies.set('app-access-token', appToken, {
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
-        path: '/',
-      })
-    }
-    return response
+    const requestHeaders = new Headers(request.headers)
+    requestHeaders.set('x-app-token', appToken)
+    return NextResponse.next({ request: { headers: requestHeaders } })
   }
 
+  const isApiPath = pathname.startsWith('/api')
   if (isApiPath) {
     return NextResponse.next()
   }
