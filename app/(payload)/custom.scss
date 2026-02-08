@@ -1,1 +1,24 @@
-/* Custom styles for Payload admin - intentionally minimal */
+/* Payload Admin – minimal monochrome overrides */
+:root {
+  --theme-elevation-0: #fafafa;
+  --theme-elevation-50: #ffffff;
+  --theme-elevation-100: #f5f5f5;
+  --theme-elevation-150: #eeeeee;
+  --theme-elevation-200: #e5e5e5;
+  --theme-elevation-250: #d4d4d4;
+  --theme-elevation-300: #a3a3a3;
+  --theme-elevation-350: #737373;
+  --theme-elevation-400: #525252;
+  --theme-elevation-450: #404040;
+  --theme-elevation-500: #262626;
+  --theme-elevation-550: #1a1a1a;
+  --theme-elevation-600: #0f0f0f;
+  --theme-elevation-650: #0a0a0a;
+  --theme-elevation-700: #050505;
+  --theme-elevation-750: #030303;
+  --theme-elevation-800: #020202;
+  --theme-elevation-850: #010101;
+  --theme-elevation-900: #000000;
+  --theme-elevation-950: #000000;
+  --theme-elevation-1000: #000000;
+}

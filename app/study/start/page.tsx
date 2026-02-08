@@ -1,12 +1,13 @@
+// Alias: /study/start → same as /learn
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
-import { StartSessionForm } from './StartSessionForm'
+import { StartSessionForm } from '@/app/learn/StartSessionForm'
 
 export const dynamic = 'force-dynamic'
 
-export default async function LearnPage() {
+export default async function StudyStartPage() {
   const user = await getUser()
   if (!user) redirect('/login')
 

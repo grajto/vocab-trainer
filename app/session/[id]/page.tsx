@@ -3,9 +3,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 
-const FEEDBACK_DELAY_DONE = 1500
-const FEEDBACK_DELAY_CORRECT = 1000
-const FEEDBACK_DELAY_WRONG = 2500
+const FEEDBACK_DELAY_CORRECT = 800
+const FEEDBACK_DELAY_WRONG = 2000
+const FEEDBACK_DELAY_DONE = 1200
 
 interface Task {
   cardId: string
@@ -59,9 +59,9 @@ export default function SessionPage() {
       setAccuracy(data.accuracy || 0)
 
       if (correct) {
-        setFeedback({ correct: true, message: '✓ Correct!' })
+        setFeedback({ correct: true, message: 'Correct' })
       } else {
-        setFeedback({ correct: false, message: `✗ Correct answer: ${currentTask.answer}` })
+        setFeedback({ correct: false, message: currentTask.answer })
       }
 
       if (data.sessionDone) {
@@ -114,29 +114,33 @@ export default function SessionPage() {
     }
   }
 
+  // No tasks loaded
   if (tasks.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
         <div className="text-center">
-          <p className="text-gray-500 mb-4">No session data found.</p>
-          <button onClick={() => router.push('/learn')} className="text-black underline">Go to Learn</button>
+          <p className="text-sm text-neutral-400 mb-3">No session data found.</p>
+          <button onClick={() => router.push('/learn')} className="text-sm text-neutral-900 underline underline-offset-2">
+            Go to Learn
+          </button>
         </div>
       </div>
     )
   }
 
+  // Session complete
   if (sessionDone) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="text-center bg-white p-8 rounded-lg shadow max-w-sm">
-          <h2 className="text-2xl font-bold mb-2">Session Complete!</h2>
-          <p className="text-4xl font-bold text-black mb-4">{accuracy}%</p>
-          <p className="text-gray-500 mb-6">accuracy</p>
+      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+        <div className="text-center max-w-xs mx-4">
+          <p className="text-xs text-neutral-400 uppercase tracking-widest mb-2">Session Complete</p>
+          <p className="text-5xl font-bold tabular-nums mb-1">{accuracy}%</p>
+          <p className="text-sm text-neutral-400 mb-8">accuracy</p>
           <div className="space-y-2">
-            <button onClick={() => router.push('/learn')} className="block w-full bg-black text-white py-2 rounded hover:bg-gray-800">
+            <button onClick={() => router.push('/learn')} className="block w-full bg-neutral-900 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-neutral-800 transition-colors">
               New Session
             </button>
-            <button onClick={() => router.push('/')} className="block w-full border border-gray-300 py-2 rounded hover:bg-gray-100">
+            <button onClick={() => router.push('/')} className="block w-full border border-neutral-200 py-2.5 rounded-xl text-sm hover:border-neutral-400 transition-colors">
               Dashboard
             </button>
           </div>
@@ -145,24 +149,39 @@ export default function SessionPage() {
     )
   }
 
+  // Active session
+  const progress = ((currentIndex + 1) / tasks.length) * 100
+
   return (
-    <div className="min-h-screen bg-white">
-      <div className="bg-white shadow px-4 py-3 flex items-center justify-between">
-        <span className="text-sm font-medium">{currentIndex + 1} / {tasks.length}</span>
-        <div className="flex-1 mx-4 bg-gray-200 rounded-full h-2">
-          <div className="bg-black h-2 rounded-full transition-all" style={{ width: `${((currentIndex + 1) / tasks.length) * 100}%` }} />
+    <div className="min-h-screen bg-neutral-50">
+      {/* Progress bar */}
+      <div className="border-b border-neutral-200 bg-white px-6 py-3">
+        <div className="max-w-lg mx-auto flex items-center gap-4">
+          <span className="text-xs text-neutral-400 tabular-nums whitespace-nowrap">
+            {currentIndex + 1} / {tasks.length}
+          </span>
+          <div className="flex-1 bg-neutral-100 rounded-full h-1.5">
+            <div
+              className="bg-neutral-900 h-1.5 rounded-full transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <span className="text-xs text-neutral-400 tabular-nums">{accuracy}%</span>
         </div>
-        <span className="text-sm text-gray-500">{accuracy}%</span>
       </div>
 
-      <main className="max-w-lg mx-auto p-4 mt-8">
-        <div className="bg-white p-6 rounded-lg shadow text-center">
-          <p className="text-xs text-gray-400 uppercase mb-2">{currentTask.taskType}</p>
-          <h2 className="text-3xl font-bold mb-8">{currentTask.prompt}</h2>
+      <main className="max-w-lg mx-auto px-6 py-12">
+        <div className="text-center">
+          <p className="text-[10px] text-neutral-400 uppercase tracking-widest mb-4">{currentTask.taskType}</p>
+          <h2 className="text-3xl font-semibold tracking-tight mb-10">{currentTask.prompt}</h2>
 
           {feedback ? (
-            <div className={`p-4 rounded-lg ${feedback.correct ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-              {feedback.message}
+            <div className={`inline-block px-5 py-3 rounded-xl text-sm font-medium ${
+              feedback.correct
+                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                : 'bg-red-50 text-red-700 border border-red-200'
+            }`}>
+              {feedback.correct ? '✓ Correct' : `✗ ${feedback.message}`}
             </div>
           ) : (
             <>
@@ -172,25 +191,29 @@ export default function SessionPage() {
                     type="text"
                     value={userAnswer}
                     onChange={e => setUserAnswer(e.target.value)}
-                    placeholder="Type your answer..."
+                    placeholder="Type your answer…"
                     autoFocus
-                    className="w-full border-2 rounded-lg px-4 py-3 text-center text-lg focus:border-black outline-none"
+                    className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-center text-lg focus:border-neutral-900 focus:outline-none transition-colors"
                     disabled={loading}
                   />
-                  <button type="submit" disabled={loading || !userAnswer.trim()} className="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-800 disabled:opacity-50">
+                  <button
+                    type="submit"
+                    disabled={loading || !userAnswer.trim()}
+                    className="w-full bg-neutral-900 text-white py-3 rounded-xl text-sm font-medium hover:bg-neutral-800 disabled:opacity-40 transition-colors"
+                  >
                     Check
                   </button>
                 </form>
               )}
 
               {currentTask.taskType === 'abcd' && currentTask.options && (
-                <div className="grid grid-cols-1 gap-3">
+                <div className="space-y-2">
                   {currentTask.options.map((opt, idx) => (
                     <button
                       key={idx}
                       onClick={() => handleAbcdSelect(opt)}
                       disabled={loading}
-                      className="p-4 border-2 rounded-lg text-left hover:bg-gray-100 hover:border-gray-400 transition disabled:opacity-50"
+                      className="w-full text-left px-5 py-3.5 border border-neutral-200 rounded-xl text-sm hover:border-neutral-400 hover:bg-neutral-50 disabled:opacity-50 transition-colors"
                     >
                       {opt}
                     </button>
@@ -200,17 +223,23 @@ export default function SessionPage() {
 
               {currentTask.taskType === 'sentence' && (
                 <form onSubmit={handleSentenceSubmit} className="space-y-4">
-                  <p className="text-sm text-gray-500">Write a sentence using: <strong>{currentTask.answer}</strong></p>
+                  <p className="text-sm text-neutral-400">
+                    Write a sentence using: <strong className="text-neutral-900">{currentTask.answer}</strong>
+                  </p>
                   <textarea
                     value={userAnswer}
                     onChange={e => setUserAnswer(e.target.value)}
-                    placeholder="Write a sentence..."
+                    placeholder="Write a sentence…"
                     autoFocus
                     rows={3}
-                    className="w-full border-2 rounded-lg px-4 py-3 text-lg focus:border-black outline-none resize-none"
+                    className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-sm focus:border-neutral-900 focus:outline-none resize-none transition-colors"
                     disabled={loading}
                   />
-                  <button type="submit" disabled={loading || !userAnswer.trim()} className="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-800 disabled:opacity-50">
+                  <button
+                    type="submit"
+                    disabled={loading || !userAnswer.trim()}
+                    className="w-full bg-neutral-900 text-white py-3 rounded-xl text-sm font-medium hover:bg-neutral-800 disabled:opacity-40 transition-colors"
+                  >
                     Check
                   </button>
                 </form>

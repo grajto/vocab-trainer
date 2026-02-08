@@ -45,78 +45,78 @@ export function StatsView() {
       .finally(() => setLoading(false))
   }, [])
 
-  if (loading) return <p className="text-gray-500">Loading stats...</p>
-  if (!stats) return <p className="text-red-500">Failed to load stats.</p>
+  if (loading) return <p className="text-sm text-neutral-400 py-8 text-center">Loading stats…</p>
+  if (!stats) return <p className="text-sm text-red-500 py-8 text-center">Failed to load stats.</p>
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Global stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-lg shadow text-center">
-          <p className="text-2xl font-bold">{stats.global.sessionsToday}</p>
-          <p className="text-xs text-gray-500">Sessions Today</p>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow text-center">
-          <p className="text-2xl font-bold">{stats.global.sessionsThisWeek}</p>
-          <p className="text-xs text-gray-500">This Week</p>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow text-center">
-          <p className="text-2xl font-bold">{stats.global.streakDays}</p>
-          <p className="text-xs text-gray-500">Day Streak</p>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow text-center">
-          <p className="text-2xl font-bold">{stats.global.avgAccuracy}%</p>
-          <p className="text-xs text-gray-500">Avg Accuracy</p>
-        </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { value: stats.global.sessionsToday, label: 'Today' },
+          { value: stats.global.sessionsThisWeek, label: 'This Week' },
+          { value: stats.global.streakDays, label: 'Day Streak' },
+          { value: `${stats.global.avgAccuracy}%`, label: 'Avg Accuracy' },
+        ].map(item => (
+          <div key={item.label} className="bg-white border border-neutral-200 rounded-xl px-4 py-3 text-center">
+            <p className="text-xl font-bold tabular-nums">{item.value}</p>
+            <p className="text-[10px] text-neutral-400 mt-0.5">{item.label}</p>
+          </div>
+        ))}
       </div>
 
       {/* Per deck stats */}
       <div>
-        <h3 className="text-lg font-semibold mb-3">Per Deck</h3>
-        <div className="space-y-3">
+        <h3 className="text-sm font-medium text-neutral-500 mb-3">Per Deck</h3>
+        <div className="space-y-2">
           {stats.deckStats.map(deck => (
-            <div key={deck.deckId} className="bg-white p-4 rounded-lg shadow">
-              <div className="flex justify-between items-center mb-2">
-                <h4 className="font-medium">{deck.deckName}</h4>
-                <span className="text-sm text-gray-500">{deck.cardCount} cards, {deck.dueCount} due</span>
+            <div key={deck.deckId} className="bg-white border border-neutral-200 rounded-xl px-5 py-4">
+              <div className="flex justify-between items-center mb-3">
+                <p className="font-medium text-sm">{deck.deckName}</p>
+                <p className="text-xs text-neutral-400">{deck.cardCount} cards · {deck.dueCount} due</p>
               </div>
               <div className="flex gap-2">
                 {([1, 2, 3, 4] as const).map(level => {
                   const count = deck.levelDistribution[level] || 0
-                  const colors = { 1: 'bg-gray-200', 2: 'bg-gray-300', 3: 'bg-gray-400 text-white', 4: 'bg-gray-800 text-white' }
+                  const shades = {
+                    1: 'bg-neutral-100 text-neutral-600',
+                    2: 'bg-neutral-200 text-neutral-700',
+                    3: 'bg-neutral-300 text-neutral-800',
+                    4: 'bg-neutral-800 text-white',
+                  }
                   return (
-                    <div key={level} className={`flex-1 ${colors[level]} rounded p-2 text-center text-sm`}>
-                      <p className="font-bold">{count}</p>
-                      <p className="text-xs">L{level}</p>
+                    <div key={level} className={`flex-1 ${shades[level]} rounded-lg py-2 text-center`}>
+                      <p className="text-sm font-semibold tabular-nums">{count}</p>
+                      <p className="text-[10px] opacity-70">L{level}</p>
                     </div>
                   )
                 })}
               </div>
-              <p className="text-xs text-gray-400 mt-1">Mastered (L4): {deck.percentLevel4}%</p>
+              <p className="text-[10px] text-neutral-400 mt-2">Mastered (L4): {deck.percentLevel4}%</p>
             </div>
           ))}
-          {stats.deckStats.length === 0 && <p className="text-gray-500">No decks yet.</p>}
+          {stats.deckStats.length === 0 && <p className="text-sm text-neutral-400 py-4 text-center">No decks yet.</p>}
         </div>
       </div>
 
       {/* Session history */}
       <div>
-        <h3 className="text-lg font-semibold mb-3">Recent Sessions</h3>
-        <div className="space-y-2">
+        <h3 className="text-sm font-medium text-neutral-500 mb-3">Recent Sessions</h3>
+        <div className="space-y-1">
           {stats.history.map(session => (
-            <div key={session.id} className="bg-white p-3 rounded-lg shadow flex justify-between items-center text-sm">
+            <div key={session.id} className="bg-white border border-neutral-200 rounded-lg px-4 py-3 flex justify-between items-center text-sm">
               <div>
                 <span className="font-medium">{session.deckName}</span>
-                <span className="text-gray-400 mx-1">·</span>
-                <span className="capitalize">{session.mode}</span>
+                <span className="text-neutral-300 mx-1.5">·</span>
+                <span className="text-neutral-500 capitalize">{session.mode}</span>
               </div>
-              <div className="text-right">
+              <div className="text-right tabular-nums">
                 <span className="font-medium">{session.accuracy}%</span>
-                <span className="text-gray-400 ml-2">{session.completedCount}/{session.targetCount}</span>
+                <span className="text-neutral-400 ml-2">{session.completedCount}/{session.targetCount}</span>
               </div>
             </div>
           ))}
-          {stats.history.length === 0 && <p className="text-gray-500">No sessions yet.</p>}
+          {stats.history.length === 0 && <p className="text-sm text-neutral-400 py-4 text-center">No sessions yet.</p>}
         </div>
       </div>
     </div>

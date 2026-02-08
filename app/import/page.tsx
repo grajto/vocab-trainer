@@ -4,6 +4,8 @@ import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { ImportForm } from './ImportForm'
 
+export const dynamic = 'force-dynamic'
+
 export default async function ImportPage() {
   const user = await getUser()
   if (!user) redirect('/login')
@@ -17,14 +19,19 @@ export default async function ImportPage() {
   })
 
   return (
-    <div className="min-h-screen bg-white">
-      <nav className="bg-white shadow px-4 py-3 flex items-center justify-between">
-        <Link href="/" className="text-xl font-bold">Vocab Trainer</Link>
+    <div className="min-h-screen bg-neutral-50">
+      <nav className="border-b border-neutral-200 bg-white px-6 py-4">
+        <div className="max-w-3xl mx-auto flex items-center justify-between">
+          <Link href="/" className="text-lg font-semibold tracking-tight">Vocab Trainer</Link>
+        </div>
       </nav>
-      <main className="max-w-lg mx-auto p-4 mt-6 space-y-6">
-        <h2 className="text-2xl font-bold">Import Cards (CSV)</h2>
+      <main className="max-w-lg mx-auto px-6 py-8 space-y-6">
+        <h2 className="text-xl font-semibold">Import Cards (CSV)</h2>
         {decks.docs.length === 0 ? (
-          <p className="text-gray-500">No decks available. <Link href="/decks" className="text-black underline">Create a deck first.</Link></p>
+          <div className="text-center py-8">
+            <p className="text-sm text-neutral-400 mb-2">No decks available.</p>
+            <Link href="/decks" className="text-sm text-neutral-900 underline underline-offset-2">Create a deck first</Link>
+          </div>
         ) : (
           <ImportForm decks={decks.docs.map(d => ({ id: String(d.id), name: d.name }))} />
         )}

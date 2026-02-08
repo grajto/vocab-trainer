@@ -34,35 +34,35 @@ export function ImportForm({ decks }: { decks: Deck[] }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow space-y-4">
+    <form onSubmit={handleSubmit} className="bg-white border border-neutral-200 rounded-xl p-6 space-y-4">
       <div>
-        <label className="block text-sm font-medium mb-1">Deck</label>
-        <select value={deckId} onChange={e => setDeckId(e.target.value)} className="w-full border rounded px-3 py-2">
+        <label className="block text-xs font-medium text-neutral-500 mb-1.5">Deck</label>
+        <select value={deckId} onChange={e => setDeckId(e.target.value)} className="w-full border border-neutral-200 rounded-lg px-3 py-2.5 text-sm focus:border-neutral-900 focus:outline-none bg-white">
           {decks.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
         </select>
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">CSV Data</label>
+        <label className="block text-xs font-medium text-neutral-500 mb-1.5">CSV Data</label>
         <textarea
           value={csvText}
           onChange={e => setCsvText(e.target.value)}
           placeholder={"front,back,notes\nhello,cześć,greeting\ndog,pies,animal"}
           rows={8}
-          className="w-full border rounded px-3 py-2 font-mono text-sm"
+          className="w-full border border-neutral-200 rounded-lg px-3 py-2.5 text-sm font-mono focus:border-neutral-900 focus:outline-none"
         />
-        <p className="text-xs text-gray-400 mt-1">Columns: front, back, notes (optional), examples (optional)</p>
+        <p className="text-[10px] text-neutral-400 mt-1.5">Columns: front, back, notes (optional), examples (optional)</p>
       </div>
-      <button type="submit" disabled={loading} className="w-full bg-black text-white py-2 rounded hover:bg-gray-800 disabled:opacity-50">
-        {loading ? 'Importing...' : 'Import'}
+      <button type="submit" disabled={loading} className="w-full bg-neutral-900 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-neutral-800 disabled:opacity-50 transition-colors">
+        {loading ? 'Importing…' : 'Import'}
       </button>
 
       {result && (
-        <div className="p-4 bg-gray-100 rounded text-sm">
-          <p className="text-green-700">Created: {result.createdCount}</p>
-          <p className="text-yellow-700">Skipped (duplicates): {result.skippedCount}</p>
+        <div className="border border-neutral-200 rounded-lg p-4 space-y-1 text-sm">
+          <p className="text-emerald-600">Created: {result.createdCount}</p>
+          {result.skippedCount > 0 && <p className="text-amber-600">Skipped: {result.skippedCount}</p>}
           {result.errors.length > 0 && (
-            <div className="text-red-600 mt-2">
-              {result.errors.map((err, i) => <p key={i}>{err}</p>)}
+            <div className="text-red-600 mt-2 space-y-0.5">
+              {result.errors.map((err, i) => <p key={i} className="text-xs">{err}</p>)}
             </div>
           )}
         </div>

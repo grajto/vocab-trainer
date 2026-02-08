@@ -35,25 +35,25 @@ export function CreateDeckForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-4 rounded-lg shadow space-y-3">
-      <h3 className="font-semibold">Create New Deck</h3>
+    <form onSubmit={handleSubmit} className="bg-white border border-neutral-200 rounded-xl p-5 space-y-3">
+      <p className="text-sm font-medium">New Deck</p>
       <input
         type="text"
         value={name}
         onChange={e => setName(e.target.value)}
         placeholder="Deck name"
         required
-        className="w-full border rounded px-3 py-2"
+        className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:border-neutral-900 focus:outline-none"
       />
       <input
         type="text"
         value={description}
         onChange={e => setDescription(e.target.value)}
         placeholder="Description (optional)"
-        className="w-full border rounded px-3 py-2"
+        className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:border-neutral-900 focus:outline-none"
       />
-      <button type="submit" disabled={loading} className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 disabled:opacity-50">
-        {loading ? 'Creating...' : 'Create Deck'}
+      <button type="submit" disabled={loading} className="bg-neutral-900 text-white text-sm px-4 py-2 rounded-lg hover:bg-neutral-800 disabled:opacity-50 transition-colors">
+        {loading ? 'Creating…' : 'Create Deck'}
       </button>
     </form>
   )

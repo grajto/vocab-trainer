@@ -35,28 +35,28 @@ export function AddCardForm({ deckId }: { deckId: string }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-4 rounded-lg shadow space-y-3">
-      <h3 className="font-semibold">Add Card</h3>
+    <form onSubmit={handleSubmit} className="bg-white border border-neutral-200 rounded-xl p-5 space-y-3">
+      <p className="text-sm font-medium">Add Card</p>
       <div className="flex gap-2">
         <input
           type="text"
           value={front}
           onChange={e => setFront(e.target.value)}
-          placeholder="Front (e.g., English)"
+          placeholder="Front (e.g. English)"
           required
-          className="flex-1 border rounded px-3 py-2"
+          className="flex-1 border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:border-neutral-900 focus:outline-none"
         />
         <input
           type="text"
           value={back}
           onChange={e => setBack(e.target.value)}
-          placeholder="Back (e.g., Polish)"
+          placeholder="Back (e.g. Polish)"
           required
-          className="flex-1 border rounded px-3 py-2"
+          className="flex-1 border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:border-neutral-900 focus:outline-none"
         />
       </div>
-      <button type="submit" disabled={loading} className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 disabled:opacity-50">
-        {loading ? 'Adding...' : 'Add Card'}
+      <button type="submit" disabled={loading} className="bg-neutral-900 text-white text-sm px-4 py-2 rounded-lg hover:bg-neutral-800 disabled:opacity-50 transition-colors">
+        {loading ? 'Adding…' : 'Add Card'}
       </button>
     </form>
   )

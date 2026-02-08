@@ -4,6 +4,8 @@ import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { AddCardForm } from './AddCardForm'
 
+export const dynamic = 'force-dynamic'
+
 export default async function DeckDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const user = await getUser()
@@ -29,32 +31,34 @@ export default async function DeckDetailPage({ params }: { params: Promise<{ id:
   })
 
   return (
-    <div className="min-h-screen bg-white">
-      <nav className="bg-white shadow px-4 py-3 flex items-center justify-between">
-        <Link href="/" className="text-xl font-bold">Vocab Trainer</Link>
-        <Link href="/decks" className="text-gray-600 hover:text-black">← Back to Decks</Link>
+    <div className="min-h-screen bg-neutral-50">
+      <nav className="border-b border-neutral-200 bg-white px-6 py-4">
+        <div className="max-w-3xl mx-auto flex items-center justify-between">
+          <Link href="/" className="text-lg font-semibold tracking-tight">Vocab Trainer</Link>
+          <Link href="/decks" className="text-sm text-neutral-400 hover:text-neutral-900 transition-colors">← Decks</Link>
+        </div>
       </nav>
-      <main className="max-w-2xl mx-auto p-4 mt-6 space-y-6">
+      <main className="max-w-3xl mx-auto px-6 py-8 space-y-6">
         <div>
-          <h2 className="text-2xl font-bold">{deck.name}</h2>
-          {deck.description && <p className="text-gray-500 mt-1">{deck.description}</p>}
-          <p className="text-sm text-gray-400 mt-1">{cards.totalDocs} cards</p>
+          <h2 className="text-xl font-semibold">{deck.name}</h2>
+          {deck.description && <p className="text-sm text-neutral-400 mt-1">{deck.description}</p>}
+          <p className="text-xs text-neutral-400 mt-1">{cards.totalDocs} card{cards.totalDocs !== 1 ? 's' : ''}</p>
         </div>
 
         <AddCardForm deckId={id} />
 
-        <div className="space-y-2">
+        <div className="space-y-1">
           {cards.docs.length === 0 ? (
-            <p className="text-gray-500">No cards yet. Add one above.</p>
+            <p className="text-sm text-neutral-400 py-8 text-center">No cards yet. Add one above.</p>
           ) : (
             cards.docs.map(card => (
-              <div key={card.id} className="bg-white p-4 rounded-lg shadow flex justify-between items-center">
-                <div>
+              <div key={card.id} className="bg-white border border-neutral-200 rounded-lg px-4 py-3 flex justify-between items-center">
+                <div className="text-sm">
                   <span className="font-medium">{card.front}</span>
-                  <span className="text-gray-400 mx-2">→</span>
-                  <span>{card.back}</span>
+                  <span className="text-neutral-300 mx-2">→</span>
+                  <span className="text-neutral-600">{card.back}</span>
                 </div>
-                <span className="text-xs text-gray-400 capitalize">{card.cardType}</span>
+                <span className="text-[10px] text-neutral-400 uppercase tracking-wide">{card.cardType}</span>
               </div>
             ))
           )}

@@ -38,42 +38,47 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
-      <div className="max-w-sm w-full p-6 bg-white rounded-lg shadow">
-        <h1 className="text-2xl font-bold mb-6 text-center">Vocab Trainer</h1>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && <p className="text-red-600 text-sm">{error}</p>}
+    <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+      <div className="w-full max-w-sm mx-4">
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-semibold tracking-tight">Vocab Trainer</h1>
+          <p className="text-sm text-neutral-400 mt-1">Sign in to continue</p>
+        </div>
+        <form onSubmit={handleSubmit} className="bg-white border border-neutral-200 rounded-xl p-6 space-y-4">
+          {error && <p className="text-red-600 text-sm bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
           <div>
-            <label className="block text-sm font-medium mb-1">Email</label>
+            <label className="block text-xs font-medium text-neutral-500 mb-1.5">Email</label>
             <input
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
               required
-              className="w-full border rounded px-3 py-2"
+              className="w-full border border-neutral-200 rounded-lg px-3 py-2.5 text-sm focus:border-neutral-900 focus:outline-none transition-colors"
+              placeholder="you@example.com"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Password</label>
+            <label className="block text-xs font-medium text-neutral-500 mb-1.5">Password</label>
             <input
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
               required
-              className="w-full border rounded px-3 py-2"
+              className="w-full border border-neutral-200 rounded-lg px-3 py-2.5 text-sm focus:border-neutral-900 focus:outline-none transition-colors"
+              placeholder="••••••••"
             />
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-black text-white py-2 rounded hover:bg-gray-800 disabled:opacity-50"
+            className="w-full bg-neutral-900 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-neutral-800 disabled:opacity-50 transition-colors"
           >
-            {loading ? 'Logging in...' : 'Log in'}
+            {loading ? 'Signing in…' : 'Sign in'}
           </button>
         </form>
-        <p className="mt-4 text-xs text-gray-500 text-center">
-          No default account exists. Create your first user at{' '}
-          <a href="/admin" className="text-black underline">/admin</a>.
+        <p className="mt-4 text-xs text-neutral-400 text-center">
+          First time? Create your account at{' '}
+          <a href="/admin" className="text-neutral-900 underline underline-offset-2">/admin</a>
         </p>
       </div>
     </div>

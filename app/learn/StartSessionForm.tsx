@@ -28,7 +28,6 @@ export function StartSessionForm({ decks }: { decks: Deck[] }) {
 
       const data = await res.json()
       if (res.ok && data.sessionId) {
-        // Store tasks in sessionStorage for the session page
         sessionStorage.setItem(`session-${data.sessionId}`, JSON.stringify(data.tasks))
         router.push(`/session/${data.sessionId}`)
       } else {
@@ -42,36 +41,46 @@ export function StartSessionForm({ decks }: { decks: Deck[] }) {
   }
 
   return (
-    <form onSubmit={handleStart} className="bg-white p-6 rounded-lg shadow space-y-4">
-      {error && <p className="text-red-600 text-sm">{error}</p>}
+    <form onSubmit={handleStart} className="bg-white border border-neutral-200 rounded-xl p-6 space-y-5">
+      {error && <p className="text-red-600 text-sm bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
+
       <div>
-        <label className="block text-sm font-medium mb-1">Deck</label>
-        <select value={deckId} onChange={e => setDeckId(e.target.value)} className="w-full border rounded px-3 py-2">
+        <label className="block text-xs font-medium text-neutral-500 mb-1.5">Deck</label>
+        <select value={deckId} onChange={e => setDeckId(e.target.value)} className="w-full border border-neutral-200 rounded-lg px-3 py-2.5 text-sm focus:border-neutral-900 focus:outline-none bg-white">
           {decks.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
         </select>
       </div>
+
       <div>
-        <label className="block text-sm font-medium mb-1">Mode</label>
-        <select value={mode} onChange={e => setMode(e.target.value)} className="w-full border rounded px-3 py-2">
+        <label className="block text-xs font-medium text-neutral-500 mb-1.5">Mode</label>
+        <select value={mode} onChange={e => setMode(e.target.value)} className="w-full border border-neutral-200 rounded-lg px-3 py-2.5 text-sm focus:border-neutral-900 focus:outline-none bg-white">
           <option value="translate">Translate (typed answer)</option>
           <option value="abcd">ABCD (multiple choice)</option>
           <option value="sentence">Sentence (use word in sentence)</option>
           <option value="mixed">Mixed</option>
         </select>
       </div>
+
       <div>
-        <label className="block text-sm font-medium mb-1">Number of cards: {targetCount}</label>
+        <label className="block text-xs font-medium text-neutral-500 mb-1.5">
+          Cards: <span className="text-neutral-900 font-semibold">{targetCount}</span>
+        </label>
         <input
           type="range"
           min={5}
           max={35}
           value={targetCount}
           onChange={e => setTargetCount(Number(e.target.value))}
-          className="w-full"
+          className="w-full accent-neutral-900"
         />
+        <div className="flex justify-between text-[10px] text-neutral-400 mt-1">
+          <span>5</span>
+          <span>35</span>
+        </div>
       </div>
-      <button type="submit" disabled={loading} className="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-800 disabled:opacity-50">
-        {loading ? 'Starting...' : 'Start Session'}
+
+      <button type="submit" disabled={loading} className="w-full bg-neutral-900 text-white py-3 rounded-xl text-sm font-medium hover:bg-neutral-800 disabled:opacity-50 transition-colors">
+        {loading ? 'Starting…' : 'Start Session'}
       </button>
     </form>
   )
