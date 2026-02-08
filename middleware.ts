@@ -32,12 +32,16 @@ export function middleware(request: NextRequest) {
   const payloadToken = request.cookies.get('payload-token')
 
   const fetchSite = request.headers.get('sec-fetch-site')
-  const normalizedFetchSite = fetchSite ?? ''
-  const isTrustedRequest = normalizedFetchSite === 'same-origin' ||
-    normalizedFetchSite === 'same-site' ||
-    normalizedFetchSite === 'none'
+  const fetchSiteValue = fetchSite ?? ''
+  const isTrustedRequest = fetchSiteValue === 'same-origin' ||
+    fetchSiteValue === 'same-site' ||
+    fetchSiteValue === 'none'
+  const shouldInjectAppToken = APP_ACCESS_TOKEN &&
+    !payloadToken &&
+    isTrustedRequest &&
+    (!isApiPath || isAllowlistedApi)
 
-  if (APP_ACCESS_TOKEN && !payloadToken && isTrustedRequest && (!isApiPath || isAllowlistedApi)) {
+  if (shouldInjectAppToken) {
     const requestHeaders = new Headers(request.headers)
     requestHeaders.set('x-app-token', APP_ACCESS_TOKEN)
     return NextResponse.next({ request: { headers: requestHeaders } })
