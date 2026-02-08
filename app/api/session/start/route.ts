@@ -8,6 +8,11 @@ export async function POST(req: NextRequest) {
     const user = await getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+    const parseCardId = (value: string | number) => {
+      const parsed = typeof value === 'string' ? Number.parseInt(value, 10) : value
+      return Number.isFinite(parsed) ? parsed : null
+    }
+
     const body = await req.json()
     const { deckId, mode, targetCount = 10 } = body
 
@@ -85,7 +90,10 @@ export async function POST(req: NextRequest) {
     // Create review states for new cards
     for (const card of selectedCards) {
       if (!card.reviewStateId) {
-        const cardIdValue = typeof card.cardId === 'string' ? Number(card.cardId) : card.cardId
+        const cardIdValue = parseCardId(card.cardId)
+        if (cardIdValue === null) {
+          return NextResponse.json({ error: 'Invalid card id' }, { status: 400 })
+        }
         const rs = await payload.create({
           collection: 'review-states',
           data: {
@@ -155,7 +163,10 @@ export async function POST(req: NextRequest) {
 
     // Create session items
     for (const task of tasks) {
-      const taskCardId = Number(task.cardId as string | number)
+      const taskCardId = parseCardId(task.cardId)
+      if (taskCardId === null) {
+        return NextResponse.json({ error: 'Invalid card id' }, { status: 400 })
+      }
       await payload.create({
         collection: 'session-items',
         data: {
