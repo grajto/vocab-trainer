@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Library, Bell, FolderOpen, Plus, BookOpen, GraduationCap, X, Menu } from 'lucide-react'
+import { Home, Library, Bell, FolderOpen, Plus, BookOpen, GraduationCap, X, Menu, BarChart3 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
 interface FolderItem {
@@ -20,6 +20,7 @@ export function Sidebar({ folders }: { folders: FolderItem[] }) {
   const navItems = [
     { href: '/', label: 'Home', icon: Home },
     { href: '/library', label: 'Your library', icon: Library },
+    { href: '/stats', label: 'Statistics', icon: BarChart3 },
     { href: '/notifications', label: 'Notifications', icon: Bell },
   ]
 

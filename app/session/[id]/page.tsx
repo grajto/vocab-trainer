@@ -203,10 +203,9 @@ export default function SessionPage() {
     setShowHint(true)
   }
 
-  const submitAnswerToServer = useCallback(async (answer: string, correct: boolean) => {
+  function handleAbcdSelect(option: string) {
     if (!currentTask) return
-    setLoading(true)
-
+    const correct = option === currentTask.answer
     const state = getTaskState(currentTask.cardId)
     state.attempts++
 
@@ -214,48 +213,28 @@ export default function SessionPage() {
       state.wasWrongBefore = state.wasWrongBefore || state.attempts > 1
       setAnsweredCount(prev => prev + 1)
       setCorrectCount(prev => prev + 1)
+      setFeedback({ correct: true, message: 'Correct' })
+      playCorrect()
     } else {
       state.wasWrongBefore = true
+      setFeedback({ correct: false, message: `Correct answer: ${currentTask.answer}` })
+      playWrong()
       requeueCard(currentTask)
     }
 
-    try {
-      await fetch('/api/session/answer', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          sessionId,
-          cardId: currentTask.cardId,
-          taskType: currentTask.taskType,
-          userAnswer: answer,
-          isCorrect: correct,
-          attemptsCount: state.attempts,
-          wasWrongBeforeCorrect: state.wasWrongBefore,
-          usedHint: state.usedHint,
-        }),
-      })
+    // Fire-and-forget save
+    saveAnswerInBackground({
+      sessionId,
+      cardId: currentTask.cardId,
+      taskType: 'abcd',
+      userAnswer: option,
+      isCorrect: correct,
+      attemptsCount: state.attempts,
+      wasWrongBeforeCorrect: state.wasWrongBefore,
+      usedHint: state.usedHint,
+    })
 
-      if (correct) {
-        setFeedback({ correct: true, message: 'Correct' })
-        playCorrect()
-      } else {
-        setFeedback({ correct: false, message: `Correct answer: ${currentTask.answer}` })
-        playWrong()
-      }
-
-      advanceToNext(correct ? FEEDBACK_DELAY_CORRECT_SLOW : FEEDBACK_DELAY_WRONG_SLOW)
-    } catch (err) {
-      console.error('Answer submit error:', err)
-    } finally {
-      setLoading(false)
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentTask, sessionId, advanceToNext, playCorrect, playWrong])
-
-  function handleAbcdSelect(option: string) {
-    const correct = option === currentTask.answer
-    submitAnswerToServer(option, correct)
+    advanceToNext(correct ? FEEDBACK_DELAY_CORRECT : FEEDBACK_DELAY_WRONG)
   }
 
   async function handleSentenceSubmit(e: React.FormEvent) {
@@ -487,7 +466,7 @@ export default function SessionPage() {
                     <button
                       key={idx}
                       onClick={() => handleAbcdSelect(opt)}
-                      disabled={loading}
+                      disabled={!!feedback}
                       className="w-full text-left px-5 py-3.5 border border-slate-200 rounded-xl text-sm hover:border-indigo-300 hover:bg-indigo-50 disabled:opacity-50 transition-all"
                     >
                       {opt}

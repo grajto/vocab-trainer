@@ -3,6 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { AddCardForm } from './AddCardForm'
+import { DeckStudyLauncher } from './DeckStudyLauncher'
 
 export const dynamic = 'force-dynamic'
 
@@ -47,31 +48,18 @@ export default async function DeckDetailPage({ params }: { params: Promise<{ id:
         <Link href="/decks" prefetch={true} className="text-sm text-slate-400 hover:text-indigo-600 transition-colors">← Decks</Link>
       </div>
 
-      {/* Mode tiles */}
+      {/* Study launcher with mode tiles + settings */}
       {cards.totalDocs > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            { mode: 'translate', label: 'Learn', icon: '📖', color: 'from-indigo-500 to-violet-500' },
-            { mode: 'abcd', label: 'Test', icon: '✅', color: 'from-emerald-500 to-teal-500' },
-            { mode: 'sentence', label: 'Sentences', icon: '✍️', color: 'from-amber-500 to-orange-500' },
-            { mode: 'mixed', label: 'Mixed', icon: '🔀', color: 'from-rose-500 to-pink-500' },
-          ].map(m => (
-            <Link
-              key={m.mode}
-              href={`/learn?deck=${id}&mode=${m.mode}`}
-              prefetch={true}
-              className={`bg-gradient-to-br ${m.color} text-white rounded-xl p-4 text-center hover:opacity-90 transition-opacity shadow-sm`}
-            >
-              <span className="text-2xl block mb-1">{m.icon}</span>
-              <span className="text-sm font-medium">{m.label}</span>
-            </Link>
-          ))}
-        </div>
+        <DeckStudyLauncher deckId={id} cardCount={cards.totalDocs} />
       )}
 
       <AddCardForm deckId={id} />
 
+      {/* Card preview - simple flashcard-like view */}
       <div className="space-y-1">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-sm font-medium text-slate-700">All cards</p>
+        </div>
         {cards.docs.length === 0 ? (
           <p className="text-sm text-slate-400 py-8 text-center">No cards yet. Add one above.</p>
         ) : (
