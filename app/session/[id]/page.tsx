@@ -18,6 +18,10 @@ interface Task {
   answer: string
   expectedAnswer?: string
   options?: string[]
+  /** Sentence mode: PL meaning shown as big prompt */
+  promptPl?: string
+  /** Sentence mode: EN word that must appear in the sentence */
+  requiredEn?: string
 }
 
 interface TaskState {
@@ -79,7 +83,7 @@ export default function SessionPage() {
   const [answeredCount, setAnsweredCount] = useState(0)
   const accuracy = answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0
 
-  const inputRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null)
 
   // Load shuffle setting
   useEffect(() => {
@@ -251,8 +255,9 @@ export default function SessionPage() {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          phrase: currentTask.answer,
+          phrase: currentTask.requiredEn || currentTask.answer,
           sentence: userAnswer,
+          promptPl: currentTask.promptPl || currentTask.prompt,
         }),
       })
       const data = await res.json()
@@ -378,8 +383,16 @@ export default function SessionPage() {
 
       <main className="max-w-lg mx-auto px-6 py-12">
         <div className="text-center">
-          <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-4">{currentTask.taskType}</p>
-          <h2 className="text-3xl font-semibold tracking-tight mb-10 text-slate-900">{currentTask.prompt}</h2>
+          <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-4">
+            {currentTask.taskType === 'sentence' ? 'sentence' : currentTask.taskType}
+          </p>
+          <h2 className="text-3xl font-semibold tracking-tight text-slate-900">
+            {currentTask.prompt}
+          </h2>
+          {currentTask.taskType === 'sentence' && (
+            <p className="text-sm text-slate-400 mt-2 mb-8">Create a sentence with this word.</p>
+          )}
+          {currentTask.taskType !== 'sentence' && <div className="mb-10" />}
 
           {showHint && !feedback && !typoState && (
             <div className="mb-6 text-sm text-slate-500 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2 inline-block font-mono tracking-widest">
@@ -431,7 +444,7 @@ export default function SessionPage() {
               {currentTask.taskType === 'translate' && (
                 <form onSubmit={handleTranslateSubmit} className="space-y-4">
                   <input
-                    ref={inputRef}
+                    ref={inputRef as React.RefObject<HTMLInputElement>}
                     type="text"
                     value={userAnswer}
                     onChange={e => setUserAnswer(e.target.value)}
@@ -476,19 +489,37 @@ export default function SessionPage() {
               )}
 
               {currentTask.taskType === 'sentence' && (
-                <form onSubmit={handleSentenceSubmit} className="space-y-4">
-                  <p className="text-sm text-slate-400">
-                    Write a sentence using: <strong className="text-indigo-600">{currentTask.answer}</strong>
-                  </p>
+                <div className="space-y-5">
+                  {/* Required EN word as pill/chip */}
+                  <div className="flex justify-center">
+                    <span className="inline-block bg-indigo-100 text-indigo-700 font-semibold px-4 py-1.5 rounded-full text-base tracking-wide">
+                      {currentTask.requiredEn || currentTask.answer}
+                    </span>
+                  </div>
+
+                  <p className="text-sm text-slate-400">Create a sentence with this word.</p>
+
+                  {/* Textarea */}
                   <textarea
+                    ref={inputRef as React.RefObject<HTMLTextAreaElement>}
                     value={userAnswer}
                     onChange={e => setUserAnswer(e.target.value)}
-                    placeholder="Write a sentence…"
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                        e.preventDefault()
+                        if (userAnswer.trim() && !loading) {
+                          handleSentenceSubmit(e as unknown as React.FormEvent)
+                        }
+                      }
+                    }}
+                    placeholder="Write one sentence…"
                     autoFocus
                     rows={3}
                     className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-indigo-500 focus:outline-none resize-none transition-colors"
                     disabled={loading}
                   />
+
+                  {/* Hint + Check buttons */}
                   <div className="flex gap-2">
                     {!showHint && (
                       <button
@@ -500,14 +531,20 @@ export default function SessionPage() {
                       </button>
                     )}
                     <button
-                      type="submit"
+                      type="button"
+                      onClick={e => {
+                        if (userAnswer.trim() && !loading) {
+                          handleSentenceSubmit(e as unknown as React.FormEvent)
+                        }
+                      }}
                       disabled={loading || !userAnswer.trim()}
                       className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3 rounded-xl text-sm font-medium hover:from-indigo-700 hover:to-violet-700 disabled:opacity-40 transition-all"
                     >
-                      Check
+                      {loading ? 'Checking…' : 'Check'}
                     </button>
                   </div>
-                </form>
+                  <p className="text-xs text-slate-300 text-center">Ctrl+Enter to submit</p>
+                </div>
               )}
             </>
           )}

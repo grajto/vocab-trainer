@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const body = await req.json()
-    const { phrase, requiredPhrase, sentence } = body
+    const { phrase, requiredPhrase, sentence, promptPl } = body
     // Support both field names for backwards compat
     const targetPhrase = phrase || requiredPhrase
 
@@ -73,6 +73,10 @@ export async function POST(req: NextRequest) {
       try {
         const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
+        const meaningContext = promptPl
+          ? ` The word/phrase "${targetPhrase}" means "${promptPl}" in Polish. The sentence should demonstrate correct usage matching this meaning.`
+          : ''
+
         const completion = await openai.chat.completions.create({
           model: 'gpt-4.1-nano',
           temperature: 0,
@@ -80,9 +84,13 @@ export async function POST(req: NextRequest) {
           messages: [
             {
               role: 'system',
-              content: `You are a strict English language teacher. The student must write a grammatically correct and natural English sentence using the phrase "${targetPhrase}".
+              content: `You are a strict English language teacher. The student must write a grammatically correct and natural English sentence using the phrase "${targetPhrase}".${meaningContext}
+Evaluate:
+1) Is it a real sentence (not repetition/nonsense)?
+2) Is it grammatically correct and natural?
+3) Does it correctly demonstrate the meaning of "${targetPhrase}"?
 Respond ONLY with valid JSON (no markdown, no code fences):
-{"ok":true/false,"issue_type":null|"grammar"|"unnatural","message_pl":"short feedback in Polish (1 sentence max)","suggested_fix":null|"corrected sentence"}
+{"ok":true/false,"issue_type":null|"not_a_sentence"|"grammar"|"unnatural"|"usage"|"meaning_mismatch","message_pl":"short feedback in Polish (1 sentence max)","suggested_fix":null|"corrected sentence"}
 If the sentence is correct and natural, set ok=true, issue_type=null, suggested_fix=null.`,
             },
             {

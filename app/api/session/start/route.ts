@@ -187,6 +187,10 @@ export async function POST(req: NextRequest) {
       answer: string
       expectedAnswer?: string
       options?: string[]
+      /** For sentence mode: the PL meaning shown as big prompt */
+      promptPl?: string
+      /** For sentence mode: the EN word/phrase that must appear in the sentence */
+      requiredEn?: string
     }
 
     const tasks: Task[] = []
@@ -213,6 +217,17 @@ export async function POST(req: NextRequest) {
 
       if (taskType === 'translate') {
         task.expectedAnswer = answer
+      }
+
+      // For sentence mode: always provide PL meaning + EN required word
+      // front = EN word, back = PL meaning (regardless of direction setting)
+      if (taskType === 'sentence') {
+        task.promptPl = card.back
+        task.requiredEn = card.front
+        // Override prompt to show PL meaning (big prompt)
+        task.prompt = card.back
+        // answer stays as the EN word for compatibility
+        task.answer = card.front
       }
 
       if (taskType === 'abcd') {
