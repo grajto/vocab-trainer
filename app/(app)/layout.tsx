@@ -22,8 +22,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       depth: 0,
     })
     folderList = folders.docs.map((f: any) => ({ id: String(f.id), name: f.name }))
-  } catch {
-    // folders table may not exist yet (migration pending) — show empty sidebar
+  } catch (err) {
+    console.error('Layout folders fetch error (migration may be pending):', err)
   }
 
   const username = (user as Record<string, unknown>).username as string || (user as Record<string, unknown>).email as string || ''

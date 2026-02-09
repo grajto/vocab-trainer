@@ -2,7 +2,8 @@ import type { MigrateUpArgs, MigrateDownArgs } from '@payloadcms/db-postgres'
 import { sql } from '@payloadcms/db-postgres'
 
 export async function up({ db }: MigrateUpArgs): Promise<void> {
-  // 1. Add 'sentence' value to enum_cards_card_type if not present
+  // Add 'sentence' value to cards enum — was added to the collection config
+  // in an earlier commit but never migrated to the database.
   await db.execute(sql`
     DO $$ BEGIN
       ALTER TYPE "enum_cards_card_type" ADD VALUE IF NOT EXISTS 'sentence';
