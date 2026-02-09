@@ -491,24 +491,27 @@ export default function SessionPage() {
     return (
       <div className="min-h-screen bg-slate-50 text-slate-900">
         <div className="border-b border-slate-200 bg-white/90 backdrop-blur-sm px-6 py-3">
-          <div className="max-w-3xl mx-auto flex items-center justify-between">
-            <div className="text-xs text-slate-500">Test</div>
+          <div className="max-w-4xl mx-auto flex items-center justify-between">
+            <div className="text-xs font-semibold text-slate-500 uppercase tracking-[0.3em]">Test</div>
             <button
               onClick={handleStopSession}
-              className="text-xs text-slate-600 hover:text-rose-600"
+              className="text-xs font-medium text-slate-600 hover:text-rose-600"
             >
               Przerwij sesję
             </button>
           </div>
         </div>
-        <main className="max-w-3xl mx-auto px-6 py-10 space-y-6">
-          <h2 className="text-2xl font-semibold">Test</h2>
+        <main className="max-w-4xl mx-auto px-6 py-10 space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-semibold text-slate-900">Test</h2>
+            <span className="text-sm text-slate-500">{tasks.length} pytań</span>
+          </div>
           {testSubmitted && testScore ? (
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4">
-              <p className="text-lg font-semibold">Wynik: {Math.round((testScore.correct / testScore.total) * 100)}%</p>
+            <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm space-y-4">
+              <p className="text-lg font-semibold text-slate-900">Wynik: {Math.round((testScore.correct / testScore.total) * 100)}%</p>
               <p className="text-sm text-slate-500">Błędy: {testScore.total - testScore.correct}</p>
               {incorrect.length > 0 && (
-                <div className="space-y-2">
+                <div className="space-y-2 border-t border-slate-100 pt-4">
                   {incorrect.map(task => (
                     <div key={task.cardId} className="text-sm text-slate-600">
                       <span className="font-medium">{task.prompt}</span> → poprawne: {task.answer}
@@ -516,20 +519,23 @@ export default function SessionPage() {
                   ))}
                 </div>
               )}
-              <button onClick={() => router.push('/')} className="text-sm text-indigo-600 hover:text-indigo-700">
+              <button onClick={() => router.push('/')} className="text-sm font-medium text-indigo-600 hover:text-indigo-700">
                 Wróć do dashboardu
               </button>
             </div>
           ) : (
             <div className="space-y-4">
               {tasks.map((task, idx) => (
-                <div key={task.cardId} className="bg-white border border-slate-200 rounded-2xl p-5 space-y-3">
-                  <p className="text-sm text-slate-400">Pytanie {idx + 1}</p>
-                  <p className="text-lg font-medium">{task.prompt}</p>
+                <div key={task.cardId} className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-[0.2em]">Pytanie {idx + 1}</p>
+                    <span className="text-xs text-slate-400">{idx + 1} / {tasks.length}</span>
+                  </div>
+                  <p className="text-lg font-medium text-slate-900">{task.prompt}</p>
                   {task.taskType === 'abcd' && task.options ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {task.options.map(option => (
-                        <label key={option} className="flex items-center gap-2 text-sm text-slate-600 border border-slate-200 rounded-xl px-3 py-2">
+                        <label key={option} className="flex items-center gap-2 text-sm text-slate-700 border border-slate-200 rounded-2xl px-4 py-3 hover:border-indigo-200 hover:bg-indigo-50 transition-colors">
                           <input
                             type="radio"
                             name={`q-${task.cardId}`}
@@ -546,7 +552,7 @@ export default function SessionPage() {
                       type="text"
                       value={testAnswers[task.cardId] || ''}
                       onChange={e => setTestAnswers(prev => ({ ...prev, [task.cardId]: e.target.value }))}
-                      className="w-full border border-slate-200 rounded-xl px-3 py-2"
+                      className="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:border-indigo-400 focus:outline-none"
                       placeholder="Wpisz odpowiedź"
                     />
                   )}
@@ -579,7 +585,7 @@ export default function SessionPage() {
                     })
                   })
                 }}
-                className="w-full bg-indigo-600 text-white py-3 rounded-xl font-medium"
+                className="w-full bg-indigo-600 text-white py-3 rounded-2xl font-medium shadow-sm hover:bg-indigo-700 transition-colors"
               >
                 Sprawdź
               </button>
@@ -617,7 +623,7 @@ export default function SessionPage() {
     <div className="min-h-screen bg-slate-50 text-slate-900">
       {/* Progress bar */}
       <div className="border-b border-slate-200 bg-white/90 backdrop-blur-sm px-6 py-3">
-        <div className="max-w-2xl mx-auto flex flex-col gap-2">
+        <div className="max-w-4xl mx-auto flex flex-col gap-2">
           <div className="flex items-center gap-4">
             <span className="text-xs text-slate-500 tabular-nums whitespace-nowrap">
               {currentIndex + 1} / {tasks.length}
@@ -654,31 +660,34 @@ export default function SessionPage() {
         </div>
       </div>
 
-      <main className="max-w-2xl mx-auto px-6 py-12">
-        <div className="text-center">
-          <p className="text-[10px] text-slate-500 uppercase tracking-[0.4em] mb-4">
-            {currentTask.taskType === 'sentence' ? 'sentence' : currentTask.taskType}
-          </p>
+      <main className="max-w-4xl mx-auto px-6 py-10">
+        <div className="bg-white border border-slate-200 rounded-[32px] shadow-sm px-8 py-10 text-center">
+          <div className="flex items-center justify-between mb-6 text-xs text-slate-400">
+            <span className="uppercase tracking-[0.3em]">
+              {currentTask.taskType === 'sentence' ? 'sentence' : currentTask.taskType}
+            </span>
+            <span className="tabular-nums">{currentIndex + 1} / {tasks.length}</span>
+          </div>
           <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900">
             {currentTask.prompt}
           </h2>
           {currentTask.taskType === 'sentence' && (
-            <p className="text-sm text-slate-600 mt-2 mb-8">Create a sentence with this word.</p>
+            <p className="text-sm text-slate-500 mt-3 mb-8">Create a sentence with this word.</p>
           )}
           {currentTask.taskType === 'describe' && (
-            <p className="text-sm text-slate-600 mt-2 mb-8">Opisz to słowo własnymi słowami.</p>
+            <p className="text-sm text-slate-500 mt-3 mb-8">Opisz to słowo własnymi słowami.</p>
           )}
-          {currentTask.taskType !== 'sentence' && <div className="mb-10" />}
+          {currentTask.taskType !== 'sentence' && <div className="mb-8" />}
 
           {showHint && !feedback && !typoState && (
-            <div className="mb-6 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2 inline-block font-mono tracking-widest">
+            <div className="mb-6 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-5 py-2 inline-block font-mono tracking-widest">
               {hintText}
             </div>
           )}
 
           {typoState && !feedback && (
             <div className="space-y-4">
-              <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 text-sm">
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4 text-sm">
                 <p className="text-amber-700 font-medium mb-2">One typo detected!</p>
                 <p className="text-slate-700">
                   Your answer: <span className="font-medium">{typoState.userAnswer}</span>
@@ -690,13 +699,13 @@ export default function SessionPage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => handleTypoDecision(true)}
-                  className="flex-1 bg-emerald-500 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-emerald-600 transition-colors"
+                  className="flex-1 bg-emerald-500 text-white py-2.5 rounded-2xl text-sm font-medium hover:bg-emerald-600 transition-colors"
                 >
                   ✓ Accept
                 </button>
                 <button
                   onClick={() => handleTypoDecision(false)}
-                  className="flex-1 bg-rose-500 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-rose-600 transition-colors"
+                  className="flex-1 bg-rose-500 text-white py-2.5 rounded-2xl text-sm font-medium hover:bg-rose-600 transition-colors"
                 >
                   ✗ Reject
                 </button>
@@ -706,7 +715,7 @@ export default function SessionPage() {
 
           {feedback ? (
             <div className="space-y-3">
-              <div className={`inline-block px-5 py-3 rounded-xl text-sm font-medium ${
+              <div className={`inline-block px-5 py-3 rounded-2xl text-sm font-medium ${
                 feedback.correct
                   ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                   : 'bg-rose-50 text-rose-700 border border-rose-200'
@@ -739,14 +748,14 @@ export default function SessionPage() {
                     onChange={e => setUserAnswer(e.target.value)}
                     placeholder="Type your answer…"
                     autoFocus
-                    className="w-full border border-slate-200 rounded-xl px-4 py-3 text-center text-lg bg-white text-slate-900 focus:border-indigo-500 focus:outline-none transition-colors"
+                    className="w-full border border-slate-200 rounded-2xl px-4 py-3 text-center text-lg bg-white text-slate-900 focus:border-indigo-500 focus:outline-none transition-colors"
                   />
                   <div className="flex gap-2">
                     {!showHint && (
                       <button
                         type="button"
                         onClick={handleHintClick}
-                        className="px-4 py-3 border border-amber-200 text-amber-700 rounded-xl text-sm hover:bg-amber-50 transition-colors"
+                        className="px-4 py-3 border border-amber-200 text-amber-700 rounded-2xl text-sm hover:bg-amber-50 transition-colors"
                       >
                         💡 Hint
                       </button>
@@ -754,7 +763,7 @@ export default function SessionPage() {
                     <button
                       type="submit"
                       disabled={!userAnswer.trim()}
-                      className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3 rounded-xl text-sm font-medium hover:from-indigo-700 hover:to-violet-700 disabled:opacity-40 transition-all"
+                      className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3 rounded-2xl text-sm font-medium hover:from-indigo-700 hover:to-violet-700 disabled:opacity-40 transition-all"
                     >
                       Check
                     </button>
@@ -763,7 +772,7 @@ export default function SessionPage() {
               )}
 
               {currentTask.taskType === 'abcd' && currentTask.options && (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {currentTask.options.map((opt, idx) => (
                     <button
                       key={idx}
@@ -776,7 +785,7 @@ export default function SessionPage() {
                             : opt === selectedOption
                               ? 'border-rose-300 bg-rose-50 text-rose-800'
                               : 'border-slate-200 text-slate-600'
-                          : 'border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 text-slate-900'
+                          : 'border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 text-slate-900 shadow-sm'
                       }`}
                     >
                       <span className="inline-flex items-center justify-center w-7 h-7 mr-3 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">
@@ -802,7 +811,7 @@ export default function SessionPage() {
                 <div className="space-y-5">
                   {/* Required EN word as pill/chip */}
                   <div className="flex justify-center">
-                    <span className="inline-block bg-indigo-100 text-indigo-700 font-semibold px-4 py-1.5 rounded-full text-base tracking-wide">
+                    <span className="inline-block bg-indigo-100 text-indigo-700 font-semibold px-5 py-2 rounded-full text-base tracking-wide shadow-sm">
                       {currentTask.requiredEn || currentTask.answer}
                     </span>
                   </div>
@@ -823,7 +832,7 @@ export default function SessionPage() {
                     placeholder="Write one sentence…"
                     autoFocus
                     rows={3}
-                    className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm bg-white text-slate-900 focus:border-indigo-500 focus:outline-none resize-none transition-colors"
+                    className="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm bg-white text-slate-900 focus:border-indigo-500 focus:outline-none resize-none transition-colors"
                     disabled={loading}
                   />
 
@@ -833,7 +842,7 @@ export default function SessionPage() {
                       <button
                         type="button"
                         onClick={handleHintClick}
-                        className="px-4 py-3 border border-amber-200 text-amber-700 rounded-xl text-sm hover:bg-amber-50 transition-colors"
+                        className="px-4 py-3 border border-amber-200 text-amber-700 rounded-2xl text-sm hover:bg-amber-50 transition-colors"
                       >
                         💡 Hint
                       </button>
@@ -846,7 +855,7 @@ export default function SessionPage() {
                         }
                       }}
                       disabled={loading || !userAnswer.trim()}
-                      className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3 rounded-xl text-sm font-medium hover:from-indigo-700 hover:to-violet-700 disabled:opacity-40 transition-all"
+                      className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3 rounded-2xl text-sm font-medium hover:from-indigo-700 hover:to-violet-700 disabled:opacity-40 transition-all"
                     >
                       {loading ? 'Checking…' : 'Check'}
                     </button>
@@ -872,7 +881,7 @@ export default function SessionPage() {
                     placeholder="Napisz opis..."
                     autoFocus
                     rows={3}
-                    className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm bg-white text-slate-900 focus:border-indigo-500 focus:outline-none resize-none transition-colors"
+                    className="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm bg-white text-slate-900 focus:border-indigo-500 focus:outline-none resize-none transition-colors"
                     disabled={loading}
                   />
                   <div className="flex gap-2">
@@ -880,7 +889,7 @@ export default function SessionPage() {
                       <button
                         type="button"
                         onClick={handleHintClick}
-                        className="px-4 py-3 border border-amber-200 text-amber-700 rounded-xl text-sm hover:bg-amber-50 transition-colors"
+                        className="px-4 py-3 border border-amber-200 text-amber-700 rounded-2xl text-sm hover:bg-amber-50 transition-colors"
                       >
                         💡 Hint
                       </button>
@@ -893,7 +902,7 @@ export default function SessionPage() {
                         }
                       }}
                       disabled={loading || !userAnswer.trim()}
-                      className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3 rounded-xl text-sm font-medium hover:from-indigo-700 hover:to-violet-700 disabled:opacity-40 transition-all"
+                      className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3 rounded-2xl text-sm font-medium hover:from-indigo-700 hover:to-violet-700 disabled:opacity-40 transition-all"
                     >
                       {loading ? 'Checking…' : 'Check'}
                     </button>
