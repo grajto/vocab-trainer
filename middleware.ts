@@ -45,7 +45,7 @@ export function middleware(request: NextRequest) {
     (!fetchSite && !origin)
   const shouldInjectAppToken = APP_ACCESS_TOKEN &&
     isTrustedRequest &&
-    (isAllowlistedApi || !isApiPath)
+    (!isApiPath || isAllowlistedApi)
 
   if (shouldInjectAppToken) {
     console.info('[middleware] Injecting app token', {
