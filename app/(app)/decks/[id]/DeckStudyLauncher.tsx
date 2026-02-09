@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSound } from '@/src/lib/SoundProvider'
 
 interface Props {
   deckId: string
@@ -15,6 +16,7 @@ export function DeckStudyLauncher({ deckId, cardCount }: Props) {
   const [levelFilter, setLevelFilter] = useState('all')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const { unlock } = useSound()
 
   const modes = [
     { mode: 'translate', label: 'Learn', icon: '📖', color: 'from-indigo-500 to-violet-500', desc: 'Type translations' },
@@ -27,6 +29,7 @@ export function DeckStudyLauncher({ deckId, cardCount }: Props) {
     if (!selectedMode) return
     setLoading(true)
     setError('')
+    unlock()
 
     try {
       const res = await fetch('/api/session/start', {

@@ -23,18 +23,20 @@ export async function POST(req: NextRequest) {
     if (!targetPhrase) {
       return NextResponse.json({
         ok: false,
-        issue_type: 'missing_phrase_config',
+        issue_type: 'missing_phrase',
         message_pl: 'Brak wymaganej frazy do sprawdzenia.',
-        aiUsed: false,
+        ai_used: false,
+        ai_latency_ms: 0,
       })
     }
 
     if (!sentence || !sentence.trim()) {
       return NextResponse.json({
         ok: false,
-        issue_type: 'empty_sentence',
+        issue_type: 'not_a_sentence',
         message_pl: 'Zdanie nie może być puste.',
-        aiUsed: false,
+        ai_used: false,
+        ai_latency_ms: 0,
       })
     }
 
@@ -44,17 +46,19 @@ export async function POST(req: NextRequest) {
     if (trimmed.length < 8) {
       return NextResponse.json({
         ok: false,
-        issue_type: 'too_short',
+        issue_type: 'not_a_sentence',
         message_pl: 'Zdanie jest za krótkie (min. 8 znaków).',
-        aiUsed: false,
+        ai_used: false,
+        ai_latency_ms: 0,
       })
     }
     if (trimmed.length > 240) {
       return NextResponse.json({
         ok: false,
-        issue_type: 'too_long',
+        issue_type: 'other',
         message_pl: 'Zdanie jest za długie (max 240 znaków).',
-        aiUsed: false,
+        ai_used: false,
+        ai_latency_ms: 0,
       })
     }
 
@@ -64,72 +68,87 @@ export async function POST(req: NextRequest) {
         ok: false,
         issue_type: 'missing_phrase',
         message_pl: `Zdanie nie zawiera wymaganego zwrotu: "${targetPhrase}".`,
-        aiUsed: false,
+        ai_used: false,
+        ai_latency_ms: 0,
       })
     }
 
-    // AI validation via OpenAI SDK
-    if (process.env.OPENAI_API_KEY) {
-      try {
-        const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
-
-        const meaningContext = promptPl
-          ? ` The word/phrase "${targetPhrase}" means "${promptPl}" in Polish. The sentence should demonstrate correct usage matching this meaning.`
-          : ''
-
-        const completion = await openai.chat.completions.create({
-          model: 'gpt-4.1-nano',
-          temperature: 0,
-          max_tokens: 200,
-          messages: [
-            {
-              role: 'system',
-              content: `You are a strict English language teacher. The student must write a grammatically correct and natural English sentence using the phrase "${targetPhrase}".${meaningContext}
-Evaluate:
-1) Is it a real sentence (not repetition/nonsense)?
-2) Is it grammatically correct and natural?
-3) Does it correctly demonstrate the meaning of "${targetPhrase}"?
-Respond ONLY with valid JSON (no markdown, no code fences):
-{"ok":true/false,"issue_type":null|"not_a_sentence"|"grammar"|"unnatural"|"usage"|"meaning_mismatch","message_pl":"short feedback in Polish (1 sentence max)","suggested_fix":null|"corrected sentence"}
-If the sentence is correct and natural, set ok=true, issue_type=null, suggested_fix=null.`,
-            },
-            {
-              role: 'user',
-              content: trimmed,
-            },
-          ],
-        })
-
-        const content = completion.choices?.[0]?.message?.content
-        if (content) {
-          // Strip possible markdown code fences
-          const cleaned = content.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim()
-          try {
-            const parsed = JSON.parse(cleaned)
-            return NextResponse.json({
-              ok: !!parsed.ok,
-              issue_type: parsed.issue_type ?? null,
-              message_pl: parsed.message_pl ?? '',
-              suggested_fix: parsed.suggested_fix ?? null,
-              aiUsed: true,
-            })
-          } catch {
-            console.error('AI response not parseable:', content)
-          }
-        }
-      } catch (err) {
-        console.error('OpenAI call failed:', err)
-      }
+    if (!process.env.OPENAI_API_KEY) {
+      return NextResponse.json({
+        ok: false,
+        issue_type: 'other',
+        message_pl: 'Brak konfiguracji AI (OPENAI_API_KEY).',
+        suggested_fix: null,
+        ai_used: false,
+        ai_latency_ms: 0,
+      })
     }
 
-    // Stub response when no AI key or AI call failed
-    return NextResponse.json({
-      ok: true,
-      issue_type: null,
-      message_pl: 'Zdanie zawiera wymaganą frazę (bez weryfikacji AI).',
-      suggested_fix: null,
-      aiUsed: false,
-    })
+    try {
+      const startedAt = Date.now()
+      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+
+      const meaningContext = promptPl
+        ? ` Polskie znaczenie: "${promptPl}". Zdanie musi pokazywać poprawne użycie słowa/zwrotu.`
+        : ''
+
+      console.info('[AI] calling OpenAI')
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-5-nano',
+        temperature: 0,
+        max_completion_tokens: 220,
+        messages: [
+          {
+            role: 'system',
+            content: `Jesteś surowym nauczycielem języka angielskiego. Twoim zadaniem jest ocenić zdanie ucznia.
+Sprawdź:
+1) Czy to jest prawdziwe zdanie po angielsku (nie zlepek słów)?
+2) Czy użycie "${targetPhrase}" jest poprawne gramatycznie?
+3) Czy zdanie jest naturalne jako przykład użycia?
+4) Czy znaczenie pasuje do "${promptPl ?? ''}"?${meaningContext}
+Zwróć WYŁĄCZNIE JSON w formacie:
+{"ok":true/false,"issue_type":null|"not_a_sentence"|"grammar"|"usage"|"meaning_mismatch"|"missing_phrase"|"other","message_pl":null|string,"suggested_fix":null|string}
+Jeśli ok=true, ustaw issue_type=null i NIE dodawaj message_pl ani suggested_fix.`,
+          },
+          {
+            role: 'user',
+            content: `requiredEn: ${targetPhrase}\nsentence: ${trimmed}`,
+          },
+        ],
+      })
+
+      const content = completion.choices?.[0]?.message?.content
+      if (!content) {
+        throw new Error('Empty AI response')
+      }
+      const cleaned = content.replace(/```json\\s*/g, '').replace(/```\\s*/g, '').trim()
+      const parsed = JSON.parse(cleaned)
+      const aiLatencyMs = Date.now() - startedAt
+      console.info('[AI] result', parsed)
+      return NextResponse.json({
+        ok: !!parsed.ok,
+        issue_type: parsed.issue_type ?? null,
+        message_pl: parsed.message_pl ?? '',
+        suggested_fix: parsed.suggested_fix ?? null,
+        ai_used: true,
+        ai_latency_ms: aiLatencyMs,
+      })
+    } catch (err: unknown) {
+      console.error('OpenAI call failed:', err)
+      const status = (err as { status?: number }).status
+      const code = (err as { code?: string }).code
+      const isQuota = status === 429 || code === 'insufficient_quota'
+      return NextResponse.json({
+        ok: false,
+        issue_type: 'other',
+        message_pl: isQuota
+          ? 'Limit AI został wyczerpany. Sprawdź billing lub spróbuj później.'
+          : 'AI nie zwróciło poprawnej odpowiedzi. Spróbuj ponownie.',
+        suggested_fix: null,
+        ai_used: true,
+        ai_latency_ms: 0,
+      })
+    }
   } catch (error: unknown) {
     console.error('Check sentence error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

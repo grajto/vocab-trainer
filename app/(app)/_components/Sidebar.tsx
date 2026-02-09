@@ -18,10 +18,10 @@ export function Sidebar({ folders }: { folders: FolderItem[] }) {
   useEffect(() => { setOpen(false) }, [pathname])
 
   const navItems = [
-    { href: '/', label: 'Home', icon: Home },
-    { href: '/library', label: 'Your library', icon: Library },
-    { href: '/stats', label: 'Statistics', icon: BarChart3 },
-    { href: '/notifications', label: 'Notifications', icon: Bell },
+    { href: '/', label: 'Strona główna', icon: Home },
+    { href: '/library', label: 'Twoje zasoby', icon: Library },
+    { href: '/stats', label: 'Statystyki', icon: BarChart3 },
+    { href: '/notifications', label: 'Powiadomienia', icon: Bell },
   ]
 
   const isActive = (href: string) => {
@@ -34,33 +34,33 @@ export function Sidebar({ folders }: { folders: FolderItem[] }) {
       {/* Mobile hamburger */}
       <button
         onClick={() => setOpen(true)}
-        className="lg:hidden fixed top-3 left-3 z-50 p-2 rounded-lg bg-white shadow-sm border border-slate-200"
+        className="lg:hidden fixed top-3 left-3 z-50 p-2 rounded-lg bg-slate-900/80 shadow-sm border border-slate-700"
         aria-label="Open menu"
       >
-        <Menu className="w-5 h-5 text-slate-600" />
+        <Menu className="w-5 h-5 text-slate-200" />
       </button>
 
       {/* Overlay */}
       {open && (
-        <div className="lg:hidden fixed inset-0 bg-black/30 z-40" onClick={() => setOpen(false)} />
+        <div className="lg:hidden fixed inset-0 bg-black/50 z-40" onClick={() => setOpen(false)} />
       )}
 
       {/* Sidebar */}
       <aside className={`
-        fixed top-0 left-0 h-full bg-white border-r border-slate-200 z-50
+        fixed top-0 left-0 h-full bg-[#0f1237] border-r border-slate-800/70 z-50
         w-64 flex flex-col
         transition-transform duration-200
         lg:translate-x-0 lg:static lg:z-auto
         ${open ? 'translate-x-0' : '-translate-x-full'}
       `}>
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-4 border-b border-slate-100">
+        <div className="flex items-center justify-between px-4 py-4 border-b border-slate-800/70">
           <Link href="/" className="flex items-center gap-2">
-            <GraduationCap className="w-6 h-6 text-indigo-600" />
-            <span className="font-bold text-lg text-slate-900">VocabTrainer</span>
+            <GraduationCap className="w-6 h-6 text-indigo-300" />
+            <span className="font-semibold text-lg text-white tracking-tight">VocabTrainer</span>
           </Link>
-          <button onClick={() => setOpen(false)} className="lg:hidden p-1 rounded hover:bg-slate-100">
-            <X className="w-5 h-5 text-slate-400" />
+          <button onClick={() => setOpen(false)} className="lg:hidden p-1 rounded hover:bg-slate-800/60">
+            <X className="w-5 h-5 text-slate-300" />
           </button>
         </div>
 
@@ -73,8 +73,8 @@ export function Sidebar({ folders }: { folders: FolderItem[] }) {
               prefetch={true}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 isActive(item.href)
-                  ? 'bg-indigo-50 text-indigo-700'
-                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                  ? 'bg-indigo-500/15 text-indigo-100'
+                  : 'text-slate-300 hover:bg-white/5 hover:text-white'
               }`}
             >
               <item.icon className="w-5 h-5 flex-shrink-0" />
@@ -85,7 +85,7 @@ export function Sidebar({ folders }: { folders: FolderItem[] }) {
           {/* Folders section */}
           <div className="pt-4">
             <p className="px-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
-              Your folders
+              Twoje foldery
             </p>
             {folders.map(folder => (
               <Link
@@ -94,8 +94,8 @@ export function Sidebar({ folders }: { folders: FolderItem[] }) {
                 prefetch={true}
                 className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
                   pathname === `/folders/${folder.id}`
-                    ? 'bg-indigo-50 text-indigo-700'
-                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                    ? 'bg-indigo-500/15 text-indigo-100'
+                    : 'text-slate-300 hover:bg-white/5 hover:text-white'
                 }`}
               >
                 <FolderOpen className="w-4 h-4 flex-shrink-0" />
@@ -104,23 +104,23 @@ export function Sidebar({ folders }: { folders: FolderItem[] }) {
             ))}
             <Link
               href="/library?tab=folders&create=true"
-              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-400 hover:text-indigo-600 hover:bg-slate-50 transition-colors"
+              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-400 hover:text-indigo-200 hover:bg-white/5 transition-colors"
             >
               <Plus className="w-4 h-4" />
-              New folder
+              Nowy folder
             </Link>
           </div>
         </nav>
 
         {/* Bottom quick links */}
-        <div className="border-t border-slate-100 px-3 py-3 space-y-1">
+        <div className="border-t border-slate-800/70 px-3 py-3 space-y-1">
           <Link
             href="/learn"
             prefetch={true}
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors"
           >
             <BookOpen className="w-4 h-4" />
-            Quick learn
+            Ucz się
           </Link>
         </div>
       </aside>
