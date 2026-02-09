@@ -119,7 +119,7 @@ Jeśli ok=true, ustaw issue_type=null i NIE dodawaj message_pl ani suggested_fix
 
       const content = completion.choices?.[0]?.message?.content ?? ''
       if (!content.trim()) {
-        console.error('[AI] empty response', { finishReason: completion.choices?.[0]?.finish_reason })
+        console.error('[AI] empty response', { finish_reason: completion.choices?.[0]?.finish_reason })
         throw new Error('Empty AI response')
       }
       const parsed = JSON.parse(content.trim())
