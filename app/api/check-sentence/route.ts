@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
       const completion = await openai.chat.completions.create({
         model: 'gpt-5-nano',
         temperature: 0,
-        max_tokens: 220,
+        max_completion_tokens: 220,
         messages: [
           {
             role: 'system',
