@@ -28,7 +28,7 @@ Copy `.env.example` to `.env.local` and fill in the values:
 | `PAYLOAD_SECRET` | Yes | Secret for Payload CMS encryption (min 32 chars) |
 | `PAYLOAD_PUBLIC_SERVER_URL` | No | `http://localhost:3000` locally. In prod set to your domain (fallback to `VERCEL_URL` if unset) |
 | `OPENAI_API_KEY` | No | OpenAI API key for sentence validation (sentence mode works without it using stub) |
-| `APP_ACCESS_TOKEN` | No | Shared token for single-user mode; middleware injects it as `x-app-token` to enable UI + `/api/session/*` access without login (admin still requires login). In production set this to avoid 401s for session endpoints. |
+| `APP_ACCESS_TOKEN` | Recommended | Shared token for single-user mode; middleware injects it as `x-app-token` to enable UI + `/api/session/*` access without login (admin still requires login). In production set this to avoid 401s for session endpoints. |
 
 ### Single-user mode (optional)
 
