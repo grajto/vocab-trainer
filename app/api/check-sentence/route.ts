@@ -125,10 +125,14 @@ Jeśli ok=true, ustaw issue_type=null i NIE dodawaj message_pl ani suggested_fix
       let finishReason = completion.choices?.[0]?.finish_reason
 
       if (finishReason === 'length') {
-        console.warn('[AI] response truncated, retrying', { finish_reason: finishReason })
+        const preview = content.trim().slice(0, 200)
+        console.warn('[AI] response truncated, retrying', { finish_reason: finishReason, preview })
         completion = await makeCompletion(420)
         content = completion.choices?.[0]?.message?.content ?? ''
         finishReason = completion.choices?.[0]?.finish_reason
+        if (finishReason === 'length') {
+          console.warn('[AI] response still truncated after retry', { finish_reason: finishReason })
+        }
       }
 
       if (!content.trim()) {
