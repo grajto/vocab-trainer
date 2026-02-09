@@ -117,10 +117,10 @@ export default function SessionPage() {
   // No tasks loaded
   if (tasks.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-50 to-slate-100">
         <div className="text-center">
-          <p className="text-sm text-neutral-400 mb-3">No session data found.</p>
-          <button onClick={() => router.push('/learn')} className="text-sm text-neutral-900 underline underline-offset-2">
+          <p className="text-sm text-slate-400 mb-3">No session data found.</p>
+          <button onClick={() => router.push('/learn')} className="text-sm text-indigo-600 underline underline-offset-2">
             Go to Learn
           </button>
         </div>
@@ -131,16 +131,16 @@ export default function SessionPage() {
   // Session complete
   if (sessionDone) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-50 to-slate-100">
         <div className="text-center max-w-xs mx-4">
-          <p className="text-xs text-neutral-400 uppercase tracking-widest mb-2">Session Complete</p>
-          <p className="text-5xl font-bold tabular-nums mb-1">{accuracy}%</p>
-          <p className="text-sm text-neutral-400 mb-8">accuracy</p>
+          <p className="text-xs text-slate-400 uppercase tracking-widest mb-2">Session Complete</p>
+          <p className="text-5xl font-bold tabular-nums mb-1 text-indigo-600">{accuracy}%</p>
+          <p className="text-sm text-slate-400 mb-8">accuracy</p>
           <div className="space-y-2">
-            <button onClick={() => router.push('/learn')} className="block w-full bg-neutral-900 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-neutral-800 transition-colors">
+            <button onClick={() => router.push('/learn')} className="block w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-2.5 rounded-xl text-sm font-medium hover:from-indigo-700 hover:to-violet-700 transition-all">
               New Session
             </button>
-            <button onClick={() => router.push('/')} className="block w-full border border-neutral-200 py-2.5 rounded-xl text-sm hover:border-neutral-400 transition-colors">
+            <button onClick={() => router.push('/')} className="block w-full border border-slate-200 py-2.5 rounded-xl text-sm hover:border-indigo-300 transition-colors">
               Dashboard
             </button>
           </div>
@@ -153,27 +153,27 @@ export default function SessionPage() {
   const progress = ((currentIndex + 1) / tasks.length) * 100
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
       {/* Progress bar */}
-      <div className="border-b border-neutral-200 bg-white px-6 py-3">
+      <div className="border-b border-slate-200 bg-white/80 backdrop-blur-sm px-6 py-3">
         <div className="max-w-lg mx-auto flex items-center gap-4">
-          <span className="text-xs text-neutral-400 tabular-nums whitespace-nowrap">
+          <span className="text-xs text-slate-400 tabular-nums whitespace-nowrap">
             {currentIndex + 1} / {tasks.length}
           </span>
-          <div className="flex-1 bg-neutral-100 rounded-full h-1.5">
+          <div className="flex-1 bg-slate-100 rounded-full h-1.5">
             <div
-              className="bg-neutral-900 h-1.5 rounded-full transition-all duration-300"
+              className="bg-gradient-to-r from-indigo-500 to-violet-500 h-1.5 rounded-full transition-all duration-300"
               style={{ width: `${progress}%` }}
             />
           </div>
-          <span className="text-xs text-neutral-400 tabular-nums">{accuracy}%</span>
+          <span className="text-xs text-slate-400 tabular-nums">{accuracy}%</span>
         </div>
       </div>
 
       <main className="max-w-lg mx-auto px-6 py-12">
         <div className="text-center">
-          <p className="text-[10px] text-neutral-400 uppercase tracking-widest mb-4">{currentTask.taskType}</p>
-          <h2 className="text-3xl font-semibold tracking-tight mb-10">{currentTask.prompt}</h2>
+          <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-4">{currentTask.taskType}</p>
+          <h2 className="text-3xl font-semibold tracking-tight mb-10 text-slate-900">{currentTask.prompt}</h2>
 
           {feedback ? (
             <div className={`inline-block px-5 py-3 rounded-xl text-sm font-medium ${
@@ -193,13 +193,13 @@ export default function SessionPage() {
                     onChange={e => setUserAnswer(e.target.value)}
                     placeholder="Type your answer…"
                     autoFocus
-                    className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-center text-lg focus:border-neutral-900 focus:outline-none transition-colors"
+                    className="w-full border border-slate-200 rounded-xl px-4 py-3 text-center text-lg focus:border-indigo-500 focus:outline-none transition-colors"
                     disabled={loading}
                   />
                   <button
                     type="submit"
                     disabled={loading || !userAnswer.trim()}
-                    className="w-full bg-neutral-900 text-white py-3 rounded-xl text-sm font-medium hover:bg-neutral-800 disabled:opacity-40 transition-colors"
+                    className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3 rounded-xl text-sm font-medium hover:from-indigo-700 hover:to-violet-700 disabled:opacity-40 transition-all"
                   >
                     Check
                   </button>
@@ -213,7 +213,7 @@ export default function SessionPage() {
                       key={idx}
                       onClick={() => handleAbcdSelect(opt)}
                       disabled={loading}
-                      className="w-full text-left px-5 py-3.5 border border-neutral-200 rounded-xl text-sm hover:border-neutral-400 hover:bg-neutral-50 disabled:opacity-50 transition-colors"
+                      className="w-full text-left px-5 py-3.5 border border-slate-200 rounded-xl text-sm hover:border-indigo-300 hover:bg-indigo-50 disabled:opacity-50 transition-all"
                     >
                       {opt}
                     </button>
@@ -223,8 +223,8 @@ export default function SessionPage() {
 
               {currentTask.taskType === 'sentence' && (
                 <form onSubmit={handleSentenceSubmit} className="space-y-4">
-                  <p className="text-sm text-neutral-400">
-                    Write a sentence using: <strong className="text-neutral-900">{currentTask.answer}</strong>
+                  <p className="text-sm text-slate-400">
+                    Write a sentence using: <strong className="text-indigo-600">{currentTask.answer}</strong>
                   </p>
                   <textarea
                     value={userAnswer}
@@ -232,13 +232,13 @@ export default function SessionPage() {
                     placeholder="Write a sentence…"
                     autoFocus
                     rows={3}
-                    className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-sm focus:border-neutral-900 focus:outline-none resize-none transition-colors"
+                    className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-indigo-500 focus:outline-none resize-none transition-colors"
                     disabled={loading}
                   />
                   <button
                     type="submit"
                     disabled={loading || !userAnswer.trim()}
-                    className="w-full bg-neutral-900 text-white py-3 rounded-xl text-sm font-medium hover:bg-neutral-800 disabled:opacity-40 transition-colors"
+                    className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3 rounded-xl text-sm font-medium hover:from-indigo-700 hover:to-violet-700 disabled:opacity-40 transition-all"
                   >
                     Check
                   </button>

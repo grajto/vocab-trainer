@@ -31,11 +31,11 @@ export default async function DeckDetailPage({ params }: { params: Promise<{ id:
   })
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      <nav className="border-b border-neutral-200 bg-white px-6 py-4">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
+      <nav className="border-b border-slate-200 bg-white/80 backdrop-blur-sm px-6 py-4">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <Link href="/" className="text-lg font-semibold tracking-tight">Vocab Trainer</Link>
-          <Link href="/decks" className="text-sm text-neutral-400 hover:text-neutral-900 transition-colors">← Decks</Link>
+          <Link href="/" className="text-lg font-semibold tracking-tight text-indigo-600">Home</Link>
+          <Link href="/decks" className="text-sm text-slate-400 hover:text-indigo-600 transition-colors">← Decks</Link>
         </div>
       </nav>
       <main className="max-w-3xl mx-auto px-6 py-8 space-y-6">
@@ -52,13 +52,17 @@ export default async function DeckDetailPage({ params }: { params: Promise<{ id:
             <p className="text-sm text-neutral-400 py-8 text-center">No cards yet. Add one above.</p>
           ) : (
             cards.docs.map(card => (
-              <div key={card.id} className="bg-white border border-neutral-200 rounded-lg px-4 py-3 flex justify-between items-center">
+              <div key={card.id} className="bg-white border border-slate-200 rounded-lg px-4 py-3 flex justify-between items-center">
                 <div className="text-sm">
-                  <span className="font-medium">{card.front}</span>
-                  <span className="text-neutral-300 mx-2">→</span>
-                  <span className="text-neutral-600">{card.back}</span>
+                  <span className="font-medium text-slate-900">{card.front}</span>
+                  <span className="text-indigo-300 mx-2">→</span>
+                  <span className="text-slate-600">{card.back}</span>
                 </div>
-                <span className="text-[10px] text-neutral-400 uppercase tracking-wide">{card.cardType}</span>
+                <span className={`text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full ${
+                  card.cardType === 'sentence' ? 'bg-violet-100 text-violet-600' :
+                  card.cardType === 'phrase' ? 'bg-amber-100 text-amber-600' :
+                  'bg-emerald-100 text-emerald-600'
+                }`}>{card.cardType}</span>
               </div>
             ))
           )}

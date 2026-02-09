@@ -20,15 +20,15 @@ export default async function DecksPage() {
   })
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      <nav className="border-b border-neutral-200 bg-white px-6 py-4">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
+      <nav className="border-b border-slate-200 bg-white/80 backdrop-blur-sm px-6 py-4">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <Link href="/" className="text-lg font-semibold tracking-tight">Vocab Trainer</Link>
-          <span className="text-xs text-neutral-400">{user.username || user.email}</span>
+          <Link href="/" className="text-lg font-semibold tracking-tight text-indigo-600">Home</Link>
+          <span className="text-xs text-slate-400">{user.username || user.email}</span>
         </div>
       </nav>
       <main className="max-w-3xl mx-auto px-6 py-8 space-y-6">
-        <h2 className="text-xl font-semibold">Decks</h2>
+        <h2 className="text-xl font-semibold text-slate-900">Decks</h2>
         
         <CreateDeckForm />
 
@@ -37,9 +37,9 @@ export default async function DecksPage() {
             <p className="text-sm text-neutral-400 py-8 text-center">No decks yet. Create one above.</p>
           ) : (
             decks.docs.map(deck => (
-              <Link key={deck.id} href={`/decks/${deck.id}`} className="block bg-white border border-neutral-200 rounded-xl px-5 py-4 hover:border-neutral-400 transition-colors">
-                <p className="font-medium">{deck.name}</p>
-                {deck.description && <p className="text-sm text-neutral-400 mt-0.5">{deck.description}</p>}
+              <Link key={deck.id} href={`/decks/${deck.id}`} className="block bg-white border border-slate-200 rounded-xl px-5 py-4 hover:border-indigo-300 hover:shadow-sm transition-all">
+                <p className="font-medium text-slate-900">{deck.name}</p>
+                {deck.description && <p className="text-sm text-slate-400 mt-0.5">{deck.description}</p>}
               </Link>
             ))
           )}

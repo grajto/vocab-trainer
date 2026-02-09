@@ -19,10 +19,10 @@ export default async function LearnPage() {
   })
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      <nav className="border-b border-neutral-200 bg-white px-6 py-4">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
+      <nav className="border-b border-slate-200 bg-white/80 backdrop-blur-sm px-6 py-4">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <Link href="/" className="text-lg font-semibold tracking-tight">Vocab Trainer</Link>
+          <Link href="/" className="text-lg font-semibold tracking-tight text-indigo-600">Home</Link>
         </div>
       </nav>
       <main className="max-w-lg mx-auto px-6 py-8 space-y-6">

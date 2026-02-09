@@ -47,56 +47,56 @@ export default async function Dashboard() {
   const totalCards = allReviewStates.totalDocs
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      <nav className="border-b border-neutral-200 bg-white px-6 py-4">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
+      <nav className="border-b border-slate-200 bg-white/80 backdrop-blur-sm px-6 py-4">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <h1 className="text-lg font-semibold tracking-tight">Vocab Trainer</h1>
-          <span className="text-xs text-neutral-400">{user.username || user.email}</span>
+          <h1 className="text-lg font-semibold tracking-tight text-indigo-600">Home</h1>
+          <span className="text-xs text-slate-400">{user.username || user.email}</span>
         </div>
       </nav>
 
       <main className="max-w-3xl mx-auto px-6 py-8 space-y-8">
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-4">
-          <div className="bg-white border border-neutral-200 rounded-xl px-5 py-4">
+          <div className="bg-gradient-to-br from-violet-500 to-indigo-600 rounded-xl px-5 py-4 text-white shadow-sm">
             <p className="text-2xl font-bold tabular-nums">{sessionsToday.totalDocs}</p>
-            <p className="text-xs text-neutral-500 mt-0.5">Sessions today</p>
+            <p className="text-xs text-violet-200 mt-0.5">Sessions today</p>
           </div>
-          <div className="bg-white border border-neutral-200 rounded-xl px-5 py-4">
+          <div className="bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl px-5 py-4 text-white shadow-sm">
             <p className="text-2xl font-bold tabular-nums">{dueNow}</p>
-            <p className="text-xs text-neutral-500 mt-0.5">Cards due</p>
+            <p className="text-xs text-amber-100 mt-0.5">Cards due</p>
           </div>
-          <div className="bg-white border border-neutral-200 rounded-xl px-5 py-4">
+          <div className="bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl px-5 py-4 text-white shadow-sm">
             <p className="text-2xl font-bold tabular-nums">{totalCards}</p>
-            <p className="text-xs text-neutral-500 mt-0.5">Total reviews</p>
+            <p className="text-xs text-emerald-100 mt-0.5">Total reviews</p>
           </div>
         </div>
 
         {/* Primary action */}
         <Link
           href="/learn"
-          className="block w-full bg-neutral-900 text-white text-center py-4 rounded-xl font-medium hover:bg-neutral-800 transition-colors"
+          className="block w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white text-center py-4 rounded-xl font-medium hover:from-indigo-700 hover:to-violet-700 transition-all shadow-sm"
         >
           Start Learning
         </Link>
 
         {/* Navigation grid */}
         <div className="grid grid-cols-2 gap-3">
-          <Link href="/decks" className="bg-white border border-neutral-200 rounded-xl px-5 py-4 hover:border-neutral-400 transition-colors">
-            <p className="font-medium">Decks</p>
-            <p className="text-xs text-neutral-400 mt-0.5">{decks.totalDocs} deck{decks.totalDocs !== 1 ? 's' : ''}</p>
+          <Link href="/decks" className="bg-white border border-slate-200 rounded-xl px-5 py-4 hover:border-indigo-300 hover:shadow-sm transition-all">
+            <p className="font-medium text-slate-900">Decks</p>
+            <p className="text-xs text-slate-400 mt-0.5">{decks.totalDocs} deck{decks.totalDocs !== 1 ? 's' : ''}</p>
           </Link>
-          <Link href="/import" className="bg-white border border-neutral-200 rounded-xl px-5 py-4 hover:border-neutral-400 transition-colors">
-            <p className="font-medium">Import CSV</p>
-            <p className="text-xs text-neutral-400 mt-0.5">Bulk add cards</p>
+          <Link href="/import" className="bg-white border border-slate-200 rounded-xl px-5 py-4 hover:border-indigo-300 hover:shadow-sm transition-all">
+            <p className="font-medium text-slate-900">Import CSV</p>
+            <p className="text-xs text-slate-400 mt-0.5">Bulk add cards</p>
           </Link>
-          <Link href="/stats" className="bg-white border border-neutral-200 rounded-xl px-5 py-4 hover:border-neutral-400 transition-colors">
-            <p className="font-medium">Statistics</p>
-            <p className="text-xs text-neutral-400 mt-0.5">Progress &amp; history</p>
+          <Link href="/stats" className="bg-white border border-slate-200 rounded-xl px-5 py-4 hover:border-indigo-300 hover:shadow-sm transition-all">
+            <p className="font-medium text-slate-900">Statistics</p>
+            <p className="text-xs text-slate-400 mt-0.5">Progress &amp; history</p>
           </Link>
-          <Link href="/admin" className="bg-white border border-neutral-200 rounded-xl px-5 py-4 hover:border-neutral-400 transition-colors">
-            <p className="font-medium">Admin</p>
-            <p className="text-xs text-neutral-400 mt-0.5">Payload CMS</p>
+          <Link href="/admin" className="bg-white border border-slate-200 rounded-xl px-5 py-4 hover:border-indigo-300 hover:shadow-sm transition-all">
+            <p className="font-medium text-slate-900">Admin</p>
+            <p className="text-xs text-slate-400 mt-0.5">Payload CMS</p>
           </Link>
         </div>
       </main>

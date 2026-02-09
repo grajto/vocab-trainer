@@ -22,13 +22,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'deckId and mode are required' }, { status: 400 })
     }
 
+    const numericDeckId = parseNumericId(deckId)
+    if (numericDeckId === null) {
+      return NextResponse.json({ error: 'deckId must be a valid number' }, { status: 400 })
+    }
+
     const count = Math.min(Math.max(Number(targetCount), 5), 35)
     const payload = await getPayload()
 
     // Get all cards in deck
     const allCards = await payload.find({
       collection: 'cards',
-      where: { deck: { equals: deckId }, owner: { equals: user.id } },
+      where: { deck: { equals: numericDeckId }, owner: { equals: user.id } },
       limit: 1000,
       depth: 0,
     })
@@ -127,7 +132,7 @@ export async function POST(req: NextRequest) {
       data: {
         owner: user.id,
         mode,
-        deck: deckId,
+        deck: numericDeckId,
         targetCount: selectedCards.length,
         completedCount: 0,
         startedAt: new Date().toISOString(),
