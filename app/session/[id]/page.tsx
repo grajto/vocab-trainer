@@ -1,18 +1,46 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { checkAnswer } from '@/src/lib/answerCheck'
 
-const FEEDBACK_DELAY_CORRECT = 800
-const FEEDBACK_DELAY_WRONG = 2000
+const FEEDBACK_DELAY_CORRECT = 200
+const FEEDBACK_DELAY_WRONG = 1500
 const FEEDBACK_DELAY_DONE = 1200
+
+// Non-translate modes still use server round-trip timings
+const FEEDBACK_DELAY_CORRECT_SLOW = 800
+const FEEDBACK_DELAY_WRONG_SLOW = 2000
 
 interface Task {
   cardId: string
   taskType: string
   prompt: string
   answer: string
+  expectedAnswer?: string
   options?: string[]
+}
+
+/**
+ * Fire-and-forget POST to /api/session/answer.
+ * Does NOT block the caller; logs errors to console.
+ */
+function saveAnswerInBackground(data: {
+  sessionId: string
+  cardId: string
+  taskType: string
+  userAnswer: string
+  isCorrect: boolean
+  expectedAnswer?: string
+}) {
+  fetch('/api/session/answer', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(data),
+  }).catch(err => {
+    console.error('Background save failed:', err)
+  })
 }
 
 export default function SessionPage() {
@@ -26,7 +54,13 @@ export default function SessionPage() {
   const [feedback, setFeedback] = useState<{ correct: boolean; message: string } | null>(null)
   const [loading, setLoading] = useState(false)
   const [sessionDone, setSessionDone] = useState(false)
-  const [accuracy, setAccuracy] = useState(0)
+
+  // Track accuracy locally so we don't need to wait for server
+  const [correctCount, setCorrectCount] = useState(0)
+  const [answeredCount, setAnsweredCount] = useState(0)
+  const accuracy = answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0
+
+  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const stored = sessionStorage.getItem(`session-${sessionId}`)
@@ -35,14 +69,79 @@ export default function SessionPage() {
     }
   }, [sessionId])
 
+  // Focus input whenever we move to a new task and feedback is cleared
+  useEffect(() => {
+    if (!feedback && inputRef.current) {
+      inputRef.current.focus()
+    }
+  }, [currentIndex, feedback])
+
   const currentTask = tasks[currentIndex]
 
-  const submitAnswer = useCallback(async (answer: string, correct: boolean) => {
+  /**
+   * Advance to the next task or finish the session.
+   */
+  const advanceToNext = useCallback((delay: number) => {
+    const isLast = currentIndex + 1 >= tasks.length
+    if (isLast) {
+      setTimeout(() => setSessionDone(true), FEEDBACK_DELAY_DONE)
+    } else {
+      setTimeout(() => {
+        setFeedback(null)
+        setUserAnswer('')
+        setCurrentIndex(prev => prev + 1)
+      }, delay)
+    }
+  }, [currentIndex, tasks.length])
+
+  /**
+   * INSTANT translate check — no server round-trip.
+   */
+  function handleTranslateSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!userAnswer.trim() || !currentTask) return
+
+    const expected = currentTask.expectedAnswer || currentTask.answer
+    const correct = checkAnswer(userAnswer, expected)
+
+    // Update local accuracy
+    setAnsweredCount(prev => prev + 1)
+    if (correct) setCorrectCount(prev => prev + 1)
+
+    // Show feedback immediately
+    if (correct) {
+      setFeedback({ correct: true, message: 'Correct' })
+    } else {
+      setFeedback({ correct: false, message: `Correct answer: ${expected}` })
+    }
+
+    // Fire-and-forget save to backend
+    saveAnswerInBackground({
+      sessionId,
+      cardId: currentTask.cardId,
+      taskType: 'translate',
+      userAnswer,
+      isCorrect: correct,
+      expectedAnswer: expected,
+    })
+
+    // Auto-advance
+    advanceToNext(correct ? FEEDBACK_DELAY_CORRECT : FEEDBACK_DELAY_WRONG)
+  }
+
+  /**
+   * ABCD mode — still uses server round-trip for consistency.
+   */
+  const submitAnswerToServer = useCallback(async (answer: string, correct: boolean) => {
     if (!currentTask) return
     setLoading(true)
 
+    // Update local accuracy
+    setAnsweredCount(prev => prev + 1)
+    if (correct) setCorrectCount(prev => prev + 1)
+
     try {
-      const res = await fetch('/api/session/answer', {
+      await fetch('/api/session/answer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -55,41 +154,23 @@ export default function SessionPage() {
         }),
       })
 
-      const data = await res.json()
-      setAccuracy(data.accuracy || 0)
-
       if (correct) {
         setFeedback({ correct: true, message: 'Correct' })
       } else {
         setFeedback({ correct: false, message: `Correct answer: ${currentTask.answer}` })
       }
 
-      if (data.sessionDone) {
-        setTimeout(() => setSessionDone(true), FEEDBACK_DELAY_DONE)
-      } else {
-        setTimeout(() => {
-          setFeedback(null)
-          setUserAnswer('')
-          setCurrentIndex(prev => prev + 1)
-        }, correct ? FEEDBACK_DELAY_CORRECT : FEEDBACK_DELAY_WRONG)
-      }
+      advanceToNext(correct ? FEEDBACK_DELAY_CORRECT_SLOW : FEEDBACK_DELAY_WRONG_SLOW)
     } catch (err) {
       console.error('Answer submit error:', err)
     } finally {
       setLoading(false)
     }
-  }, [currentTask, sessionId])
-
-  function handleTranslateSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!userAnswer.trim() || !currentTask) return
-    const correct = userAnswer.trim().toLowerCase() === currentTask.answer.trim().toLowerCase()
-    submitAnswer(userAnswer, correct)
-  }
+  }, [currentTask, sessionId, advanceToNext])
 
   function handleAbcdSelect(option: string) {
     const correct = option === currentTask.answer
-    submitAnswer(option, correct)
+    submitAnswerToServer(option, correct)
   }
 
   async function handleSentenceSubmit(e: React.FormEvent) {
@@ -108,9 +189,9 @@ export default function SessionPage() {
         }),
       })
       const data = await res.json()
-      await submitAnswer(userAnswer, data.ok)
+      await submitAnswerToServer(userAnswer, data.ok)
     } catch {
-      await submitAnswer(userAnswer, false)
+      await submitAnswerToServer(userAnswer, false)
     }
   }
 
@@ -188,17 +269,17 @@ export default function SessionPage() {
               {currentTask.taskType === 'translate' && (
                 <form onSubmit={handleTranslateSubmit} className="space-y-4">
                   <input
+                    ref={inputRef}
                     type="text"
                     value={userAnswer}
                     onChange={e => setUserAnswer(e.target.value)}
                     placeholder="Type your answer…"
                     autoFocus
                     className="w-full border border-slate-200 rounded-xl px-4 py-3 text-center text-lg focus:border-indigo-500 focus:outline-none transition-colors"
-                    disabled={loading}
                   />
                   <button
                     type="submit"
-                    disabled={loading || !userAnswer.trim()}
+                    disabled={!userAnswer.trim()}
                     className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3 rounded-xl text-sm font-medium hover:from-indigo-700 hover:to-violet-700 disabled:opacity-40 transition-all"
                   >
                     Check

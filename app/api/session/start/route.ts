@@ -147,6 +147,7 @@ export async function POST(req: NextRequest) {
       taskType: TaskType
       prompt: string
       answer: string
+      expectedAnswer?: string
       options?: string[]
     }
 
@@ -167,6 +168,11 @@ export async function POST(req: NextRequest) {
         taskType,
         prompt: card.front,
         answer: card.back,
+      }
+
+      // For translate (including translate in mixed), include expectedAnswer for instant client-side checking
+      if (taskType === 'translate') {
+        task.expectedAnswer = card.back
       }
 
       // For ABCD, generate options

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from '@/src/lib/getPayload'
 import { getUser } from '@/src/lib/getUser'
 import { processCorrectAnswer, processWrongAnswer } from '@/src/lib/srs'
+import { normalizeAnswer } from '@/src/lib/answerCheck'
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,13 +10,31 @@ export async function POST(req: NextRequest) {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const body = await req.json()
-    const { sessionId, cardId, taskType, userAnswer, isCorrect } = body
+    const { sessionId, cardId, taskType, userAnswer, isCorrect: clientIsCorrect, expectedAnswer } = body
 
     if (!sessionId || !cardId) {
       return NextResponse.json({ error: 'sessionId and cardId are required' }, { status: 400 })
     }
 
     const payload = await getPayload()
+
+    // Determine the authoritative isCorrect value.
+    // Trust client for non-translate tasks; for translate, verify expectedAnswer against DB.
+    let isCorrect = !!clientIsCorrect
+
+    if (taskType === 'translate' && expectedAnswer != null) {
+      // Fetch card from DB to verify expectedAnswer hasn't been tampered with
+      try {
+        const card = await payload.findByID({ collection: 'cards', id: cardId, depth: 0 })
+        const dbAnswer = card.back || ''
+        // If client's expectedAnswer doesn't match DB, re-check server-side
+        if (normalizeAnswer(expectedAnswer) !== normalizeAnswer(dbAnswer)) {
+          isCorrect = normalizeAnswer(userAnswer || '') === normalizeAnswer(dbAnswer)
+        }
+      } catch {
+        // Card not found or error - fall through with client value
+      }
+    }
 
     // Get review state for this card
     const reviewStates = await payload.find({
@@ -79,7 +98,8 @@ export async function POST(req: NextRequest) {
         id: sessionItems.docs[0].id,
         data: {
           userAnswer: userAnswer || '',
-          isCorrect: !!isCorrect,
+          isCorrect,
+          aiUsed: false,
           taskType: taskType || sessionItems.docs[0].taskType,
         },
       })
