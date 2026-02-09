@@ -3,6 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { FolderOpen } from 'lucide-react'
+import { FolderDeckList } from './FolderDeckList'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,6 +31,22 @@ export default async function FolderPage({ params }: { params: Promise<{ id: str
     limit: 100,
     depth: 0,
   })
+
+  const recentSessions = await payload.find({
+    collection: 'sessions',
+    where: { owner: { equals: user.id }, deck: { in: decks.docs.map((d: any) => d.id) } },
+    sort: '-startedAt',
+    limit: 200,
+    depth: 0,
+  })
+
+  const lastUsedMap = new Map<string, string>()
+  for (const s of recentSessions.docs) {
+    const did = String(s.deck)
+    if (!lastUsedMap.has(did) && s.startedAt) {
+      lastUsedMap.set(did, s.startedAt)
+    }
+  }
 
   // Count cards across all decks
   let totalCards = 0
@@ -81,36 +98,33 @@ export default async function FolderPage({ params }: { params: Promise<{ id: str
 
       {/* Learn from folder CTA */}
       {decks.docs.length > 0 && (
-        <Link
-          href={`/learn?folder=${id}`}
-          prefetch={true}
-          className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3.5 rounded-xl font-medium hover:from-indigo-700 hover:to-violet-700 transition-all shadow-sm"
-        >
-          Learn from folder
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link
+            href={`/study?folder=${id}`}
+            prefetch={true}
+            className="flex-1 min-w-[200px] flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3.5 rounded-xl font-medium hover:from-indigo-700 hover:to-violet-700 transition-all shadow-sm"
+          >
+            Ucz się
+          </Link>
+          <Link
+            href="/decks?create=true"
+            prefetch={true}
+            className="flex-1 min-w-[200px] flex items-center justify-center gap-2 border border-slate-200 bg-white text-slate-700 py-3.5 rounded-xl font-medium hover:border-indigo-300 transition-all shadow-sm"
+          >
+            Dodaj zestaw
+          </Link>
+        </div>
       )}
 
-      {/* Decks list */}
-      <div className="space-y-2">
-        {decks.docs.length === 0 ? (
-          <div className="text-center py-12 bg-white border border-slate-200 rounded-xl">
-            <p className="text-sm text-slate-400 mb-2">No decks in this folder yet.</p>
-            <p className="text-xs text-slate-400">Assign decks to this folder from the deck settings.</p>
-          </div>
-        ) : (
-          decks.docs.map((deck: any) => (
-            <Link
-              key={deck.id}
-              href={`/decks/${deck.id}`}
-              prefetch={true}
-              className="block bg-white border border-slate-200 rounded-xl px-5 py-4 hover:border-indigo-300 hover:shadow-sm transition-all"
-            >
-              <p className="font-medium text-slate-900">{deck.name}</p>
-              {deck.description && <p className="text-sm text-slate-400 mt-0.5">{deck.description}</p>}
-            </Link>
-          ))
-        )}
-      </div>
+      <FolderDeckList
+        decks={decks.docs.map((deck: any) => ({
+          id: String(deck.id),
+          name: deck.name,
+          description: deck.description || '',
+          updatedAt: deck.updatedAt || '',
+          lastUsed: lastUsedMap.get(String(deck.id)) || null,
+        }))}
+      />
     </div>
   )
 }
