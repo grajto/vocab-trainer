@@ -124,8 +124,8 @@ Jeśli ok=true, ustaw issue_type=null i NIE dodawaj message_pl ani suggested_fix
       let content = completion.choices?.[0]?.message?.content ?? ''
       let finishReason = completion.choices?.[0]?.finish_reason
 
-      if (!content.trim() && finishReason === 'length') {
-        console.warn('[AI] empty response retrying', { finish_reason: finishReason })
+      if (finishReason === 'length') {
+        console.warn('[AI] response truncated, retrying', { finish_reason: finishReason })
         completion = await makeCompletion(420)
         content = completion.choices?.[0]?.message?.content ?? ''
         finishReason = completion.choices?.[0]?.finish_reason
