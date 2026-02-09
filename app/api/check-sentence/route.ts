@@ -93,10 +93,11 @@ export async function POST(req: NextRequest) {
         : ''
 
       console.info('[AI] calling OpenAI')
-        const completion = await openai.chat.completions.create({
-          model: 'gpt-5-nano',
-          max_completion_tokens: 220,
-          messages: [
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-5-nano',
+        max_completion_tokens: 220,
+        response_format: { type: 'json_object' },
+        messages: [
           {
             role: 'system',
             content: `Jesteś surowym nauczycielem języka angielskiego. Twoim zadaniem jest ocenić zdanie ucznia.
@@ -116,8 +117,9 @@ Jeśli ok=true, ustaw issue_type=null i NIE dodawaj message_pl ani suggested_fix
         ],
       })
 
-      const content = completion.choices?.[0]?.message?.content
-      if (!content) {
+      const content = completion.choices?.[0]?.message?.content ?? ''
+      if (!content.trim()) {
+        console.error('[AI] empty response', { finishReason: completion.choices?.[0]?.finish_reason })
         throw new Error('Empty AI response')
       }
       const cleaned = content.replace(/```json\\s*/g, '').replace(/```\\s*/g, '').trim()
