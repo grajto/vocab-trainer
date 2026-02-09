@@ -34,10 +34,10 @@ export function Sidebar({ folders }: { folders: FolderItem[] }) {
       {/* Mobile hamburger */}
       <button
         onClick={() => setOpen(true)}
-        className="lg:hidden fixed top-3 left-3 z-50 p-2 rounded-lg bg-slate-900/80 shadow-sm border border-slate-700"
+        className="lg:hidden fixed top-3 left-3 z-50 p-2 rounded-lg bg-white/95 shadow-sm border border-slate-200"
         aria-label="Open menu"
       >
-        <Menu className="w-5 h-5 text-slate-200" />
+        <Menu className="w-5 h-5 text-slate-700" />
       </button>
 
       {/* Overlay */}
@@ -47,20 +47,20 @@ export function Sidebar({ folders }: { folders: FolderItem[] }) {
 
       {/* Sidebar */}
       <aside className={`
-        fixed top-0 left-0 h-full bg-[#0f1237] border-r border-slate-800/70 z-50
+        fixed top-0 left-0 h-full bg-white border-r border-slate-200 z-50
         w-64 flex flex-col
         transition-transform duration-200
         lg:translate-x-0 lg:static lg:z-auto
         ${open ? 'translate-x-0' : '-translate-x-full'}
       `}>
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-4 border-b border-slate-800/70">
+        <div className="flex items-center justify-between px-4 py-4 border-b border-slate-200">
           <Link href="/" className="flex items-center gap-2">
-            <GraduationCap className="w-6 h-6 text-indigo-300" />
-            <span className="font-semibold text-lg text-white tracking-tight">VocabTrainer</span>
+            <GraduationCap className="w-6 h-6 text-indigo-600" />
+            <span className="font-semibold text-lg text-slate-900 tracking-tight">VocabTrainer</span>
           </Link>
-          <button onClick={() => setOpen(false)} className="lg:hidden p-1 rounded hover:bg-slate-800/60">
-            <X className="w-5 h-5 text-slate-300" />
+          <button onClick={() => setOpen(false)} className="lg:hidden p-1 rounded hover:bg-slate-100">
+            <X className="w-5 h-5 text-slate-500" />
           </button>
         </div>
 
@@ -73,8 +73,8 @@ export function Sidebar({ folders }: { folders: FolderItem[] }) {
               prefetch={true}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 isActive(item.href)
-                  ? 'bg-indigo-500/15 text-indigo-100'
-                  : 'text-slate-300 hover:bg-white/5 hover:text-white'
+                  ? 'bg-indigo-50 text-indigo-700'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
               }`}
             >
               <item.icon className="w-5 h-5 flex-shrink-0" />
@@ -84,7 +84,7 @@ export function Sidebar({ folders }: { folders: FolderItem[] }) {
 
           {/* Folders section */}
           <div className="pt-4">
-            <p className="px-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
+            <p className="px-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">
               Twoje foldery
             </p>
             {folders.map(folder => (
@@ -94,8 +94,8 @@ export function Sidebar({ folders }: { folders: FolderItem[] }) {
                 prefetch={true}
                 className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
                   pathname === `/folders/${folder.id}`
-                    ? 'bg-indigo-500/15 text-indigo-100'
-                    : 'text-slate-300 hover:bg-white/5 hover:text-white'
+                    ? 'bg-indigo-50 text-indigo-700'
+                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                 }`}
               >
                 <FolderOpen className="w-4 h-4 flex-shrink-0" />
@@ -104,7 +104,7 @@ export function Sidebar({ folders }: { folders: FolderItem[] }) {
             ))}
             <Link
               href="/library?tab=folders&create=true"
-              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-400 hover:text-indigo-200 hover:bg-white/5 transition-colors"
+              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-500 hover:text-indigo-600 hover:bg-slate-100 transition-colors"
             >
               <Plus className="w-4 h-4" />
               Nowy folder
@@ -113,11 +113,11 @@ export function Sidebar({ folders }: { folders: FolderItem[] }) {
         </nav>
 
         {/* Bottom quick links */}
-        <div className="border-t border-slate-800/70 px-3 py-3 space-y-1">
+        <div className="border-t border-slate-200 px-3 py-3 space-y-1">
           <Link
             href="/learn"
             prefetch={true}
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-300 hover:bg-white/5 hover:text-white transition-colors"
+            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors"
           >
             <BookOpen className="w-4 h-4" />
             Ucz się
