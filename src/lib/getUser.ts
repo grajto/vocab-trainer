@@ -6,26 +6,40 @@ export async function getUser() {
   const payload = await getPayload()
   const headersList = await getHeaders()
   const { user } = await payload.auth({ headers: headersList })
-  if (user) return user
+  if (user) {
+    console.info('[auth] Payload cookie user authenticated', { id: user.id })
+    return user
+  }
 
   const appToken = process.env.APP_ACCESS_TOKEN
-  if (!appToken) return null
+  if (!appToken) {
+    console.info('[auth] APP_ACCESS_TOKEN not set; app-token auth disabled')
+    return null
+  }
 
   const headerToken = headersList.get('x-app-token')
   const cookieStore = await getCookies()
   const cookieToken = cookieStore.get('app-token')?.value
   const incomingToken = headerToken || cookieToken
-  if (!incomingToken) return null
+  if (!incomingToken) {
+    console.warn('[auth] Missing app token header/cookie')
+    return null
+  }
 
   const expected = Buffer.from(appToken)
   const actual = Buffer.from(incomingToken)
-  if (expected.length !== actual.length) return null
+  if (expected.length !== actual.length) {
+    console.warn('[auth] App token length mismatch')
+    return null
+  }
 
   try {
     if (!timingSafeEqual(expected, actual)) {
+      console.warn('[auth] App token mismatch')
       return null
     }
   } catch {
+    console.warn('[auth] App token comparison failed')
     return null
   }
 
@@ -50,5 +64,6 @@ export async function getUser() {
     console.warn('App token authentication disabled: expects exactly one owner user', { count: owner.totalDocs })
     return null
   }
+  console.info('[auth] App token authenticated as owner', { id: owner.docs[0].id })
   return owner.docs[0]
 }

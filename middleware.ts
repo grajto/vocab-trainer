@@ -49,6 +49,14 @@ export function middleware(request: NextRequest) {
     (!isApiPath || isAllowlistedApi)
 
   if (shouldInjectAppToken) {
+    console.info('[middleware] Injecting app token', {
+      pathname,
+      fetchSite,
+      origin,
+      host,
+      isAllowlistedApi,
+      isTrustedRequest,
+    })
     const requestHeaders = new Headers(request.headers)
     requestHeaders.set('x-app-token', APP_ACCESS_TOKEN)
     const response = NextResponse.next({ request: { headers: requestHeaders } })

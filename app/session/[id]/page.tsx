@@ -498,15 +498,28 @@ export default function SessionPage() {
           )}
 
           {feedback ? (
-            <div className={`inline-block px-5 py-3 rounded-xl text-sm font-medium ${
-              feedback.correct
-                ? 'bg-emerald-500/10 text-emerald-200 border border-emerald-400/30'
-                : 'bg-rose-500/10 text-rose-200 border border-rose-400/30'
-            }`}>
-              {feedback.correct ? '✓ ' : '✗ '}
-              {feedback.message.split('\n').map((line, i) => (
-                <span key={i}>{i > 0 && <br />}{line}</span>
-              ))}
+            <div className="space-y-3">
+              <div className={`inline-block px-5 py-3 rounded-xl text-sm font-medium ${
+                feedback.correct
+                  ? 'bg-emerald-500/10 text-emerald-200 border border-emerald-400/30'
+                  : 'bg-rose-500/10 text-rose-200 border border-rose-400/30'
+              }`}>
+                {feedback.correct ? '✓ ' : '✗ '}
+                {feedback.message.split('\n').map((line, i) => (
+                  <span key={i}>{i > 0 && <br />}{line}</span>
+                ))}
+              </div>
+              {currentTask.taskType === 'sentence' && aiInfo && (
+                <div className="flex justify-center">
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-[11px] font-semibold border ${
+                    aiInfo.used
+                      ? 'bg-emerald-500/10 text-emerald-200 border-emerald-400/40'
+                      : 'bg-slate-700/40 text-slate-300 border-slate-600/60'
+                  }`}>
+                    AI: {aiInfo.used ? 'ON' : 'OFF'} ({aiInfo.latencyMs} ms)
+                  </span>
+                </div>
+              )}
             </div>
           ) : !typoState && (
             <>
@@ -632,11 +645,6 @@ export default function SessionPage() {
                     </button>
                   </div>
                   <p className="text-xs text-slate-400 text-center">Ctrl+Enter to submit</p>
-                  {process.env.NODE_ENV === 'development' && aiInfo && (
-                    <p className="text-[11px] text-slate-400 text-center">
-                      AI: {aiInfo.used ? 'ON' : 'OFF'} ({aiInfo.latencyMs} ms)
-                    </p>
-                  )}
                 </div>
               )}
             </>
