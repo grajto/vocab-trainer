@@ -3,6 +3,8 @@ import { redirect, notFound } from 'next/navigation'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { AddCardForm } from './AddCardForm'
+import { AppShell } from '../../ui/AppShell'
+import { StartSessionForm } from '../../learn/StartSessionForm'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,7 +14,7 @@ export default async function DeckDetailPage({ params }: { params: Promise<{ id:
   if (!user) redirect('/login')
 
   const payload = await getPayload()
-  
+
   let deck
   try {
     deck = await payload.findByID({ collection: 'decks', id, depth: 0 })
@@ -31,28 +33,41 @@ export default async function DeckDetailPage({ params }: { params: Promise<{ id:
   })
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      <nav className="border-b border-neutral-200 bg-white px-6 py-4">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <Link href="/" className="text-lg font-semibold tracking-tight">Vocab Trainer</Link>
-          <Link href="/decks" className="text-sm text-neutral-400 hover:text-neutral-900 transition-colors">← Decks</Link>
-        </div>
-      </nav>
-      <main className="max-w-3xl mx-auto px-6 py-8 space-y-6">
-        <div>
-          <h2 className="text-xl font-semibold">{deck.name}</h2>
-          {deck.description && <p className="text-sm text-neutral-400 mt-1">{deck.description}</p>}
-          <p className="text-xs text-neutral-400 mt-1">{cards.totalDocs} card{cards.totalDocs !== 1 ? 's' : ''}</p>
+    <AppShell userLabel={user.username || user.email} activePath="/library">
+      <div className="space-y-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-semibold">{deck.name}</h2>
+            {deck.description && <p className="text-sm text-neutral-400 mt-1">{deck.description}</p>}
+            <p className="text-xs text-neutral-400 mt-1">{cards.totalDocs} card{cards.totalDocs !== 1 ? 's' : ''}</p>
+          </div>
+          <Link href="/library" className="text-sm text-neutral-500 hover:text-neutral-900">← Twoje zasoby</Link>
         </div>
 
-        <AddCardForm deckId={id} />
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {['Fiszki', 'Ucz się', 'Test', 'Zdania'].map(mode => (
+            <div key={mode} className="bg-white border border-neutral-200 rounded-2xl px-4 py-3 text-sm font-medium text-neutral-700">
+              {mode}
+            </div>
+          ))}
+        </div>
+
+        <div className="grid lg:grid-cols-[1.2fr,1fr] gap-6">
+          <div>
+            <AddCardForm deckId={id} />
+          </div>
+          <div className="bg-white border border-neutral-200 rounded-2xl p-5 space-y-4">
+            <h3 className="text-lg font-semibold">Szybkie ustawienia sesji</h3>
+            <StartSessionForm decks={[{ id: String(deck.id), name: deck.name }]} />
+          </div>
+        </div>
 
         <div className="space-y-1">
           {cards.docs.length === 0 ? (
             <p className="text-sm text-neutral-400 py-8 text-center">No cards yet. Add one above.</p>
           ) : (
             cards.docs.map(card => (
-              <div key={card.id} className="bg-white border border-neutral-200 rounded-lg px-4 py-3 flex justify-between items-center">
+              <div key={card.id} className="bg-white border border-neutral-200 rounded-xl px-4 py-3 flex justify-between items-center">
                 <div className="text-sm">
                   <span className="font-medium">{card.front}</span>
                   <span className="text-neutral-300 mx-2">→</span>
@@ -63,7 +78,7 @@ export default async function DeckDetailPage({ params }: { params: Promise<{ id:
             ))
           )}
         </div>
-      </main>
-    </div>
+      </div>
+    </AppShell>
   )
 }

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { ImportForm } from './ImportForm'
+import { AppShell } from '../ui/AppShell'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,23 +20,18 @@ export default async function ImportPage() {
   })
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      <nav className="border-b border-neutral-200 bg-white px-6 py-4">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <Link href="/" className="text-lg font-semibold tracking-tight">Vocab Trainer</Link>
-        </div>
-      </nav>
-      <main className="max-w-lg mx-auto px-6 py-8 space-y-6">
-        <h2 className="text-xl font-semibold">Import Cards (CSV)</h2>
+    <AppShell userLabel={user.username || user.email} activePath="/library">
+      <div className="max-w-2xl space-y-4">
+        <h2 className="text-2xl font-semibold">Import Cards (CSV)</h2>
         {decks.docs.length === 0 ? (
-          <div className="text-center py-8">
+          <div className="text-center py-8 bg-white border border-neutral-200 rounded-2xl">
             <p className="text-sm text-neutral-400 mb-2">No decks available.</p>
-            <Link href="/decks" className="text-sm text-neutral-900 underline underline-offset-2">Create a deck first</Link>
+            <Link href="/decks" className="text-sm text-blue-600">Create a deck first</Link>
           </div>
         ) : (
           <ImportForm decks={decks.docs.map(d => ({ id: String(d.id), name: d.name }))} />
         )}
-      </main>
-    </div>
+      </div>
+    </AppShell>
   )
 }

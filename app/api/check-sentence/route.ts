@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const body = await req.json()
-    const { requiredPhrase, sentence } = body
+    const { promptPl = '', requiredWord, sentence } = body
 
     if (!sentence || !sentence.trim()) {
       return NextResponse.json({
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    if (!requiredPhrase) {
+    if (!requiredWord) {
       return NextResponse.json({
         ok: false,
         issue_type: 'missing_phrase_config',
@@ -27,15 +27,15 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // Hard validation: sentence must contain the required phrase
+    // Soft validation: sentence should contain the required word or phrase
     const lowerSentence = sentence.toLowerCase()
-    const lowerPhrase = requiredPhrase.toLowerCase()
+    const lowerPhrase = requiredWord.toLowerCase()
 
     if (!lowerSentence.includes(lowerPhrase)) {
       return NextResponse.json({
         ok: false,
         issue_type: 'missing_phrase',
-        message_pl: `Zdanie musi zawierać frazę: "${requiredPhrase}".`,
+        message_pl: `Zdanie musi zawierać słowo lub frazę: "${requiredWord}".`,
         aiUsed: false,
       })
     }
@@ -54,11 +54,11 @@ export async function POST(req: NextRequest) {
             messages: [
               {
                 role: 'system',
-                content: 'You are a language teacher. Check if the following sentence is grammatically correct and natural. Respond ONLY with JSON: { "ok": boolean, "issue_type": "grammar"|"unnatural"|null, "message_pl": "short message in Polish max 1 sentence", "suggested_fix": "corrected sentence or null" }',
+                content: 'You are a language teacher. Check if the sentence is grammatically correct, natural, and matches the Polish prompt. Respond ONLY with JSON: { "ok": boolean, "issue_type": "grammar"|"unnatural"|"meaning"|null, "message_pl": "short message in Polish max 1 sentence", "suggested_fix": "corrected sentence or null" }',
               },
               {
                 role: 'user',
-                content: `Required phrase: "${requiredPhrase}"\nSentence: "${sentence}"`,
+                content: `Prompt (PL): "${promptPl}"\nRequired word: "${requiredWord}"\nSentence (EN): "${sentence}"`,
               },
             ],
             temperature: 0.3,

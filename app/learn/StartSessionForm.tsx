@@ -2,12 +2,14 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { getSoundManager } from '@/src/lib/soundManager'
 
 type Deck = { id: string; name: string }
 
 export function StartSessionForm({ decks }: { decks: Deck[] }) {
   const [deckId, setDeckId] = useState(decks[0]?.id || '')
   const [mode, setMode] = useState('translate')
+  const [direction, setDirection] = useState<'forward' | 'reverse' | 'mixed'>('forward')
   const [targetCount, setTargetCount] = useState(10)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -19,11 +21,12 @@ export function StartSessionForm({ decks }: { decks: Deck[] }) {
     setError('')
 
     try {
+      await getSoundManager().unlock()
       const res = await fetch('/api/session/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ deckId, mode, targetCount }),
+        body: JSON.stringify({ deckId, mode, targetCount, direction }),
       })
 
       const data = await res.json()
@@ -57,6 +60,15 @@ export function StartSessionForm({ decks }: { decks: Deck[] }) {
           <option value="translate">Translate (typed answer)</option>
           <option value="abcd">ABCD (multiple choice)</option>
           <option value="sentence">Sentence (use word in sentence)</option>
+          <option value="mixed">Mixed</option>
+        </select>
+      </div>
+
+      <div>
+        <label className="block text-xs font-medium text-neutral-500 mb-1.5">Direction</label>
+        <select value={direction} onChange={e => setDirection(e.target.value as 'forward' | 'reverse' | 'mixed')} className="w-full border border-neutral-200 rounded-lg px-3 py-2.5 text-sm focus:border-neutral-900 focus:outline-none bg-white">
+          <option value="forward">PL → EN</option>
+          <option value="reverse">EN → PL</option>
           <option value="mixed">Mixed</option>
         </select>
       </div>

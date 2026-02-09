@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { CreateDeckForm } from './CreateDeckForm'
+import { AppShell } from '../ui/AppShell'
 
 export const dynamic = 'force-dynamic'
 
@@ -20,31 +21,28 @@ export default async function DecksPage() {
   })
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      <nav className="border-b border-neutral-200 bg-white px-6 py-4">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <Link href="/" className="text-lg font-semibold tracking-tight">Vocab Trainer</Link>
-          <span className="text-xs text-neutral-400">{user.username || user.email}</span>
+    <AppShell userLabel={user.username || user.email} activePath="/library">
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-semibold">Zestawy</h2>
+          <Link href="/import" className="text-sm text-blue-600">Importuj</Link>
         </div>
-      </nav>
-      <main className="max-w-3xl mx-auto px-6 py-8 space-y-6">
-        <h2 className="text-xl font-semibold">Decks</h2>
-        
+
         <CreateDeckForm />
 
-        <div className="space-y-2">
+        <div className="grid sm:grid-cols-2 gap-3">
           {decks.docs.length === 0 ? (
             <p className="text-sm text-neutral-400 py-8 text-center">No decks yet. Create one above.</p>
           ) : (
             decks.docs.map(deck => (
-              <Link key={deck.id} href={`/decks/${deck.id}`} className="block bg-white border border-neutral-200 rounded-xl px-5 py-4 hover:border-neutral-400 transition-colors">
+              <Link key={deck.id} href={`/decks/${deck.id}`} className="block bg-white border border-neutral-200 rounded-2xl px-5 py-4 hover:border-blue-300 transition-colors">
                 <p className="font-medium">{deck.name}</p>
                 {deck.description && <p className="text-sm text-neutral-400 mt-0.5">{deck.description}</p>}
               </Link>
             ))
           )}
         </div>
-      </main>
-    </div>
+      </div>
+    </AppShell>
   )
 }
