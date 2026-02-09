@@ -93,11 +93,10 @@ export async function POST(req: NextRequest) {
         : ''
 
       console.info('[AI] calling OpenAI')
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-5-nano',
-        temperature: 0,
-        max_completion_tokens: 220,
-        messages: [
+        const completion = await openai.chat.completions.create({
+          model: 'gpt-5-nano',
+          max_completion_tokens: 220,
+          messages: [
           {
             role: 'system',
             content: `Jesteś surowym nauczycielem języka angielskiego. Twoim zadaniem jest ocenić zdanie ucznia.
