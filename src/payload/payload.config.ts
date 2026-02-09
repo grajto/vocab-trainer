@@ -3,6 +3,7 @@ import { buildConfig } from 'payload'
 import { postgresAdapter } from '@payloadcms/db-postgres'
 
 import { Users } from './collections/Users.ts'
+import { Folders } from './collections/Folders.ts'
 import { Decks } from './collections/Decks.ts'
 import { Cards } from './collections/Cards.ts'
 import { ReviewStates } from './collections/ReviewStates.ts'
@@ -19,7 +20,7 @@ export default buildConfig({
   admin: {
     user: Users.slug,
   },
-  collections: [Users, Decks, Cards, ReviewStates, Sessions, SessionItems],
+  collections: [Users, Folders, Decks, Cards, ReviewStates, Sessions, SessionItems],
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URL!,

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { checkAnswer } from '@/src/lib/answerCheck'
+import { useSound } from '@/src/lib/SoundProvider'
 
 // Translate mode: instant feedback with short delays for a "Quizlet-like" feel
 const FEEDBACK_DELAY_CORRECT = 200      // just enough to flash green check
@@ -48,6 +49,7 @@ export default function SessionPage() {
   const params = useParams()
   const sessionId = params.id as string
   const router = useRouter()
+  const { playCorrect, playWrong, enabled: soundEnabled, toggle: toggleSound } = useSound()
 
   const [tasks, setTasks] = useState<Task[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -112,8 +114,10 @@ export default function SessionPage() {
     // Show feedback immediately
     if (correct) {
       setFeedback({ correct: true, message: 'Correct' })
+      playCorrect()
     } else {
       setFeedback({ correct: false, message: `Correct answer: ${expected}` })
+      playWrong()
     }
 
     // Fire-and-forget save to backend
@@ -157,8 +161,10 @@ export default function SessionPage() {
 
       if (correct) {
         setFeedback({ correct: true, message: 'Correct' })
+        playCorrect()
       } else {
         setFeedback({ correct: false, message: `Correct answer: ${currentTask.answer}` })
+        playWrong()
       }
 
       advanceToNext(correct ? FEEDBACK_DELAY_CORRECT_SLOW : FEEDBACK_DELAY_WRONG_SLOW)
@@ -167,7 +173,7 @@ export default function SessionPage() {
     } finally {
       setLoading(false)
     }
-  }, [currentTask, sessionId, advanceToNext])
+  }, [currentTask, sessionId, advanceToNext, playCorrect, playWrong])
 
   function handleAbcdSelect(option: string) {
     const correct = option === currentTask.answer
@@ -249,6 +255,13 @@ export default function SessionPage() {
             />
           </div>
           <span className="text-xs text-slate-400 tabular-nums">{accuracy}%</span>
+          <button
+            onClick={toggleSound}
+            className="text-xs text-slate-400 hover:text-indigo-600 transition-colors"
+            title={soundEnabled ? 'Sound ON' : 'Sound OFF'}
+          >
+            {soundEnabled ? '🔊' : '🔇'}
+          </button>
         </div>
       </div>
 

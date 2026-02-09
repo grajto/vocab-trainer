@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
-import { StartSessionForm } from '@/app/learn/StartSessionForm'
+import { StartSessionForm } from '@/app/(app)/learn/StartSessionForm'
 
 export const dynamic = 'force-dynamic'
 

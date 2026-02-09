@@ -1,8 +1,8 @@
 import type { CollectionConfig } from 'payload'
 import { isOwner, isAuthenticated } from '../access/isOwner.ts'
 
-export const Decks: CollectionConfig = {
-  slug: 'decks',
+export const Folders: CollectionConfig = {
+  slug: 'folders',
   admin: { useAsTitle: 'name' },
   timestamps: true,
   access: {
@@ -15,7 +15,5 @@ export const Decks: CollectionConfig = {
     { name: 'owner', type: 'relationship', relationTo: 'users', required: true },
     { name: 'name', type: 'text', required: true },
     { name: 'description', type: 'textarea' },
-    { name: 'folder', type: 'relationship', relationTo: 'folders', index: true },
-    { name: 'tags', type: 'array', fields: [{ name: 'tag', type: 'text' }] },
   ],
 }
