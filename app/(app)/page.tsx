@@ -15,36 +15,53 @@ export default async function HomePage() {
   const todayStart = new Date(now)
   todayStart.setHours(0, 0, 0, 0)
 
-  const [sessionsToday, decks, dueStates, recentSessions] = await Promise.all([
-    payload.find({
-      collection: 'sessions',
-      where: { owner: { equals: user.id }, startedAt: { greater_than_equal: todayStart.toISOString() } },
-      limit: 0,
-      depth: 0,
-    }),
-    payload.find({
-      collection: 'decks',
-      where: { owner: { equals: user.id } },
-      limit: 100,
-      depth: 0,
-    }),
-    payload.find({
-      collection: 'review-states',
-      where: { owner: { equals: user.id }, dueAt: { less_than_equal: now.toISOString() } },
-      limit: 0,
-      depth: 0,
-    }),
-    payload.find({
-      collection: 'sessions',
-      where: { owner: { equals: user.id } },
-      sort: '-startedAt',
-      limit: 8,
-      depth: 0,
-    }),
-  ])
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let sessionsToday: any = { totalDocs: 0 }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let decks: any = { totalDocs: 0, docs: [] }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let dueStates: any = { totalDocs: 0 }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let recentSessions: any = { docs: [] }
+
+  try {
+    const results = await Promise.all([
+      payload.find({
+        collection: 'sessions',
+        where: { owner: { equals: user.id }, startedAt: { greater_than_equal: todayStart.toISOString() } },
+        limit: 0,
+        depth: 0,
+      }),
+      payload.find({
+        collection: 'decks',
+        where: { owner: { equals: user.id } },
+        limit: 100,
+        depth: 0,
+      }),
+      payload.find({
+        collection: 'review-states',
+        where: { owner: { equals: user.id }, dueAt: { less_than_equal: now.toISOString() } },
+        limit: 0,
+        depth: 0,
+      }),
+      payload.find({
+        collection: 'sessions',
+        where: { owner: { equals: user.id } },
+        sort: '-startedAt',
+        limit: 8,
+        depth: 0,
+      }),
+    ])
+    sessionsToday = results[0]
+    decks = results[1]
+    dueStates = results[2]
+    recentSessions = results[3]
+  } catch (err) {
+    console.error('Home page data fetch error (migration may be pending):', err)
+  }
 
   // Build recent decks from sessions
-  const deckMap = new Map(decks.docs.map(d => [String(d.id), d]))
+  const deckMap = new Map<string, any>(decks.docs.map((d: any) => [String(d.id), d]))
   const recentDeckIds = new Set<string>()
   const jumpBackIn: Array<{ deckId: string; name: string; mode: string; sessionId: string }> = []
 
@@ -145,7 +162,7 @@ export default async function HomePage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {decks.docs.slice(0, 9).map(deck => (
+            {decks.docs.slice(0, 9).map((deck: any) => (
               <Link
                 key={deck.id}
                 href={`/decks/${deck.id}`}

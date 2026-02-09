@@ -37,7 +37,7 @@ export default async function FolderPage({ params }: { params: Promise<{ id: str
   const now = new Date().toISOString()
 
   if (decks.docs.length > 0) {
-    const deckIds = decks.docs.map(d => d.id)
+    const deckIds = decks.docs.map((d: any) => d.id)
     const cardResult = await payload.find({
       collection: 'cards',
       where: { owner: { equals: user.id }, deck: { in: deckIds } },
@@ -47,7 +47,7 @@ export default async function FolderPage({ params }: { params: Promise<{ id: str
     totalCards = cardResult.totalDocs
 
     if (cardResult.docs.length > 0) {
-      const cardIds = cardResult.docs.map(c => c.id)
+      const cardIds = cardResult.docs.map((c: any) => c.id)
       const dueResult = await payload.find({
         collection: 'review-states',
         where: {
@@ -98,7 +98,7 @@ export default async function FolderPage({ params }: { params: Promise<{ id: str
             <p className="text-xs text-slate-400">Assign decks to this folder from the deck settings.</p>
           </div>
         ) : (
-          decks.docs.map(deck => (
+          decks.docs.map((deck: any) => (
             <Link
               key={deck.id}
               href={`/decks/${deck.id}`}

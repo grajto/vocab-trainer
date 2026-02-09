@@ -22,13 +22,19 @@ export default async function DeckDetailPage({ params }: { params: Promise<{ id:
 
   if (String(deck.owner) !== String(user.id)) notFound()
 
-  const cards = await payload.find({
-    collection: 'cards',
-    where: { deck: { equals: id }, owner: { equals: user.id } },
-    sort: '-createdAt',
-    limit: 200,
-    depth: 0,
-  })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let cards: any = { totalDocs: 0, docs: [] }
+  try {
+    cards = await payload.find({
+      collection: 'cards',
+      where: { deck: { equals: id }, owner: { equals: user.id } },
+      sort: '-createdAt',
+      limit: 200,
+      depth: 0,
+    })
+  } catch (err) {
+    console.error('Deck detail data fetch error:', err)
+  }
 
   return (
     <div className="p-6 lg:p-8 max-w-4xl mx-auto space-y-6">
@@ -69,7 +75,7 @@ export default async function DeckDetailPage({ params }: { params: Promise<{ id:
         {cards.docs.length === 0 ? (
           <p className="text-sm text-slate-400 py-8 text-center">No cards yet. Add one above.</p>
         ) : (
-          cards.docs.map(card => (
+          cards.docs.map((card: any) => (
             <div key={card.id} className="bg-white border border-slate-200 rounded-lg px-4 py-3 flex justify-between items-center">
               <div className="text-sm">
                 <span className="font-medium text-slate-900">{card.front}</span>

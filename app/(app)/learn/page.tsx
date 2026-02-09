@@ -11,12 +11,18 @@ export default async function LearnPage() {
   if (!user) redirect('/login')
 
   const payload = await getPayload()
-  const decks = await payload.find({
-    collection: 'decks',
-    where: { owner: { equals: user.id } },
-    limit: 100,
-    depth: 0,
-  })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let decks: any = { docs: [] }
+  try {
+    decks = await payload.find({
+      collection: 'decks',
+      where: { owner: { equals: user.id } },
+      limit: 100,
+      depth: 0,
+    })
+  } catch (err) {
+    console.error('Learn page data fetch error (migration may be pending):', err)
+  }
 
   return (
     <div className="p-6 lg:p-8 max-w-lg mx-auto space-y-6">
@@ -27,7 +33,7 @@ export default async function LearnPage() {
           <Link href="/decks" prefetch={true} className="text-sm text-indigo-600 underline underline-offset-2">Create a deck first</Link>
         </div>
       ) : (
-        <StartSessionForm decks={decks.docs.map(d => ({ id: String(d.id), name: d.name }))} />
+        <StartSessionForm decks={decks.docs.map((d: any) => ({ id: String(d.id), name: d.name }))} />
       )}
     </div>
   )

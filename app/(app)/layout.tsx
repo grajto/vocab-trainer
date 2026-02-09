@@ -11,15 +11,21 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (!user) redirect('/login')
 
   const payload = await getPayload()
-  const folders = await payload.find({
-    collection: 'folders',
-    where: { owner: { equals: user.id } },
-    sort: 'name',
-    limit: 50,
-    depth: 0,
-  })
 
-  const folderList = folders.docs.map(f => ({ id: String(f.id), name: f.name }))
+  let folderList: { id: string; name: string }[] = []
+  try {
+    const folders = await payload.find({
+      collection: 'folders',
+      where: { owner: { equals: user.id } },
+      sort: 'name',
+      limit: 50,
+      depth: 0,
+    })
+    folderList = folders.docs.map((f: any) => ({ id: String(f.id), name: f.name }))
+  } catch {
+    // folders table may not exist yet (migration pending) — show empty sidebar
+  }
+
   const username = (user as Record<string, unknown>).username as string || (user as Record<string, unknown>).email as string || ''
 
   return (

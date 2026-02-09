@@ -21,21 +21,32 @@ export default async function NotificationsPage() {
   const payload = await getPayload()
   const now = new Date()
 
-  const [decks, sessions] = await Promise.all([
-    payload.find({
-      collection: 'decks',
-      where: { owner: { equals: user.id } },
-      limit: 100,
-      depth: 0,
-    }),
-    payload.find({
-      collection: 'sessions',
-      where: { owner: { equals: user.id } },
-      sort: '-startedAt',
-      limit: 200,
-      depth: 0,
-    }),
-  ])
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let decks: any = { docs: [] }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let sessions: any = { docs: [] }
+
+  try {
+    const results = await Promise.all([
+      payload.find({
+        collection: 'decks',
+        where: { owner: { equals: user.id } },
+        limit: 100,
+        depth: 0,
+      }),
+      payload.find({
+        collection: 'sessions',
+        where: { owner: { equals: user.id } },
+        sort: '-startedAt',
+        limit: 200,
+        depth: 0,
+      }),
+    ])
+    decks = results[0]
+    sessions = results[1]
+  } catch (err) {
+    console.error('Notifications page data fetch error (migration may be pending):', err)
+  }
 
   // Build notifications dynamically
   const notifications: Notification[] = []
@@ -94,7 +105,7 @@ export default async function NotificationsPage() {
       depth: 0,
     })
 
-    const cIds = cards.docs.map(c => c.id)
+    const cIds = cards.docs.map((c: any) => c.id)
     if (cIds.length === 0) continue
 
     const dueStates = await payload.find({
