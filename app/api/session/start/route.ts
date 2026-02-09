@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const body = await req.json()
-    const { deckId, mode, targetCount = 10 } = body
+    const { deckId, mode, targetCount = 10, direction = 'forward' } = body
 
     // Sentence is available as its own mode; mixed mode intentionally excludes it.
     const allowedModes = ['translate', 'sentence', 'abcd', 'mixed'] as const
@@ -18,7 +18,12 @@ export async function POST(req: NextRequest) {
     const isMode = (value: unknown): value is Mode =>
       allowedModes.includes(value as Mode)
 
-    if (!deckId || !isMode(mode)) {
+    const allowedDirections = ['forward', 'reverse', 'mixed'] as const
+    type Direction = (typeof allowedDirections)[number]
+    const isDirection = (value: unknown): value is Direction =>
+      allowedDirections.includes(value as Direction)
+
+    if (!deckId || !isMode(mode) || !isDirection(direction)) {
       return NextResponse.json({ error: 'deckId and mode are required' }, { status: 400 })
     }
 
@@ -142,6 +147,8 @@ export async function POST(req: NextRequest) {
       taskType: TaskType
       prompt: string
       answer: string
+      correctIndex?: number
+      correctValue?: string
       options?: string[]
     }
 
@@ -157,21 +164,33 @@ export async function POST(req: NextRequest) {
       }
 
       const cardIdValue = cardIdMap.get(String(card.cardId))!
+      const useReverse = direction === 'reverse' || (direction === 'mixed' && Math.random() > 0.5)
+      const prompt = useReverse ? card.back : card.front
+      const answer = useReverse ? card.front : card.back
+
       const task: Task = {
         cardId: cardIdValue,
         taskType,
-        prompt: card.front,
-        answer: card.back,
+        prompt,
+        answer,
+      }
+
+      if (taskType === 'sentence') {
+        task.prompt = card.back
+        task.answer = card.front
       }
 
       // For ABCD, generate options
       if (taskType === 'abcd') {
         const otherCards = allCards.docs.filter(c => String(c.id) !== String(card.cardId))
         const shuffled = otherCards.sort(() => Math.random() - 0.5).slice(0, 3)
-        const options = shuffled.map(c => c.back)
-        options.push(card.back)
-        // Shuffle options
-        task.options = options.sort(() => Math.random() - 0.5)
+        const options = shuffled.map(c => (useReverse ? c.front : c.back))
+        const correctValue = answer
+        options.push(correctValue)
+        const shuffledOptions = options.sort(() => Math.random() - 0.5)
+        task.options = shuffledOptions
+        task.correctIndex = shuffledOptions.indexOf(correctValue)
+        task.correctValue = correctValue
       }
 
       tasks.push(task)
@@ -192,6 +211,9 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       sessionId: session.id,
+      deckId,
+      direction,
+      mode,
       tasks,
       totalCards: selectedCards.length,
     })

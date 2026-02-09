@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { redirect } from 'next/navigation'
+import { AppShell } from './ui/AppShell'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,95 +12,102 @@ export default async function Dashboard() {
 
   const payload = await getPayload()
   const now = new Date()
-  const todayStart = new Date(now)
-  todayStart.setHours(0, 0, 0, 0)
 
-  // Fetch stats server-side for fast initial render
-  const [sessionsToday, decks, allReviewStates, dueReviewStates] = await Promise.all([
-    payload.find({
-      collection: 'sessions',
-      where: { owner: { equals: user.id }, startedAt: { greater_than_equal: todayStart.toISOString() } },
-      limit: 0,
-      depth: 0,
-    }),
+  const [decks, dueReviewStates, recentSessions] = await Promise.all([
     payload.find({
       collection: 'decks',
       where: { owner: { equals: user.id } },
-      limit: 100,
+      limit: 6,
+      sort: '-updatedAt',
       depth: 0,
     }),
-    payload.find({
-      collection: 'review-states',
-      where: { owner: { equals: user.id } },
-      limit: 0,
-      depth: 0,
-    }),
-    // Count due cards efficiently with a where clause instead of loading all into memory
     payload.find({
       collection: 'review-states',
       where: { owner: { equals: user.id }, dueAt: { less_than_equal: now.toISOString() } },
       limit: 0,
       depth: 0,
     }),
+    payload.find({
+      collection: 'sessions',
+      where: { owner: { equals: user.id } },
+      limit: 4,
+      sort: '-startedAt',
+      depth: 1,
+    }),
   ])
 
-  const dueNow = dueReviewStates.totalDocs
-  const totalCards = allReviewStates.totalDocs
+  const jumpBackDeck = decks.docs[0]
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      <nav className="border-b border-neutral-200 bg-white px-6 py-4">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <h1 className="text-lg font-semibold tracking-tight">Vocab Trainer</h1>
-          <span className="text-xs text-neutral-400">{user.username || user.email}</span>
-        </div>
-      </nav>
+    <AppShell userLabel={user.username || user.email} activePath="/">
+      <div className="space-y-10">
+        <section>
+          <h1 className="text-2xl font-semibold tracking-tight mb-4">Jump back in</h1>
+          {jumpBackDeck ? (
+            <div className="bg-white border border-neutral-200 rounded-2xl p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+              <div>
+                <p className="text-lg font-semibold mb-2">{jumpBackDeck.name}</p>
+                <p className="text-sm text-neutral-500 mb-4">Kontynuuj naukę i zakończ powtórkę.</p>
+                <Link
+                  href="/learn"
+                  className="inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-blue-600 text-white text-sm font-medium hover:bg-blue-500"
+                >
+                  Kontynuuj
+                </Link>
+              </div>
+              <div className="flex-1">
+                <div className="h-2 bg-neutral-100 rounded-full overflow-hidden">
+                  <div className="h-full w-1/2 bg-emerald-500 rounded-full" />
+                </div>
+                <p className="text-xs text-neutral-400 mt-2">50% of questions completed</p>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white border border-neutral-200 rounded-2xl p-6 text-sm text-neutral-500">
+              Brak zestawów. <Link href="/decks" className="text-blue-600">Utwórz pierwszy zestaw</Link>.
+            </div>
+          )}
+        </section>
 
-      <main className="max-w-3xl mx-auto px-6 py-8 space-y-8">
-        {/* Stats row */}
-        <div className="grid grid-cols-3 gap-4">
-          <div className="bg-white border border-neutral-200 rounded-xl px-5 py-4">
-            <p className="text-2xl font-bold tabular-nums">{sessionsToday.totalDocs}</p>
-            <p className="text-xs text-neutral-500 mt-0.5">Sessions today</p>
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Recents</h2>
+            <Link href="/library" className="text-sm text-blue-600">Zobacz wszystko</Link>
           </div>
-          <div className="bg-white border border-neutral-200 rounded-xl px-5 py-4">
-            <p className="text-2xl font-bold tabular-nums">{dueNow}</p>
-            <p className="text-xs text-neutral-500 mt-0.5">Cards due</p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {decks.docs.map(deck => (
+              <Link key={deck.id} href={`/decks/${deck.id}`} className="bg-white border border-neutral-200 rounded-2xl p-4 hover:border-blue-300 transition-colors">
+                <p className="font-medium">{deck.name}</p>
+                <p className="text-xs text-neutral-400 mt-1">Zestaw fiszek</p>
+              </Link>
+            ))}
+            {decks.docs.length === 0 && (
+              <p className="text-sm text-neutral-400">Brak ostatnich zestawów.</p>
+            )}
           </div>
-          <div className="bg-white border border-neutral-200 rounded-xl px-5 py-4">
-            <p className="text-2xl font-bold tabular-nums">{totalCards}</p>
-            <p className="text-xs text-neutral-500 mt-0.5">Total reviews</p>
-          </div>
-        </div>
+        </section>
 
-        {/* Primary action */}
-        <Link
-          href="/learn"
-          className="block w-full bg-neutral-900 text-white text-center py-4 rounded-xl font-medium hover:bg-neutral-800 transition-colors"
-        >
-          Start Learning
-        </Link>
-
-        {/* Navigation grid */}
-        <div className="grid grid-cols-2 gap-3">
-          <Link href="/decks" className="bg-white border border-neutral-200 rounded-xl px-5 py-4 hover:border-neutral-400 transition-colors">
-            <p className="font-medium">Decks</p>
-            <p className="text-xs text-neutral-400 mt-0.5">{decks.totalDocs} deck{decks.totalDocs !== 1 ? 's' : ''}</p>
-          </Link>
-          <Link href="/import" className="bg-white border border-neutral-200 rounded-xl px-5 py-4 hover:border-neutral-400 transition-colors">
-            <p className="font-medium">Import CSV</p>
-            <p className="text-xs text-neutral-400 mt-0.5">Bulk add cards</p>
-          </Link>
-          <Link href="/stats" className="bg-white border border-neutral-200 rounded-xl px-5 py-4 hover:border-neutral-400 transition-colors">
-            <p className="font-medium">Statistics</p>
-            <p className="text-xs text-neutral-400 mt-0.5">Progress &amp; history</p>
-          </Link>
-          <Link href="/admin" className="bg-white border border-neutral-200 rounded-xl px-5 py-4 hover:border-neutral-400 transition-colors">
-            <p className="font-medium">Admin</p>
-            <p className="text-xs text-neutral-400 mt-0.5">Payload CMS</p>
-          </Link>
-        </div>
-      </main>
-    </div>
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Do powtórki</h2>
+            <span className="text-sm text-neutral-500">{dueReviewStates.totalDocs} kart do powtórki</span>
+          </div>
+          <div className="bg-white border border-neutral-200 rounded-2xl p-6">
+            <div className="grid sm:grid-cols-2 gap-4">
+              {recentSessions.docs.map(session => (
+                <div key={session.id} className="border border-neutral-100 rounded-xl p-4">
+                  <p className="text-sm font-medium">{session.deck?.name || 'Sesja'}</p>
+                  <p className="text-xs text-neutral-400 mt-1">Tryb: {session.mode}</p>
+                  <p className="text-xs text-neutral-400">Accuracy: {session.accuracy ?? 0}%</p>
+                </div>
+              ))}
+              {recentSessions.docs.length === 0 && (
+                <p className="text-sm text-neutral-400">Brak sesji do wyświetlenia.</p>
+              )}
+            </div>
+          </div>
+        </section>
+      </div>
+    </AppShell>
   )
 }
