@@ -37,6 +37,7 @@ function saveAnswerInBackground(data: {
   wasWrongBeforeCorrect?: boolean
   usedHint?: boolean
   userOverride?: boolean
+  aiUsed?: boolean
 }) {
   fetch('/api/session/answer', {
     method: 'POST',
@@ -261,6 +262,9 @@ export default function SessionPage() {
     e.preventDefault()
     if (!userAnswer.trim() || !currentTask) return
 
+    const state = getTaskState(currentTask.cardId)
+    state.attempts++
+
     setLoading(true)
     try {
       const res = await fetch('/api/check-sentence', {
@@ -268,14 +272,52 @@ export default function SessionPage() {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          requiredPhrase: currentTask.answer,
+          phrase: currentTask.answer,
           sentence: userAnswer,
         }),
       })
       const data = await res.json()
-      await submitAnswerToServer(userAnswer, data.ok)
+      const correct = !!data.ok
+
+      if (correct) {
+        state.wasWrongBefore = state.wasWrongBefore || state.attempts > 1
+        setAnsweredCount(prev => prev + 1)
+        setCorrectCount(prev => prev + 1)
+        setFeedback({ correct: true, message: data.message_pl || 'Correct' })
+        playCorrect()
+      } else {
+        state.wasWrongBefore = true
+        const msg = data.suggested_fix
+          ? `${data.message_pl || 'Incorrect'}\nSuggested: ${data.suggested_fix}`
+          : (data.message_pl || `Use: ${currentTask.answer}`)
+        setFeedback({ correct: false, message: msg })
+        playWrong()
+        requeueCard(currentTask)
+      }
+
+      // Fire-and-forget save to backend
+      saveAnswerInBackground({
+        sessionId,
+        cardId: currentTask.cardId,
+        taskType: 'sentence',
+        userAnswer,
+        isCorrect: correct,
+        attemptsCount: state.attempts,
+        wasWrongBeforeCorrect: state.wasWrongBefore,
+        usedHint: state.usedHint,
+        aiUsed: data.aiUsed ?? false,
+      })
+
+      advanceToNext(correct ? FEEDBACK_DELAY_CORRECT_SLOW : FEEDBACK_DELAY_WRONG_SLOW)
     } catch {
-      await submitAnswerToServer(userAnswer, false)
+      // On network error, count as wrong
+      state.wasWrongBefore = true
+      setFeedback({ correct: false, message: 'Network error – try again' })
+      playWrong()
+      requeueCard(currentTask)
+      advanceToNext(FEEDBACK_DELAY_WRONG_SLOW)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -400,7 +442,10 @@ export default function SessionPage() {
                 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                 : 'bg-red-50 text-red-700 border border-red-200'
             }`}>
-              {feedback.correct ? '✓ Correct' : `✗ ${feedback.message}`}
+              {feedback.correct ? '✓ ' : '✗ '}
+              {feedback.message.split('\n').map((line, i) => (
+                <span key={i}>{i > 0 && <br />}{line}</span>
+              ))}
             </div>
           ) : !typoState && (
             <>

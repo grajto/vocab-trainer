@@ -14,6 +14,7 @@ export async function POST(req: NextRequest) {
       sessionId, cardId, taskType, userAnswer,
       isCorrect: clientIsCorrect, expectedAnswer,
       attemptsCount, wasWrongBeforeCorrect, usedHint, userOverride,
+      aiUsed: clientAiUsed,
     } = body
 
     if (!sessionId || !cardId) {
@@ -103,7 +104,7 @@ export async function POST(req: NextRequest) {
       const itemUpdate: Record<string, unknown> = {
         userAnswer: userAnswer || '',
         isCorrect,
-        aiUsed: false,
+        aiUsed: taskType === 'sentence' ? !!clientAiUsed : false,
         taskType: taskType || sessionItems.docs[0].taskType,
       }
 
@@ -128,7 +129,7 @@ export async function POST(req: NextRequest) {
           data: {
             userAnswer: userAnswer || '',
             isCorrect,
-            aiUsed: false,
+            aiUsed: taskType === 'sentence' ? !!clientAiUsed : false,
             taskType: taskType || sessionItems.docs[0].taskType,
           },
         })

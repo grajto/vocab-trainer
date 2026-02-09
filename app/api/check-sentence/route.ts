@@ -1,5 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getUser } from '@/src/lib/getUser'
+import OpenAI from 'openai'
+
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
+/** Collapse whitespace and lowercase for phrase containment check */
+function norm(s: string): string {
+  return s.trim().replace(/\s+/g, ' ').toLowerCase()
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -7,7 +16,18 @@ export async function POST(req: NextRequest) {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const body = await req.json()
-    const { requiredPhrase, sentence } = body
+    const { phrase, requiredPhrase, sentence } = body
+    // Support both field names for backwards compat
+    const targetPhrase = phrase || requiredPhrase
+
+    if (!targetPhrase) {
+      return NextResponse.json({
+        ok: false,
+        issue_type: 'missing_phrase_config',
+        message_pl: 'Brak wymaganej frazy do sprawdzenia.',
+        aiUsed: false,
+      })
+    }
 
     if (!sentence || !sentence.trim()) {
       return NextResponse.json({
@@ -18,76 +38,88 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    if (!requiredPhrase) {
+    const trimmed = sentence.trim()
+
+    // Pre-AI validation: length
+    if (trimmed.length < 8) {
       return NextResponse.json({
         ok: false,
-        issue_type: 'missing_phrase_config',
-        message_pl: 'Brak wymaganej frazy do sprawdzenia.',
+        issue_type: 'too_short',
+        message_pl: 'Zdanie jest za krótkie (min. 8 znaków).',
+        aiUsed: false,
+      })
+    }
+    if (trimmed.length > 240) {
+      return NextResponse.json({
+        ok: false,
+        issue_type: 'too_long',
+        message_pl: 'Zdanie jest za długie (max 240 znaków).',
         aiUsed: false,
       })
     }
 
-    // Hard validation: sentence must contain the required phrase
-    const lowerSentence = sentence.toLowerCase()
-    const lowerPhrase = requiredPhrase.toLowerCase()
-
-    if (!lowerSentence.includes(lowerPhrase)) {
+    // Pre-AI validation: phrase containment (case-insensitive, collapsed whitespace)
+    if (!norm(trimmed).includes(norm(targetPhrase))) {
       return NextResponse.json({
         ok: false,
         issue_type: 'missing_phrase',
-        message_pl: `Zdanie musi zawierać frazę: "${requiredPhrase}".`,
+        message_pl: `Zdanie nie zawiera wymaganego zwrotu: "${targetPhrase}".`,
         aiUsed: false,
       })
     }
 
-    // If OPENAI_API_KEY exists, try AI validation
+    // AI validation via OpenAI SDK
     if (process.env.OPENAI_API_KEY) {
       try {
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-          },
-          body: JSON.stringify({
-            model: 'gpt-3.5-turbo',
-            messages: [
-              {
-                role: 'system',
-                content: 'You are a language teacher. Check if the following sentence is grammatically correct and natural. Respond ONLY with JSON: { "ok": boolean, "issue_type": "grammar"|"unnatural"|null, "message_pl": "short message in Polish max 1 sentence", "suggested_fix": "corrected sentence or null" }',
-              },
-              {
-                role: 'user',
-                content: `Required phrase: "${requiredPhrase}"\nSentence: "${sentence}"`,
-              },
-            ],
-            temperature: 0.3,
-            max_tokens: 200,
-          }),
+        const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+
+        const completion = await openai.chat.completions.create({
+          model: 'gpt-4.1-nano',
+          temperature: 0,
+          max_tokens: 200,
+          messages: [
+            {
+              role: 'system',
+              content: `You are a strict English language teacher. The student must write a grammatically correct and natural English sentence using the phrase "${targetPhrase}".
+Respond ONLY with valid JSON (no markdown, no code fences):
+{"ok":true/false,"issue_type":null|"grammar"|"unnatural","message_pl":"short feedback in Polish (1 sentence max)","suggested_fix":null|"corrected sentence"}
+If the sentence is correct and natural, set ok=true, issue_type=null, suggested_fix=null.`,
+            },
+            {
+              role: 'user',
+              content: trimmed,
+            },
+          ],
         })
 
-        if (response.ok) {
-          const data = await response.json()
-          const content = data.choices?.[0]?.message?.content
-          if (content) {
-            try {
-              const parsed = JSON.parse(content)
-              return NextResponse.json({ ...parsed, aiUsed: true })
-            } catch {
-              // AI response not parseable, fall through
-            }
+        const content = completion.choices?.[0]?.message?.content
+        if (content) {
+          // Strip possible markdown code fences
+          const cleaned = content.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim()
+          try {
+            const parsed = JSON.parse(cleaned)
+            return NextResponse.json({
+              ok: !!parsed.ok,
+              issue_type: parsed.issue_type ?? null,
+              message_pl: parsed.message_pl ?? '',
+              suggested_fix: parsed.suggested_fix ?? null,
+              aiUsed: true,
+            })
+          } catch {
+            console.error('AI response not parseable:', content)
           }
         }
-      } catch {
-        // AI call failed, fall through to stub
+      } catch (err) {
+        console.error('OpenAI call failed:', err)
       }
     }
 
-    // Stub response when no AI available
+    // Stub response when no AI key or AI call failed
     return NextResponse.json({
       ok: true,
       issue_type: null,
       message_pl: 'Zdanie zawiera wymaganą frazę (bez weryfikacji AI).',
+      suggested_fix: null,
       aiUsed: false,
     })
   } catch (error: unknown) {
