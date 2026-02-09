@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isAuthenticated } from '../access/isOwner'
+import { isAuthenticated } from '../access/isOwner.ts'
 
 export const SessionItems: CollectionConfig = {
   slug: 'session-items',

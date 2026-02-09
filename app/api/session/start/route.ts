@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from '@/src/lib/getPayload'
 import { getUser } from '@/src/lib/getUser'
 import { selectCardsForSession } from '@/src/lib/srs'
+import { parseNumericId } from '@/src/lib/parseNumericId'
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,7 +12,13 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const { deckId, mode, targetCount = 10 } = body
 
-    if (!deckId || !mode) {
+    // Sentence is available as its own mode; mixed mode intentionally excludes it.
+    const allowedModes = ['translate', 'sentence', 'abcd', 'mixed'] as const
+    type Mode = (typeof allowedModes)[number]
+    const isMode = (value: unknown): value is Mode =>
+      allowedModes.includes(value as Mode)
+
+    if (!deckId || !isMode(mode)) {
       return NextResponse.json({ error: 'deckId and mode are required' }, { status: 400 })
     }
 
@@ -81,14 +88,25 @@ export async function POST(req: NextRequest) {
 
     const selectedCards = selectCardsForSession(cardsWithState, cardsWithoutState, count, 20, introToday)
 
+    // Precompute numeric card IDs once for review state creation + task payloads.
+    const cardIdMap = new Map<string, number>()
+    for (const card of selectedCards) {
+      const parsedId = parseNumericId(card.cardId)
+      if (parsedId === null) {
+        return NextResponse.json({ error: `Invalid cardId: ${card.cardId}` }, { status: 400 })
+      }
+      cardIdMap.set(String(card.cardId), parsedId)
+    }
+
     // Create review states for new cards
     for (const card of selectedCards) {
       if (!card.reviewStateId) {
+        const cardIdValue = cardIdMap.get(String(card.cardId))!
         const rs = await payload.create({
           collection: 'review-states',
           data: {
             owner: user.id,
-            card: card.cardId,
+            card: cardIdValue,
             level: 1,
             dueAt: new Date().toISOString(),
             introducedAt: new Date().toISOString(),
@@ -117,15 +135,30 @@ export async function POST(req: NextRequest) {
     })
 
     // Build tasks
-    const tasks = selectedCards.map(card => {
-      let taskType = mode
+    type TaskType = Exclude<Mode, 'mixed'>
+    type MixedTaskType = Exclude<TaskType, 'sentence'>
+    type Task = {
+      cardId: number
+      taskType: TaskType
+      prompt: string
+      answer: string
+      options?: string[]
+    }
+
+    const tasks: Task[] = []
+    for (const card of selectedCards) {
+      let taskType: TaskType
       if (mode === 'mixed') {
-        const types = ['translate', 'abcd'] as const
+        // Mixed mode intentionally excludes sentence tasks to keep sessions fast without AI deps.
+        const types: MixedTaskType[] = ['translate', 'abcd']
         taskType = types[Math.floor(Math.random() * types.length)]
+      } else {
+        taskType = mode
       }
 
-      const task: Record<string, unknown> = {
-        cardId: card.cardId,
+      const cardIdValue = cardIdMap.get(String(card.cardId))!
+      const task: Task = {
+        cardId: cardIdValue,
         taskType,
         prompt: card.front,
         answer: card.back,
@@ -141,8 +174,8 @@ export async function POST(req: NextRequest) {
         task.options = options.sort(() => Math.random() - 0.5)
       }
 
-      return task
-    })
+      tasks.push(task)
+    }
 
     // Create session items
     for (const task of tasks) {
@@ -150,9 +183,9 @@ export async function POST(req: NextRequest) {
         collection: 'session-items',
         data: {
           session: session.id,
-          card: task.cardId as string,
-          taskType: task.taskType as string,
-          promptShown: task.prompt as string,
+          card: task.cardId,
+          taskType: task.taskType,
+          promptShown: task.prompt,
         },
       })
     }

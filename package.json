@@ -10,7 +10,7 @@
     "payload": "payload"
   },
   "engines": {
-    "node": ">=20.11.0 <21"
+    "node": ">=24.11.1 <25"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "^3.75.0",

@@ -1,23 +1,57 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
+const APP_ACCESS_TOKEN = process.env.APP_ACCESS_TOKEN
+const APP_TOKEN_API_ALLOWLIST = [
+  '/api/session',
+  '/api/import',
+  '/api/check-sentence',
+  '/api/stats',
+  '/api/decks',
+  '/api/cards',
+]
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  
+
+  const isAdminPath = pathname.startsWith('/admin')
+  const isLoginPath = pathname === '/login'
+  const isAssetPath = pathname.startsWith('/_next') || pathname.startsWith('/favicon')
+  const isApiPath = pathname.startsWith('/api')
+  const isAllowlistedApi = isApiPath && APP_TOKEN_API_ALLOWLIST.some(prefix => pathname.startsWith(prefix))
+
   // Allow public paths
-  if (
-    pathname.startsWith('/admin') ||
-    pathname.startsWith('/api') ||
-    pathname === '/login' ||
-    pathname.startsWith('/_next') ||
-    pathname.startsWith('/favicon')
-  ) {
+  if (isAssetPath || isAdminPath || isLoginPath) {
+    return NextResponse.next()
+  }
+
+  if (isApiPath && !APP_ACCESS_TOKEN) {
+    return NextResponse.next()
+  }
+
+  const payloadToken = request.cookies.get('payload-token')
+
+  const fetchSite = request.headers.get('sec-fetch-site')
+  const isTrustedRequest = fetchSite === 'same-origin' ||
+    fetchSite === 'same-site' ||
+    fetchSite === 'none'
+  const shouldInjectAppToken = APP_ACCESS_TOKEN &&
+    !payloadToken &&
+    isTrustedRequest &&
+    (!isApiPath || isAllowlistedApi)
+
+  if (shouldInjectAppToken) {
+    const requestHeaders = new Headers(request.headers)
+    requestHeaders.set('x-app-token', APP_ACCESS_TOKEN)
+    return NextResponse.next({ request: { headers: requestHeaders } })
+  }
+
+  if (isApiPath) {
     return NextResponse.next()
   }
 
   // Check for Payload CMS auth cookie ('payload-token' is Payload's default cookie name)
-  const token = request.cookies.get('payload-token')
-  if (!token) {
+  if (!payloadToken) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 

@@ -24,7 +24,7 @@ export default async function DecksPage() {
       <nav className="border-b border-neutral-200 bg-white px-6 py-4">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <Link href="/" className="text-lg font-semibold tracking-tight">Vocab Trainer</Link>
-          <span className="text-xs text-neutral-400">{user.email}</span>
+          <span className="text-xs text-neutral-400">{user.username || user.email}</span>
         </div>
       </nav>
       <main className="max-w-3xl mx-auto px-6 py-8 space-y-6">

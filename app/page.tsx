@@ -51,7 +51,7 @@ export default async function Dashboard() {
       <nav className="border-b border-neutral-200 bg-white px-6 py-4">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <h1 className="text-lg font-semibold tracking-tight">Vocab Trainer</h1>
-          <span className="text-xs text-neutral-400">{user.email}</span>
+          <span className="text-xs text-neutral-400">{user.username || user.email}</span>
         </div>
       </nav>
 
@@ -94,10 +94,10 @@ export default async function Dashboard() {
             <p className="font-medium">Statistics</p>
             <p className="text-xs text-neutral-400 mt-0.5">Progress &amp; history</p>
           </Link>
-          <a href="/admin" className="bg-white border border-neutral-200 rounded-xl px-5 py-4 hover:border-neutral-400 transition-colors">
+          <Link href="/admin" className="bg-white border border-neutral-200 rounded-xl px-5 py-4 hover:border-neutral-400 transition-colors">
             <p className="font-medium">Admin</p>
             <p className="text-xs text-neutral-400 mt-0.5">Payload CMS</p>
-          </a>
+          </Link>
         </div>
       </main>
     </div>

@@ -2,16 +2,20 @@ import path from 'path'
 import { buildConfig } from 'payload'
 import { postgresAdapter } from '@payloadcms/db-postgres'
 
-import { Users } from './collections/Users'
-import { Decks } from './collections/Decks'
-import { Cards } from './collections/Cards'
-import { ReviewStates } from './collections/ReviewStates'
-import { Sessions } from './collections/Sessions'
-import { SessionItems } from './collections/SessionItems'
+import { Users } from './collections/Users.ts'
+import { Decks } from './collections/Decks.ts'
+import { Cards } from './collections/Cards.ts'
+import { ReviewStates } from './collections/ReviewStates.ts'
+import { Sessions } from './collections/Sessions.ts'
+import { SessionItems } from './collections/SessionItems.ts'
+
+const serverURL =
+  process.env.PAYLOAD_PUBLIC_SERVER_URL ||
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
 
 export default buildConfig({
   secret: process.env.PAYLOAD_SECRET!,
-  serverURL: process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3000',
+  serverURL,
   admin: {
     user: Users.slug,
   },
