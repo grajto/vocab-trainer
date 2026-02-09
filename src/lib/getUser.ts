@@ -1,5 +1,5 @@
 import { timingSafeEqual } from 'crypto'
-import { headers as getHeaders } from 'next/headers'
+import { headers as getHeaders, cookies as getCookies } from 'next/headers'
 import { getPayload } from './getPayload'
 
 export async function getUser() {
@@ -12,10 +12,13 @@ export async function getUser() {
   if (!appToken) return null
 
   const headerToken = headersList.get('x-app-token')
-  if (!headerToken) return null
+  const cookieStore = await getCookies()
+  const cookieToken = cookieStore.get('app-token')?.value
+  const incomingToken = headerToken || cookieToken
+  if (!incomingToken) return null
 
   const expected = Buffer.from(appToken)
-  const actual = Buffer.from(headerToken)
+  const actual = Buffer.from(incomingToken)
   if (expected.length !== actual.length) return null
 
   try {
@@ -40,7 +43,20 @@ export async function getUser() {
   }
 
   if (owner.totalDocs === 0) {
-    console.warn('App token authentication disabled: owner user missing')
+    try {
+      const anyUser = await payload.find({
+        collection: 'users',
+        limit: 1,
+        depth: 0,
+      })
+      if (anyUser.totalDocs === 1) {
+        console.warn('App token authentication fallback: using the only user (no owner role found)')
+        return anyUser.docs[0]
+      }
+      console.warn('App token authentication disabled: owner user missing and multiple users present', { count: anyUser.totalDocs })
+    } catch (error) {
+      console.error('App token fallback user lookup failed', error)
+    }
     return null
   }
   if (owner.totalDocs > 1) {

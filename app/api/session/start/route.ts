@@ -187,6 +187,8 @@ export async function POST(req: NextRequest) {
       answer: string
       expectedAnswer?: string
       options?: string[]
+      correctIndex?: number
+      correctValue?: string
       /** For sentence mode: the PL meaning shown as big prompt */
       promptPl?: string
       /** For sentence mode: the EN word/phrase that must appear in the sentence */
@@ -235,7 +237,10 @@ export async function POST(req: NextRequest) {
         const shuffled = otherCards.sort(() => Math.random() - 0.5).slice(0, 3)
         const options = shuffled.map(c => dir === 'reverse' ? c.front : c.back)
         options.push(answer)
-        task.options = options.sort(() => Math.random() - 0.5)
+        const shuffledOptions = options.sort(() => Math.random() - 0.5)
+        task.options = shuffledOptions
+        task.correctIndex = shuffledOptions.indexOf(answer)
+        task.correctValue = answer
       }
 
       tasks.push(task)

@@ -7,6 +7,7 @@ interface SoundContextType {
   toggle: () => void
   playCorrect: () => void
   playWrong: () => void
+  unlock: () => void
 }
 
 const SoundContext = createContext<SoundContextType>({
@@ -14,6 +15,7 @@ const SoundContext = createContext<SoundContextType>({
   toggle: () => {},
   playCorrect: () => {},
   playWrong: () => {},
+  unlock: () => {},
 })
 
 export function useSound() {
@@ -50,22 +52,27 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   // Unlock audio on first user interaction (for mobile)
+  const unlock = useCallback(() => {
+    if (unlockedRef.current) return
+    const all = [...correctPoolRef.current, ...wrongPoolRef.current]
+    for (const audio of all) {
+      audio.play().then(() => {
+        audio.pause()
+        audio.currentTime = 0
+      }).catch(() => {})
+    }
+    unlockedRef.current = true
+  }, [])
+
   useEffect(() => {
     if (unlockedRef.current) return
-    function unlock() {
-      const all = [...correctPoolRef.current, ...wrongPoolRef.current]
-      for (const audio of all) {
-        audio.play().then(() => { audio.pause(); audio.currentTime = 0 }).catch(() => {})
-      }
-      unlockedRef.current = true
-    }
     document.addEventListener('click', unlock, { once: true })
     document.addEventListener('touchstart', unlock, { once: true })
     return () => {
       document.removeEventListener('click', unlock)
       document.removeEventListener('touchstart', unlock)
     }
-  }, [])
+  }, [unlock])
 
   const toggle = useCallback(() => {
     setEnabled(prev => {
@@ -96,7 +103,7 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
   }, [enabled])
 
   return (
-    <SoundContext value={{ enabled, toggle, playCorrect, playWrong }}>
+    <SoundContext value={{ enabled, toggle, playCorrect, playWrong, unlock }}>
       {children}
     </SoundContext>
   )

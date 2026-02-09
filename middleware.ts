@@ -34,9 +34,15 @@ export function middleware(request: NextRequest) {
   const payloadToken = request.cookies.get('payload-token')
 
   const fetchSite = request.headers.get('sec-fetch-site')
+  const origin = request.headers.get('origin')
+  const host = request.headers.get('host')
+  const originHost = origin ? new URL(origin).host : null
+  const isSameOrigin = originHost && host ? originHost === host : false
   const isTrustedRequest = fetchSite === 'same-origin' ||
     fetchSite === 'same-site' ||
-    fetchSite === 'none'
+    fetchSite === 'none' ||
+    isSameOrigin ||
+    (!fetchSite && !origin)
   const shouldInjectAppToken = APP_ACCESS_TOKEN &&
     !payloadToken &&
     isTrustedRequest &&
@@ -45,7 +51,14 @@ export function middleware(request: NextRequest) {
   if (shouldInjectAppToken) {
     const requestHeaders = new Headers(request.headers)
     requestHeaders.set('x-app-token', APP_ACCESS_TOKEN)
-    return NextResponse.next({ request: { headers: requestHeaders } })
+    const response = NextResponse.next({ request: { headers: requestHeaders } })
+    response.cookies.set('app-token', APP_ACCESS_TOKEN, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: request.nextUrl.protocol === 'https:',
+      path: '/',
+    })
+    return response
   }
 
   if (isApiPath) {
