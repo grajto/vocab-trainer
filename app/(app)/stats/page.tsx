@@ -10,7 +10,7 @@ export default async function StatsPage() {
 
   return (
     <div className="p-6 lg:p-8 max-w-4xl mx-auto space-y-6">
-      <h2 className="text-xl font-semibold text-slate-900">Statistics</h2>
+      <h2 className="text-xl font-semibold text-slate-900">Statystyki</h2>
       <StatsView />
     </div>
   )

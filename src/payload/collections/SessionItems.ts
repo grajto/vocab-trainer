@@ -17,6 +17,7 @@ export const SessionItems: CollectionConfig = {
       { label: 'Translate', value: 'translate' },
       { label: 'Sentence', value: 'sentence' },
       { label: 'ABCD', value: 'abcd' },
+      { label: 'Describe', value: 'describe' },
     ]},
     { name: 'promptShown', type: 'text' },
     { name: 'userAnswer', type: 'textarea' },

@@ -14,13 +14,25 @@ export default async function StudyStartPage() {
   const payload = await getPayload()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let decks: any = { docs: [] }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let folders: any = { docs: [] }
   try {
-    decks = await payload.find({
-      collection: 'decks',
-      where: { owner: { equals: user.id } },
-      limit: 100,
-      depth: 0,
-    })
+    const results = await Promise.all([
+      payload.find({
+        collection: 'decks',
+        where: { owner: { equals: user.id } },
+        limit: 100,
+        depth: 0,
+      }),
+      payload.find({
+        collection: 'folders',
+        where: { owner: { equals: user.id } },
+        limit: 100,
+        depth: 0,
+      }),
+    ])
+    decks = results[0]
+    folders = results[1]
   } catch (err) {
     console.error('Study start data fetch error (migration may be pending):', err)
   }
@@ -40,7 +52,10 @@ export default async function StudyStartPage() {
             <Link href="/decks" className="text-sm text-indigo-600 underline underline-offset-2">Create a deck first</Link>
           </div>
         ) : (
-          <StartSessionForm decks={decks.docs.map((d: any) => ({ id: String(d.id), name: d.name }))} />
+          <StartSessionForm
+            decks={decks.docs.map((d: any) => ({ id: String(d.id), name: d.name }))}
+            folders={folders.docs.map((f: any) => ({ id: String(f.id), name: f.name }))}
+          />
         )}
       </main>
     </div>
