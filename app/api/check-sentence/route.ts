@@ -1,19 +1,66 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getUser } from '@/src/lib/getUser'
-import OpenAI from 'openai'
+import { buildCheckSentenceResponse, parseCheckSentenceResponse } from '@/src/lib/ai/checkSentenceSchema'
+import { createOpenAIClient, logOpenAIEnv } from '@/src/lib/ai/openaiClient'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
+
+const MODEL = 'gpt-5-nano'
+const PRIMARY_MAX_OUTPUT_TOKENS = 360
+const RETRY_MAX_OUTPUT_TOKENS = 600
+const PREVIEW_LENGTH = 200
 
 /** Collapse whitespace and lowercase for phrase containment check */
 function norm(s: string): string {
   return s.trim().replace(/\s+/g, ' ').toLowerCase()
 }
 
+function getFallbackCorrected(sentence: string, targetPhrase?: string) {
+  return sentence.trim() || targetPhrase?.trim() || '[brak zdania]'
+}
+
+const SYSTEM_PROMPT = `Zwróć WYŁĄCZNIE minifikowany JSON o strukturze:
+{"ok":boolean,"corrected":string,"errors":[{"type":string,"from":string,"to":string,"explain":string}],"comment":string}
+Zasady:
+- errors maks 5 elementów
+- comment maks 200 znaków
+- corrected zawsze niepuste
+- jeśli ok=true, corrected musi być identyczne jak input
+- brak dodatkowych kluczy, brak markdown
+Typy błędów: grammar | usage | meaning | spam | other.`
+
+const RETRY_PROMPT = `JSON only:
+{"ok":boolean,"corrected":string,"errors":[{"type":string,"from":string,"to":string,"explain":string}],"comment":string}
+errors<=5, comment<=200, corrected!=empty, ok=true => corrected=input.`
+
+function extractResponseMeta(response: unknown) {
+  const typed = response as {
+    output_text?: string
+    output?: Array<{ type?: string; finish_reason?: string; content?: Array<{ type?: string; finish_reason?: string }> }>
+    incomplete_details?: { reason?: string }
+  }
+  const finishReason =
+    typed.output?.[0]?.finish_reason ||
+    typed.output?.[0]?.content?.[0]?.finish_reason ||
+    typed.incomplete_details?.reason ||
+    null
+  const output = typed.output ?? []
+  const hasToolCalls = output.some(item => item.type === 'tool_call' || item.type === 'function_call')
+  return { finishReason, hasToolCalls }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const user = await getUser()
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!user) {
+      return NextResponse.json(buildCheckSentenceResponse({
+        ok: false,
+        corrected: '[brak zdania]',
+        errors: [{ type: 'other', from: '', to: '', explain: 'Unauthorized' }],
+        comment: 'Unauthorized',
+      }), { status: 401 })
+    }
 
     const body = await req.json()
     const { phrase, requiredPhrase, sentence, promptPl } = body
@@ -21,193 +68,161 @@ export async function POST(req: NextRequest) {
     const targetPhrase = phrase || requiredPhrase
 
     if (!targetPhrase) {
-      return NextResponse.json({
+      return NextResponse.json(buildCheckSentenceResponse({
         ok: false,
-        issue_type: 'usage',
-        message_pl: 'Brak wymaganej frazy do sprawdzenia.',
-        ai_used: false,
-        ai_latency_ms: 0,
-      })
+        corrected: getFallbackCorrected(sentence || '', targetPhrase),
+        errors: [{ type: 'usage', from: '', to: '', explain: 'Brak wymaganej frazy do sprawdzenia.' }],
+        comment: 'Brak wymaganej frazy do sprawdzenia.',
+      }))
     }
 
     if (!sentence || !sentence.trim()) {
-      return NextResponse.json({
+      return NextResponse.json(buildCheckSentenceResponse({
         ok: false,
-        issue_type: 'not_a_sentence',
-        message_pl: 'Zdanie nie może być puste.',
-        ai_used: false,
-        ai_latency_ms: 0,
-      })
+        corrected: getFallbackCorrected(sentence || '', targetPhrase),
+        errors: [{ type: 'grammar', from: '', to: '', explain: 'Zdanie nie może być puste.' }],
+        comment: 'Zdanie nie może być puste.',
+      }))
     }
 
     const trimmed = sentence.trim()
 
     // Pre-AI validation: length
     if (trimmed.length < 8) {
-      return NextResponse.json({
+      return NextResponse.json(buildCheckSentenceResponse({
         ok: false,
-        issue_type: 'not_a_sentence',
-        message_pl: 'Zdanie jest za krótkie (min. 8 znaków).',
-        ai_used: false,
-        ai_latency_ms: 0,
-      })
+        corrected: getFallbackCorrected(trimmed, targetPhrase),
+        errors: [{ type: 'grammar', from: trimmed, to: trimmed, explain: 'Zdanie jest za krótkie (min. 8 znaków).' }],
+        comment: 'Zdanie jest za krótkie (min. 8 znaków).',
+      }))
     }
     if (trimmed.length > 240) {
-      return NextResponse.json({
+      return NextResponse.json(buildCheckSentenceResponse({
         ok: false,
-        issue_type: 'other',
-        message_pl: 'Zdanie jest za długie (max 240 znaków).',
-        ai_used: false,
-        ai_latency_ms: 0,
-      })
+        corrected: getFallbackCorrected(trimmed, targetPhrase),
+        errors: [{ type: 'other', from: trimmed, to: trimmed, explain: 'Zdanie jest za długie (max 240 znaków).' }],
+        comment: 'Zdanie jest za długie (max 240 znaków).',
+      }))
     }
 
     // Pre-AI validation: phrase containment (case-insensitive, collapsed whitespace)
     if (!norm(trimmed).includes(norm(targetPhrase))) {
-      return NextResponse.json({
+      return NextResponse.json(buildCheckSentenceResponse({
         ok: false,
-        issue_type: 'usage',
-        message_pl: `Zdanie nie zawiera wymaganego zwrotu: "${targetPhrase}".`,
-        ai_used: false,
-        ai_latency_ms: 0,
-      })
+        corrected: getFallbackCorrected(trimmed, targetPhrase),
+        errors: [{ type: 'usage', from: trimmed, to: trimmed, explain: `Zdanie nie zawiera wymaganego zwrotu: "${targetPhrase}".` }],
+        comment: `Zdanie nie zawiera wymaganego zwrotu: "${targetPhrase}".`,
+      }))
     }
 
     if (!process.env.OPENAI_API_KEY) {
       console.error('[AI] Missing OPENAI_API_KEY')
-      return NextResponse.json({ error: 'Missing OPENAI_API_KEY' }, { status: 500 })
+      return NextResponse.json(buildCheckSentenceResponse({
+        ok: false,
+        corrected: getFallbackCorrected(trimmed, targetPhrase),
+        errors: [{ type: 'other', from: '', to: '', explain: 'Missing OPENAI_API_KEY' }],
+        comment: 'Missing OPENAI_API_KEY',
+      }), { status: 500 })
     }
 
     try {
-      const startedAt = Date.now()
-      const apiKey = process.env.OPENAI_API_KEY
-      const openai = new OpenAI({
-        apiKey,
-        organization: process.env.OPENAI_ORG,
-        project: process.env.OPENAI_PROJECT,
-      })
-      const keyPrefix = apiKey ? `${apiKey.slice(0, 6)}***` : 'missing'
-      console.info('[AI] env', {
-        hasKey: !!apiKey,
-        keyPrefix,
-        keyLength: apiKey?.length ?? 0,
-        org: process.env.OPENAI_ORG || null,
-        project: process.env.OPENAI_PROJECT || null,
-        baseURL: (openai as unknown as { baseURL?: string }).baseURL || 'default',
-      })
+      const { client: openai, apiKey, baseURL } = createOpenAIClient()
+      logOpenAIEnv({ client: openai, apiKey, baseURL })
 
       const meaningContext = promptPl
         ? `PL znaczenie: "${promptPl}".`
         : ''
 
-      console.info('[AI] calling OpenAI', { model: 'gpt-5-nano' })
-      const shortPrompt = `Oceń zdanie ucznia. Sprawdź: poprawność zdania, poprawne użycie "${targetPhrase}", sens znaczeniowy, brak spamu.
-Zwróć WYŁĄCZNIE krótki JSON:
-{"ok":true/false,"issue_type":"not_a_sentence"|"grammar"|"usage"|"meaning"|"spam"|"other","message_pl":string,"suggested_fix":string|null}
-Zasady: message_pl max 200 znaków, suggested_fix max 120 znaków. Jeśli ok=true: issue_type="other", message_pl="OK", suggested_fix=null.`
-      const shorterPrompt = `JSON only:
-{"ok":true/false,"issue_type":"not_a_sentence"|"grammar"|"usage"|"meaning"|"spam"|"other","message_pl":string,"suggested_fix":string|null}
-message_pl<=200 chars, suggested_fix<=120 chars.`
-      const messages = [
-        {
-          role: 'system',
-          content: shortPrompt,
-        },
-        {
-          role: 'user',
-          content: `requiredEn: ${targetPhrase}\n${meaningContext}\nsentence: ${trimmed}`,
-        },
-      ] satisfies Array<{ role: 'system' | 'user'; content: string }>
+      console.info('[AI] calling OpenAI', { model: MODEL })
+      const userContent = `requiredEn: ${targetPhrase}\n${meaningContext}\nsentence: ${trimmed}`
 
-      // Keep logs compact while showing enough context from truncated JSON responses.
-      const PREVIEW_LENGTH = 200
-      const makeCompletion = (maxTokens: number, useShorter: boolean) =>
-        openai.chat.completions.create({
-          model: 'gpt-5-nano',
-          max_completion_tokens: maxTokens,
-          response_format: { type: 'json_object' },
-          messages: useShorter ? [
-            { role: 'system', content: shorterPrompt },
-            { role: 'user', content: `requiredEn: ${targetPhrase}\n${meaningContext}\nsentence: ${trimmed}` },
-          ] : messages,
+      const runRequest = async (prompt: string, maxTokens: number) => {
+        const response = await openai.responses.create({
+          model: MODEL,
+          max_output_tokens: maxTokens,
+          tool_choice: 'none',
+          input: [
+            { role: 'system', content: prompt },
+            { role: 'user', content: userContent },
+          ],
         })
-
-      let completion = await makeCompletion(300, false)
-      let content = completion.choices?.[0]?.message?.content ?? ''
-      let finishReason = completion.choices?.[0]?.finish_reason
-      console.info('[AI] completion keys', Object.keys(completion || {}))
-      const responseHeaders = (completion as unknown as { response?: { headers?: Record<string, string> } }).response?.headers
-      if (responseHeaders) {
-        console.info('[AI] response headers', {
-          requestId: responseHeaders['x-request-id'] || responseHeaders['request-id'] || null,
+        const text = response.output_text?.trim() ?? ''
+        const { finishReason, hasToolCalls } = extractResponseMeta(response)
+        console.info('[AI] response meta', {
+          finish_reason: finishReason,
+          text_length: text.length,
+          has_tool_calls: hasToolCalls,
+          has_text: text.length > 0,
         })
-      }
-
-      if (finishReason === 'length') {
-        const preview = content.trim().slice(0, PREVIEW_LENGTH)
-        console.warn('[AI] response truncated, retrying', { finish_reason: finishReason, preview })
-        completion = await makeCompletion(600, !content.trim())
-        content = completion.choices?.[0]?.message?.content ?? ''
-        finishReason = completion.choices?.[0]?.finish_reason
-      }
-
-      if (!content.trim()) {
-        console.error('[AI] empty response', { finish_reason: finishReason })
-        throw new Error('Empty AI response')
-      }
-      let parsed: any
-      try {
-        parsed = JSON.parse(content.trim())
-      } catch (parseError) {
-        if (finishReason === 'length') {
-          console.error('[AI] response truncated after retry', { finish_reason: finishReason })
-          throw new Error('AI response truncated')
+        const responseHeaders = (response as unknown as { response?: { headers?: Record<string, string> } }).response?.headers
+        if (responseHeaders) {
+          console.info('[AI] response headers', {
+            requestId: responseHeaders['x-request-id'] || responseHeaders['request-id'] || null,
+          })
         }
-        console.error('[AI] JSON parse failed', parseError)
-        throw parseError
+        return { text, finishReason, hasToolCalls }
       }
-      const rawIssueType = typeof parsed.issue_type === 'string' ? parsed.issue_type : 'other'
-      const issueTypeMap: Record<string, string> = {
-        not_a_sentence: 'not_a_sentence',
-        grammar: 'grammar',
-        usage: 'usage',
-        meaning: 'meaning',
-        meaning_mismatch: 'meaning',
-        missing_phrase: 'usage',
-        spam: 'spam',
-        other: 'other',
+
+      const attempts = [
+        { prompt: SYSTEM_PROMPT, maxTokens: PRIMARY_MAX_OUTPUT_TOKENS },
+        { prompt: RETRY_PROMPT, maxTokens: RETRY_MAX_OUTPUT_TOKENS },
+      ]
+
+      let lastError: string | null = null
+      for (let attempt = 0; attempt < attempts.length; attempt++) {
+        const { prompt, maxTokens } = attempts[attempt]
+        const { text, finishReason, hasToolCalls } = await runRequest(prompt, maxTokens)
+        const preview = text.slice(0, PREVIEW_LENGTH)
+
+        if (finishReason === 'length' || !text) {
+          lastError = finishReason === 'length' ? 'finish_reason=length' : 'empty_text'
+          console.warn('[AI] response truncated or empty, retrying', { attempt, finish_reason: finishReason, preview })
+          continue
+        }
+
+        if (hasToolCalls) {
+          lastError = 'tool_calls_present'
+          console.warn('[AI] tool calls detected, retrying', { attempt })
+          continue
+        }
+
+        try {
+          const parsed = parseCheckSentenceResponse(text, trimmed)
+          return NextResponse.json(parsed)
+        } catch (parseError) {
+          lastError = (parseError as Error).message
+          console.warn('[AI] JSON parse/validation failed, retrying', { attempt, error: lastError, preview })
+          continue
+        }
       }
-      const normalizedIssueType = issueTypeMap[rawIssueType] ?? 'other'
-      const normalizedOk = typeof parsed.ok === 'boolean' ? parsed.ok : false
-      const aiLatencyMs = Date.now() - startedAt
-      console.info('[AI] result', parsed)
-      const message = parsed.message_pl ?? ''
+
+      if (lastError?.includes('length') || lastError?.includes('empty_text')) {
+        return NextResponse.json({
+          error: 'AI_TRUNCATED',
+          detail: lastError || 'Response truncated or empty after retries.',
+        }, { status: 502 })
+      }
+
       return NextResponse.json({
-        ok: normalizedOk,
-        issue_type: normalizedIssueType,
-        message_pl: normalizedOk ? (message || 'OK') : message,
-        suggested_fix: parsed.suggested_fix ?? null,
-        ai_used: true,
-        ai_latency_ms: aiLatencyMs,
-      })
+        error: 'AI_INVALID_JSON',
+        detail: lastError || 'Invalid AI response after retries.',
+      }, { status: 502 })
     } catch (err: unknown) {
       console.error('OpenAI call failed:', err)
-      const status = (err as { status?: number }).status
-      const code = (err as { code?: string }).code
-      const isQuota = status === 429 || code === 'insufficient_quota'
-      return NextResponse.json({
+      return NextResponse.json(buildCheckSentenceResponse({
         ok: false,
-        issue_type: 'other',
-        message_pl: isQuota
-          ? 'Limit AI został wyczerpany. Sprawdź billing lub spróbuj później.'
-          : 'AI nie zwróciło poprawnej odpowiedzi. Spróbuj ponownie.',
-        suggested_fix: null,
-        ai_used: true,
-        ai_latency_ms: 0,
-      })
+        corrected: getFallbackCorrected(trimmed, targetPhrase),
+        errors: [{ type: 'other', from: '', to: '', explain: 'AI nie zwróciło poprawnej odpowiedzi. Spróbuj ponownie.' }],
+        comment: 'AI nie zwróciło poprawnej odpowiedzi. Spróbuj ponownie.',
+      }), { status: 502 })
     }
   } catch (error: unknown) {
     console.error('Check sentence error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json(buildCheckSentenceResponse({
+      ok: false,
+      corrected: '[brak zdania]',
+      errors: [{ type: 'other', from: '', to: '', explain: 'Internal server error' }],
+      comment: 'Internal server error',
+    }), { status: 500 })
   }
 }
