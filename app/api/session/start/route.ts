@@ -4,6 +4,7 @@ import { getUser } from '@/src/lib/getUser'
 import { requireAppToken } from '@/src/lib/requireAppToken'
 import { selectCardsForSession } from '@/src/lib/srs'
 import { parseNumericId } from '@/src/lib/parseNumericId'
+import { getStudySettings } from '@/src/lib/userSettings'
 
 export async function POST(req: NextRequest) {
   try {
@@ -15,38 +16,61 @@ export async function POST(req: NextRequest) {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const body = await req.json()
-    const { deckId, mode, targetCount = 10, levelFilter = 'all' } = body
+    const { deckId, folderId, mode, targetCount = 10, levels, direction, shuffle = true, requireCorrect = false } = body
 
-    const allowedModes = ['translate', 'sentence', 'abcd', 'mixed'] as const
+    const allowedModes = ['translate', 'sentence', 'abcd', 'mixed', 'test', 'describe'] as const
     type Mode = (typeof allowedModes)[number]
     const isMode = (value: unknown): value is Mode =>
       allowedModes.includes(value as Mode)
 
-    if (!deckId || !isMode(mode)) {
-      return NextResponse.json({ error: 'deckId and mode are required' }, { status: 400 })
+    if ((!deckId && !folderId) || !isMode(mode)) {
+      return NextResponse.json({ error: 'deckId or folderId and mode are required' }, { status: 400 })
     }
 
-    const numericDeckId = parseNumericId(deckId)
-    if (numericDeckId === null) {
+    const numericDeckId = deckId ? parseNumericId(deckId) : null
+    const numericFolderId = folderId ? parseNumericId(folderId) : null
+    if (deckId && numericDeckId === null) {
       return NextResponse.json({ error: 'deckId must be a valid number' }, { status: 400 })
+    }
+    if (folderId && numericFolderId === null) {
+      return NextResponse.json({ error: 'folderId must be a valid number' }, { status: 400 })
     }
 
     const count = Math.min(Math.max(Number(targetCount), 5), 35)
     const payload = await getPayload()
+    const settings = getStudySettings(user as Record<string, unknown>)
 
     // Get deck to check direction setting
     let deckDirection = 'front-to-back'
-    try {
-      const deck = await payload.findByID({ collection: 'decks', id: numericDeckId, depth: 0 })
-      deckDirection = (deck as any).direction || 'front-to-back'
-    } catch {
-      // Fall through with default
+    if (numericDeckId) {
+      try {
+        const deck = await payload.findByID({ collection: 'decks', id: numericDeckId, depth: 0 })
+        deckDirection = (deck as any).direction || 'front-to-back'
+      } catch {
+        // Fall through with default
+      }
+    }
+    const selectedDirection = direction || (deckDirection === 'back-to-front' ? 'en-pl' : deckDirection === 'both' ? 'both' : settings.defaultDirection)
+
+    let deckIds: number[] = []
+    if (numericDeckId) deckIds = [numericDeckId]
+    if (numericFolderId) {
+      const folderDecks = await payload.find({
+        collection: 'decks',
+        where: { owner: { equals: user.id }, folder: { equals: numericFolderId } },
+        limit: 200,
+        depth: 0,
+      })
+      deckIds = folderDecks.docs.map((d: any) => Number(d.id))
+    }
+    if (deckIds.length === 0) {
+      return NextResponse.json({ error: 'No decks found for selected resource' }, { status: 400 })
     }
 
     // Get all cards in deck
     const allCards = await payload.find({
       collection: 'cards',
-      where: { deck: { equals: numericDeckId }, owner: { equals: user.id } },
+      where: { deck: { in: deckIds }, owner: { equals: user.id } },
       limit: 1000,
       depth: 0,
     })
@@ -106,21 +130,13 @@ export async function POST(req: NextRequest) {
         totalWrong: 0,
       }))
 
-    // Apply level filter
-    if (levelFilter === '1') {
-      cardsWithState = cardsWithState.filter(c => c.level === 1)
-    } else if (levelFilter === '2-3') {
-      cardsWithState = cardsWithState.filter(c => c.level === 2 || c.level === 3)
-      cardsWithoutState = [] // Only show existing cards
-    } else if (levelFilter === '4') {
-      cardsWithState = cardsWithState.filter(c => c.level === 4)
-      cardsWithoutState = [] // Only show existing cards
-    } else if (levelFilter === 'problematic') {
-      // Sort by totalWrong descending, pick top cards
-      cardsWithState = cardsWithState
-        .filter(c => (c.totalWrong || 0) > 0)
-        .sort((a, b) => (b.totalWrong || 0) - (a.totalWrong || 0))
-      cardsWithoutState = [] // Only show existing cards
+    const selectedLevels = Array.isArray(levels) && levels.length > 0
+      ? levels.map((l: number) => Number(l)).filter((l: number) => [1, 2, 3, 4].includes(l))
+      : [1, 2, 3, 4]
+
+    cardsWithState = cardsWithState.filter(c => selectedLevels.includes(c.level))
+    if (!selectedLevels.includes(1)) {
+      cardsWithoutState = []
     }
 
     if (cardsWithState.length === 0 && cardsWithoutState.length === 0) {
@@ -168,23 +184,31 @@ export async function POST(req: NextRequest) {
       data: {
         owner: user.id,
         mode,
-        deck: numericDeckId,
+        deck: deckIds[0],
         targetCount: selectedCards.length,
         completedCount: 0,
         startedAt: new Date().toISOString(),
+        settings: {
+          deckIds,
+          folderId: numericFolderId ?? null,
+          direction: selectedDirection,
+          levels: selectedLevels,
+          shuffle,
+          requireCorrect,
+        },
       },
     })
 
     // Determine direction for each task
     function getDirection(): 'normal' | 'reverse' {
-      if (deckDirection === 'back-to-front') return 'reverse'
-      if (deckDirection === 'both') return Math.random() > 0.5 ? 'reverse' : 'normal'
+      if (selectedDirection === 'en-pl') return 'reverse'
+      if (selectedDirection === 'both') return Math.random() > 0.5 ? 'reverse' : 'normal'
       return 'normal'
     }
 
     // Build tasks
-    type TaskType = Exclude<Mode, 'mixed'>
-    type MixedTaskType = Exclude<TaskType, 'sentence'>
+    type TaskType = Exclude<Mode, 'mixed' | 'test'>
+    type MixedTaskType = Exclude<TaskType, 'describe'>
     type Task = {
       cardId: number
       taskType: TaskType
@@ -203,9 +227,18 @@ export async function POST(req: NextRequest) {
     const tasks: Task[] = []
     for (const card of selectedCards) {
       let taskType: TaskType
-      if (mode === 'mixed') {
-        const types: MixedTaskType[] = ['translate', 'abcd']
+      if (mode === 'test') {
+        const types: Array<'translate' | 'abcd'> = ['translate', 'abcd']
         taskType = types[Math.floor(Math.random() * types.length)]
+      } else if (mode === 'mixed') {
+        const types: MixedTaskType[] = ['translate', 'abcd', 'sentence']
+        const weightedPool: MixedTaskType[] = [
+          ...Array(settings.mixTranslate).fill('translate'),
+          ...Array(settings.mixAbcd).fill('abcd'),
+          ...Array(settings.mixSentence).fill('sentence'),
+        ]
+        const pool = weightedPool.length > 0 ? weightedPool : types
+        taskType = pool[Math.floor(Math.random() * pool.length)]
       } else {
         taskType = mode
       }
@@ -224,6 +257,11 @@ export async function POST(req: NextRequest) {
 
       if (taskType === 'translate') {
         task.expectedAnswer = answer
+      }
+
+      if (taskType === 'describe') {
+        task.prompt = card.front
+        task.answer = card.back
       }
 
       // For sentence mode: always provide PL meaning + EN required word
@@ -249,6 +287,10 @@ export async function POST(req: NextRequest) {
       }
 
       tasks.push(task)
+    }
+
+    if (shuffle) {
+      tasks.sort(() => Math.random() - 0.5)
     }
 
     // Create session items

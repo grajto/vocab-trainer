@@ -1,4 +1,4 @@
-// Alias: /study/start → same as /learn
+// Alias: /study/start → same as /study
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getUser } from '@/src/lib/getUser'
@@ -14,13 +14,25 @@ export default async function StudyStartPage() {
   const payload = await getPayload()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let decks: any = { docs: [] }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let folders: any = { docs: [] }
   try {
-    decks = await payload.find({
-      collection: 'decks',
-      where: { owner: { equals: user.id } },
-      limit: 100,
-      depth: 0,
-    })
+    const results = await Promise.all([
+      payload.find({
+        collection: 'decks',
+        where: { owner: { equals: user.id } },
+        limit: 100,
+        depth: 0,
+      }),
+      payload.find({
+        collection: 'folders',
+        where: { owner: { equals: user.id } },
+        limit: 100,
+        depth: 0,
+      }),
+    ])
+    decks = results[0]
+    folders = results[1]
   } catch (err) {
     console.error('Study start data fetch error (migration may be pending):', err)
   }
@@ -29,7 +41,7 @@ export default async function StudyStartPage() {
     <div className="min-h-screen bg-slate-50">
       <nav className="border-b border-slate-200 bg-white/80 backdrop-blur-sm px-6 py-4">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <Link href="/" className="text-lg font-semibold tracking-tight text-indigo-600">Home</Link>
+          <Link href="/dashboard" className="text-lg font-semibold tracking-tight text-indigo-600">Dashboard</Link>
         </div>
       </nav>
       <main className="max-w-lg mx-auto px-6 py-8 space-y-6">
@@ -40,7 +52,10 @@ export default async function StudyStartPage() {
             <Link href="/decks" className="text-sm text-indigo-600 underline underline-offset-2">Create a deck first</Link>
           </div>
         ) : (
-          <StartSessionForm decks={decks.docs.map((d: any) => ({ id: String(d.id), name: d.name }))} />
+          <StartSessionForm
+            decks={decks.docs.map((d: any) => ({ id: String(d.id), name: d.name }))}
+            folders={folders.docs.map((f: any) => ({ id: String(f.id), name: f.name }))}
+          />
         )}
       </main>
     </div>

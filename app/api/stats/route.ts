@@ -36,6 +36,20 @@ export async function GET() {
       depth: 0,
     })
 
+    const last7DaysStart = new Date(now)
+    last7DaysStart.setDate(last7DaysStart.getDate() - 6)
+    last7DaysStart.setHours(0, 0, 0, 0)
+
+    const sessionsLast7Days = await payload.find({
+      collection: 'sessions',
+      where: {
+        owner: { equals: user.id },
+        startedAt: { greater_than_equal: last7DaysStart.toISOString() },
+      },
+      limit: 0,
+      depth: 0,
+    })
+
     const recentSessions = await payload.find({
       collection: 'sessions',
       where: { owner: { equals: user.id } },
@@ -48,6 +62,13 @@ export async function GET() {
     const avgAccuracy = completedSessions.length > 0
       ? Math.round(completedSessions.reduce((sum, s) => sum + (s.accuracy || 0), 0) / completedSessions.length)
       : 0
+
+    const minutesLast7Days = sessionsLast7Days.docs.reduce((sum, s) => {
+      if (!s.startedAt) return sum
+      const start = new Date(s.startedAt)
+      const end = s.endedAt ? new Date(s.endedAt) : now
+      return sum + Math.max(1, Math.round((end.getTime() - start.getTime()) / 60000))
+    }, 0)
 
     // Calculate streak
     const yearAgo = new Date(now)
@@ -81,6 +102,30 @@ export async function GET() {
       } else {
         break
       }
+    }
+
+    const sessionsByDay: Array<{ date: string; count: number; minutes: number }> = []
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now)
+      d.setDate(d.getDate() - i)
+      d.setHours(0, 0, 0, 0)
+      const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
+      const daySessions = allSessions.docs.filter(s => {
+        if (!s.startedAt) return false
+        const sd = new Date(s.startedAt)
+        return `${sd.getFullYear()}-${sd.getMonth()}-${sd.getDate()}` === key
+      })
+      const minutes = daySessions.reduce((sum, s) => {
+        if (!s.startedAt) return sum
+        const start = new Date(s.startedAt)
+        const end = s.endedAt ? new Date(s.endedAt) : now
+        return sum + Math.max(1, Math.round((end.getTime() - start.getTime()) / 60000))
+      }, 0)
+      sessionsByDay.push({
+        date: `${d.getDate()}.${d.getMonth() + 1}`,
+        count: daySessions.length,
+        minutes,
+      })
     }
 
     // Per deck stats
@@ -185,6 +230,17 @@ export async function GET() {
     allHardestCards.sort((a, b) => b.totalWrong - a.totalWrong)
     const hardestCards = allHardestCards.slice(0, 20)
 
+    const problematicDecks = Object.values(allHardestCards.reduce((acc, card) => {
+      const key = String(card.deckId)
+      if (!acc[key]) {
+        acc[key] = { deckId: String(card.deckId), deckName: card.deckName, totalWrong: 0 }
+      }
+      acc[key].totalWrong += card.totalWrong
+      return acc
+    }, {} as Record<string, { deckId: string; deckName: string; totalWrong: number }>))
+      .sort((a, b) => b.totalWrong - a.totalWrong)
+      .slice(0, 5)
+
     // Per folder stats
     let folderStats: Array<{
       folderId: string | number
@@ -251,10 +307,13 @@ export async function GET() {
       global: {
         sessionsToday: sessionsToday.totalDocs,
         sessionsThisWeek: sessionsThisWeek.totalDocs,
+        minutesLast7Days,
         streakDays,
         avgAccuracy,
         levelDistribution: globalLevelDist,
       },
+      sessionsByDay,
+      problematicDecks,
       deckStats,
       folderStats,
       hardestCards,

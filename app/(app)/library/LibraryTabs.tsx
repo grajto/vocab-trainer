@@ -3,19 +3,22 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { FolderOpen, Search } from 'lucide-react'
+import { FolderOpen, Search, MoreHorizontal } from 'lucide-react'
 
 interface Deck {
   id: string
   name: string
-  description: string
-  folder: string | null
+  cardCount: number
+  author: string
+  createdAt: string
 }
 
 interface Folder {
   id: string
   name: string
-  description: string
+  deckCount: number
+  cardCount: number
+  mastery: number
 }
 
 export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder[] }) {
@@ -88,20 +91,22 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
 
       {/* Decks tab */}
       {tab === 'decks' && (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {filteredDecks.length === 0 ? (
             <p className="text-sm text-slate-400 text-center py-8">No decks found.</p>
           ) : (
             filteredDecks.map(d => (
-              <Link
-                key={d.id}
-                href={`/decks/${d.id}`}
-                prefetch={true}
-                className="block bg-white border border-slate-200 rounded-xl px-5 py-4 hover:border-indigo-300 hover:shadow-sm transition-all"
-              >
-                <p className="font-medium text-slate-900">{d.name}</p>
-                {d.description && <p className="text-sm text-slate-400 mt-0.5 line-clamp-1">{d.description}</p>}
-              </Link>
+              <div key={d.id} className="bg-white border border-slate-200 rounded-2xl px-5 py-4 flex items-center justify-between hover:border-indigo-300 hover:shadow-sm transition-all">
+                <Link href={`/decks/${d.id}`} prefetch={true} className="min-w-0">
+                  <p className="font-medium text-slate-900 truncate">{d.name}</p>
+                  <p className="text-xs text-slate-400 mt-1">
+                    {d.cardCount} kart · {d.author} · {d.createdAt}
+                  </p>
+                </Link>
+                <button className="p-2 rounded-lg hover:bg-slate-100 text-slate-400">
+                  <MoreHorizontal className="w-4 h-4" />
+                </button>
+              </div>
             ))
           )}
         </div>
@@ -140,18 +145,18 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
             <p className="text-sm text-slate-400 text-center py-4">No folders yet.</p>
           ) : (
             filteredFolders.map(f => (
-              <Link
-                key={f.id}
-                href={`/folders/${f.id}`}
-                prefetch={true}
-                className="flex items-center gap-3 bg-white border border-slate-200 rounded-xl px-5 py-4 hover:border-indigo-300 hover:shadow-sm transition-all"
-              >
-                <FolderOpen className="w-5 h-5 text-indigo-500 flex-shrink-0" />
-                <div>
-                  <p className="font-medium text-slate-900">{f.name}</p>
-                  {f.description && <p className="text-sm text-slate-400 mt-0.5">{f.description}</p>}
-                </div>
-              </Link>
+              <div key={f.id} className="flex items-center justify-between gap-3 bg-white border border-slate-200 rounded-2xl px-5 py-4 hover:border-indigo-300 hover:shadow-sm transition-all">
+                <Link href={`/folders/${f.id}`} prefetch={true} className="flex items-center gap-3 min-w-0">
+                  <FolderOpen className="w-5 h-5 text-indigo-500 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="font-medium text-slate-900 truncate">{f.name}</p>
+                    <p className="text-xs text-slate-400 mt-1">{f.deckCount} decków · {f.cardCount} kart · {f.mastery}% mastery</p>
+                  </div>
+                </Link>
+                <button className="p-2 rounded-lg hover:bg-slate-100 text-slate-400">
+                  <MoreHorizontal className="w-4 h-4" />
+                </button>
+              </div>
             ))
           )}
         </div>
