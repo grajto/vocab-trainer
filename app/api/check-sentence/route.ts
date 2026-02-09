@@ -133,12 +133,17 @@ Jeśli ok=true, ustaw issue_type=null i NIE dodawaj message_pl ani suggested_fix
         ai_used: true,
         ai_latency_ms: aiLatencyMs,
       })
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('OpenAI call failed:', err)
+      const status = (err as { status?: number }).status
+      const code = (err as { code?: string }).code
+      const isQuota = status === 429 || code === 'insufficient_quota'
       return NextResponse.json({
         ok: false,
         issue_type: 'other',
-        message_pl: 'AI nie zwróciło poprawnej odpowiedzi. Spróbuj ponownie.',
+        message_pl: isQuota
+          ? 'Limit AI został wyczerpany. Sprawdź billing lub spróbuj później.'
+          : 'AI nie zwróciło poprawnej odpowiedzi. Spróbuj ponownie.',
         suggested_fix: null,
         ai_used: true,
         ai_latency_ms: 0,
