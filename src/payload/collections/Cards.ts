@@ -18,6 +18,6 @@ export const Cards: CollectionConfig = {
     { name: 'back', type: 'text', required: true },
     { name: 'examples', type: 'textarea' },
     { name: 'notes', type: 'textarea' },
-    { name: 'cardType', type: 'select', options: [{ label: 'Word', value: 'word' }, { label: 'Phrase', value: 'phrase' }], defaultValue: 'word' },
+    { name: 'cardType', type: 'select', options: [{ label: 'Word', value: 'word' }, { label: 'Phrase', value: 'phrase' }, { label: 'Sentence', value: 'sentence' }], defaultValue: 'word' },
   ],
 }

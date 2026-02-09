@@ -1,24 +1,63 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { checkAnswerWithTypo, generateHint } from '@/src/lib/answerCheck'
+import { useSound } from '@/src/lib/SoundProvider'
 
-const FEEDBACK_DELAY_CORRECT = 800
-const FEEDBACK_DELAY_WRONG = 2000
+const FEEDBACK_DELAY_CORRECT = 200
+const FEEDBACK_DELAY_WRONG = 1500
 const FEEDBACK_DELAY_DONE = 1200
+const FEEDBACK_DELAY_CORRECT_SLOW = 800
+const FEEDBACK_DELAY_WRONG_SLOW = 2000
 
 interface Task {
   cardId: string
   taskType: string
   prompt: string
   answer: string
+  expectedAnswer?: string
   options?: string[]
+  /** Sentence mode: PL meaning shown as big prompt */
+  promptPl?: string
+  /** Sentence mode: EN word that must appear in the sentence */
+  requiredEn?: string
+}
+
+interface TaskState {
+  attempts: number
+  usedHint: boolean
+  wasWrongBefore: boolean
+}
+
+function saveAnswerInBackground(data: {
+  sessionId: string
+  cardId: string
+  taskType: string
+  userAnswer: string
+  isCorrect: boolean
+  expectedAnswer?: string
+  attemptsCount?: number
+  wasWrongBeforeCorrect?: boolean
+  usedHint?: boolean
+  userOverride?: boolean
+  aiUsed?: boolean
+}) {
+  fetch('/api/session/answer', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(data),
+  }).catch(err => {
+    console.error(`Background save failed (session=${data.sessionId}, card=${data.cardId}):`, err)
+  })
 }
 
 export default function SessionPage() {
   const params = useParams()
   const sessionId = params.id as string
   const router = useRouter()
+  const { playCorrect, playWrong, enabled: soundEnabled, toggle: toggleSound } = useSound()
 
   const [tasks, setTasks] = useState<Task[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -26,76 +65,189 @@ export default function SessionPage() {
   const [feedback, setFeedback] = useState<{ correct: boolean; message: string } | null>(null)
   const [loading, setLoading] = useState(false)
   const [sessionDone, setSessionDone] = useState(false)
-  const [accuracy, setAccuracy] = useState(0)
+
+  // Typo state
+  const [typoState, setTypoState] = useState<{ expected: string; userAnswer: string } | null>(null)
+
+  // Hint state
+  const [showHint, setShowHint] = useState(false)
+
+  // Shuffle toggle (persisted in localStorage)
+  const [shuffleEnabled, setShuffleEnabled] = useState(false)
+
+  // Track per-card state (attempts, hints used)
+  const taskStatesRef = useRef<Map<string, TaskState>>(new Map())
+
+  // Track accuracy locally
+  const [correctCount, setCorrectCount] = useState(0)
+  const [answeredCount, setAnsweredCount] = useState(0)
+  const accuracy = answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0
+
+  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null)
+
+  // Load shuffle setting
+  useEffect(() => {
+    const saved = localStorage.getItem('vocab-shuffle')
+    if (saved === 'true') setShuffleEnabled(true)
+  }, [])
 
   useEffect(() => {
     const stored = sessionStorage.getItem(`session-${sessionId}`)
     if (stored) {
-      setTasks(JSON.parse(stored))
+      let parsed: Task[] = JSON.parse(stored)
+      const shufflePref = localStorage.getItem('vocab-shuffle') === 'true'
+      if (shufflePref) {
+        // Fisher-Yates shuffle for uniform randomization
+        const arr = [...parsed]
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]]
+        }
+        parsed = arr
+      }
+      setTasks(parsed)
     }
   }, [sessionId])
 
+  useEffect(() => {
+    if (!feedback && !typoState && inputRef.current) {
+      inputRef.current.focus()
+    }
+  }, [currentIndex, feedback, typoState])
+
   const currentTask = tasks[currentIndex]
 
-  const submitAnswer = useCallback(async (answer: string, correct: boolean) => {
-    if (!currentTask) return
-    setLoading(true)
-
-    try {
-      const res = await fetch('/api/session/answer', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          sessionId,
-          cardId: currentTask.cardId,
-          taskType: currentTask.taskType,
-          userAnswer: answer,
-          isCorrect: correct,
-        }),
-      })
-
-      const data = await res.json()
-      setAccuracy(data.accuracy || 0)
-
-      if (correct) {
-        setFeedback({ correct: true, message: 'Correct' })
-      } else {
-        setFeedback({ correct: false, message: `Correct answer: ${currentTask.answer}` })
-      }
-
-      if (data.sessionDone) {
-        setTimeout(() => setSessionDone(true), FEEDBACK_DELAY_DONE)
-      } else {
-        setTimeout(() => {
-          setFeedback(null)
-          setUserAnswer('')
-          setCurrentIndex(prev => prev + 1)
-        }, correct ? FEEDBACK_DELAY_CORRECT : FEEDBACK_DELAY_WRONG)
-      }
-    } catch (err) {
-      console.error('Answer submit error:', err)
-    } finally {
-      setLoading(false)
+  function getTaskState(cardId: string): TaskState {
+    if (!taskStatesRef.current.has(cardId)) {
+      taskStatesRef.current.set(cardId, { attempts: 0, usedHint: false, wasWrongBefore: false })
     }
-  }, [currentTask, sessionId])
+    return taskStatesRef.current.get(cardId)!
+  }
+
+  const advanceToNext = useCallback((delay: number) => {
+    const isLast = currentIndex + 1 >= tasks.length
+    if (isLast) {
+      setTimeout(() => setSessionDone(true), FEEDBACK_DELAY_DONE)
+    } else {
+      setTimeout(() => {
+        setFeedback(null)
+        setUserAnswer('')
+        setShowHint(false)
+        setTypoState(null)
+        setCurrentIndex(prev => prev + 1)
+      }, delay)
+    }
+  }, [currentIndex, tasks.length])
+
+  function requeueCard(task: Task) {
+    setTasks(prev => [...prev, { ...task }])
+  }
 
   function handleTranslateSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!userAnswer.trim() || !currentTask) return
-    const correct = userAnswer.trim().toLowerCase() === currentTask.answer.trim().toLowerCase()
-    submitAnswer(userAnswer, correct)
+
+    const expected = currentTask.expectedAnswer || currentTask.answer
+    const state = getTaskState(currentTask.cardId)
+    state.attempts++
+
+    const result = checkAnswerWithTypo(userAnswer, expected)
+
+    if (result === 'typo') {
+      setTypoState({ expected, userAnswer: userAnswer.trim() })
+      return
+    }
+
+    finishTranslateAnswer(result === 'correct', expected, state, false)
+  }
+
+  function handleTypoDecision(accept: boolean) {
+    if (!typoState || !currentTask) return
+    const state = getTaskState(currentTask.cardId)
+    finishTranslateAnswer(accept, typoState.expected, state, true)
+    setTypoState(null)
+  }
+
+  function finishTranslateAnswer(correct: boolean, expected: string, state: TaskState, userOverride: boolean) {
+    if (!currentTask) return
+
+    if (correct) {
+      state.wasWrongBefore = state.wasWrongBefore || state.attempts > 1
+      setAnsweredCount(prev => prev + 1)
+      setCorrectCount(prev => prev + 1)
+      setFeedback({ correct: true, message: 'Correct' })
+      playCorrect()
+    } else {
+      state.wasWrongBefore = true
+      setFeedback({ correct: false, message: `Correct answer: ${expected}` })
+      playWrong()
+      requeueCard(currentTask)
+    }
+
+    saveAnswerInBackground({
+      sessionId,
+      cardId: currentTask.cardId,
+      taskType: 'translate',
+      userAnswer,
+      isCorrect: correct,
+      expectedAnswer: expected,
+      attemptsCount: state.attempts,
+      wasWrongBeforeCorrect: state.wasWrongBefore,
+      usedHint: state.usedHint,
+      userOverride,
+    })
+
+    advanceToNext(correct ? FEEDBACK_DELAY_CORRECT : FEEDBACK_DELAY_WRONG)
+  }
+
+  function handleHintClick() {
+    if (!currentTask) return
+    const state = getTaskState(currentTask.cardId)
+    state.usedHint = true
+    setShowHint(true)
   }
 
   function handleAbcdSelect(option: string) {
+    if (!currentTask) return
     const correct = option === currentTask.answer
-    submitAnswer(option, correct)
+    const state = getTaskState(currentTask.cardId)
+    state.attempts++
+
+    if (correct) {
+      state.wasWrongBefore = state.wasWrongBefore || state.attempts > 1
+      setAnsweredCount(prev => prev + 1)
+      setCorrectCount(prev => prev + 1)
+      setFeedback({ correct: true, message: 'Correct' })
+      playCorrect()
+    } else {
+      state.wasWrongBefore = true
+      setFeedback({ correct: false, message: `Correct answer: ${currentTask.answer}` })
+      playWrong()
+      requeueCard(currentTask)
+    }
+
+    // Fire-and-forget save
+    saveAnswerInBackground({
+      sessionId,
+      cardId: currentTask.cardId,
+      taskType: 'abcd',
+      userAnswer: option,
+      isCorrect: correct,
+      attemptsCount: state.attempts,
+      wasWrongBeforeCorrect: state.wasWrongBefore,
+      usedHint: state.usedHint,
+    })
+
+    advanceToNext(correct ? FEEDBACK_DELAY_CORRECT : FEEDBACK_DELAY_WRONG)
   }
 
   async function handleSentenceSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!userAnswer.trim() || !currentTask) return
-    
+
+    const state = getTaskState(currentTask.cardId)
+    state.attempts++
+
     setLoading(true)
     try {
       const res = await fetch('/api/check-sentence', {
@@ -103,24 +255,70 @@ export default function SessionPage() {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          requiredPhrase: currentTask.answer,
+          phrase: currentTask.requiredEn || currentTask.answer,
           sentence: userAnswer,
+          promptPl: currentTask.promptPl || currentTask.prompt,
         }),
       })
       const data = await res.json()
-      await submitAnswer(userAnswer, data.ok)
+      const correct = !!data.ok
+
+      if (correct) {
+        state.wasWrongBefore = state.wasWrongBefore || state.attempts > 1
+        setAnsweredCount(prev => prev + 1)
+        setCorrectCount(prev => prev + 1)
+        setFeedback({ correct: true, message: data.message_pl || 'Correct' })
+        playCorrect()
+      } else {
+        state.wasWrongBefore = true
+        const msg = data.suggested_fix
+          ? `${data.message_pl || 'Incorrect'}\nSuggested: ${data.suggested_fix}`
+          : (data.message_pl || `Use: ${currentTask.answer}`)
+        setFeedback({ correct: false, message: msg })
+        playWrong()
+        requeueCard(currentTask)
+      }
+
+      // Fire-and-forget save to backend
+      saveAnswerInBackground({
+        sessionId,
+        cardId: currentTask.cardId,
+        taskType: 'sentence',
+        userAnswer,
+        isCorrect: correct,
+        attemptsCount: state.attempts,
+        wasWrongBeforeCorrect: state.wasWrongBefore,
+        usedHint: state.usedHint,
+        aiUsed: data.aiUsed ?? false,
+      })
+
+      advanceToNext(correct ? FEEDBACK_DELAY_CORRECT_SLOW : FEEDBACK_DELAY_WRONG_SLOW)
     } catch {
-      await submitAnswer(userAnswer, false)
+      // On network error, count as wrong
+      state.wasWrongBefore = true
+      setFeedback({ correct: false, message: 'Network error – try again' })
+      playWrong()
+      requeueCard(currentTask)
+      advanceToNext(FEEDBACK_DELAY_WRONG_SLOW)
+    } finally {
+      setLoading(false)
     }
   }
 
-  // No tasks loaded
+  function toggleShuffle() {
+    setShuffleEnabled(prev => {
+      const next = !prev
+      localStorage.setItem('vocab-shuffle', String(next))
+      return next
+    })
+  }
+
   if (tasks.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-50 to-slate-100">
         <div className="text-center">
-          <p className="text-sm text-neutral-400 mb-3">No session data found.</p>
-          <button onClick={() => router.push('/learn')} className="text-sm text-neutral-900 underline underline-offset-2">
+          <p className="text-sm text-slate-400 mb-3">No session data found.</p>
+          <button onClick={() => router.push('/learn')} className="text-sm text-indigo-600 underline underline-offset-2">
             Go to Learn
           </button>
         </div>
@@ -128,19 +326,18 @@ export default function SessionPage() {
     )
   }
 
-  // Session complete
   if (sessionDone) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-50 to-slate-100">
         <div className="text-center max-w-xs mx-4">
-          <p className="text-xs text-neutral-400 uppercase tracking-widest mb-2">Session Complete</p>
-          <p className="text-5xl font-bold tabular-nums mb-1">{accuracy}%</p>
-          <p className="text-sm text-neutral-400 mb-8">accuracy</p>
+          <p className="text-xs text-slate-400 uppercase tracking-widest mb-2">Session Complete</p>
+          <p className="text-5xl font-bold tabular-nums mb-1 text-indigo-600">{accuracy}%</p>
+          <p className="text-sm text-slate-400 mb-8">accuracy</p>
           <div className="space-y-2">
-            <button onClick={() => router.push('/learn')} className="block w-full bg-neutral-900 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-neutral-800 transition-colors">
+            <button onClick={() => router.push('/learn')} className="block w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-2.5 rounded-xl text-sm font-medium hover:from-indigo-700 hover:to-violet-700 transition-all">
               New Session
             </button>
-            <button onClick={() => router.push('/')} className="block w-full border border-neutral-200 py-2.5 rounded-xl text-sm hover:border-neutral-400 transition-colors">
+            <button onClick={() => router.push('/')} className="block w-full border border-slate-200 py-2.5 rounded-xl text-sm hover:border-indigo-300 transition-colors">
               Dashboard
             </button>
           </div>
@@ -149,31 +346,87 @@ export default function SessionPage() {
     )
   }
 
-  // Active session
   const progress = ((currentIndex + 1) / tasks.length) * 100
+  const hintText = showHint && currentTask ? generateHint(currentTask.expectedAnswer || currentTask.answer) : ''
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
       {/* Progress bar */}
-      <div className="border-b border-neutral-200 bg-white px-6 py-3">
+      <div className="border-b border-slate-200 bg-white/80 backdrop-blur-sm px-6 py-3">
         <div className="max-w-lg mx-auto flex items-center gap-4">
-          <span className="text-xs text-neutral-400 tabular-nums whitespace-nowrap">
+          <span className="text-xs text-slate-400 tabular-nums whitespace-nowrap">
             {currentIndex + 1} / {tasks.length}
           </span>
-          <div className="flex-1 bg-neutral-100 rounded-full h-1.5">
+          <div className="flex-1 bg-slate-100 rounded-full h-1.5">
             <div
-              className="bg-neutral-900 h-1.5 rounded-full transition-all duration-300"
+              className="bg-gradient-to-r from-indigo-500 to-violet-500 h-1.5 rounded-full transition-all duration-300"
               style={{ width: `${progress}%` }}
             />
           </div>
-          <span className="text-xs text-neutral-400 tabular-nums">{accuracy}%</span>
+          <span className="text-xs text-slate-400 tabular-nums">{accuracy}%</span>
+          <button
+            onClick={toggleShuffle}
+            className={`text-xs transition-colors ${shuffleEnabled ? 'text-indigo-600' : 'text-slate-300 hover:text-slate-500'}`}
+            title={shuffleEnabled ? 'Shuffle ON' : 'Shuffle OFF'}
+          >
+            🔀
+          </button>
+          <button
+            onClick={toggleSound}
+            className="text-xs text-slate-400 hover:text-indigo-600 transition-colors"
+            title={soundEnabled ? 'Sound ON' : 'Sound OFF'}
+          >
+            {soundEnabled ? '🔊' : '🔇'}
+          </button>
         </div>
       </div>
 
       <main className="max-w-lg mx-auto px-6 py-12">
         <div className="text-center">
-          <p className="text-[10px] text-neutral-400 uppercase tracking-widest mb-4">{currentTask.taskType}</p>
-          <h2 className="text-3xl font-semibold tracking-tight mb-10">{currentTask.prompt}</h2>
+          <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-4">
+            {currentTask.taskType === 'sentence' ? 'sentence' : currentTask.taskType}
+          </p>
+          <h2 className="text-3xl font-semibold tracking-tight text-slate-900">
+            {currentTask.prompt}
+          </h2>
+          {currentTask.taskType === 'sentence' && (
+            <p className="text-sm text-slate-400 mt-2 mb-8">Create a sentence with this word.</p>
+          )}
+          {currentTask.taskType !== 'sentence' && <div className="mb-10" />}
+
+          {showHint && !feedback && !typoState && (
+            <div className="mb-6 text-sm text-slate-500 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2 inline-block font-mono tracking-widest">
+              {hintText}
+            </div>
+          )}
+
+          {typoState && !feedback && (
+            <div className="space-y-4">
+              <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 text-sm">
+                <p className="text-amber-700 font-medium mb-2">One typo detected!</p>
+                <p className="text-slate-600">
+                  Your answer: <span className="font-medium">{typoState.userAnswer}</span>
+                </p>
+                <p className="text-slate-600">
+                  Expected: <span className="font-medium">{typoState.expected}</span>
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleTypoDecision(true)}
+                  className="flex-1 bg-emerald-500 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-emerald-600 transition-colors"
+                >
+                  ✓ Accept
+                </button>
+                <button
+                  onClick={() => handleTypoDecision(false)}
+                  className="flex-1 bg-red-500 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-red-600 transition-colors"
+                >
+                  ✗ Reject
+                </button>
+              </div>
+            </div>
+          )}
 
           {feedback ? (
             <div className={`inline-block px-5 py-3 rounded-xl text-sm font-medium ${
@@ -181,28 +434,42 @@ export default function SessionPage() {
                 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                 : 'bg-red-50 text-red-700 border border-red-200'
             }`}>
-              {feedback.correct ? '✓ Correct' : `✗ ${feedback.message}`}
+              {feedback.correct ? '✓ ' : '✗ '}
+              {feedback.message.split('\n').map((line, i) => (
+                <span key={i}>{i > 0 && <br />}{line}</span>
+              ))}
             </div>
-          ) : (
+          ) : !typoState && (
             <>
               {currentTask.taskType === 'translate' && (
                 <form onSubmit={handleTranslateSubmit} className="space-y-4">
                   <input
+                    ref={inputRef as React.RefObject<HTMLInputElement>}
                     type="text"
                     value={userAnswer}
                     onChange={e => setUserAnswer(e.target.value)}
                     placeholder="Type your answer…"
                     autoFocus
-                    className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-center text-lg focus:border-neutral-900 focus:outline-none transition-colors"
-                    disabled={loading}
+                    className="w-full border border-slate-200 rounded-xl px-4 py-3 text-center text-lg focus:border-indigo-500 focus:outline-none transition-colors"
                   />
-                  <button
-                    type="submit"
-                    disabled={loading || !userAnswer.trim()}
-                    className="w-full bg-neutral-900 text-white py-3 rounded-xl text-sm font-medium hover:bg-neutral-800 disabled:opacity-40 transition-colors"
-                  >
-                    Check
-                  </button>
+                  <div className="flex gap-2">
+                    {!showHint && (
+                      <button
+                        type="button"
+                        onClick={handleHintClick}
+                        className="px-4 py-3 border border-amber-200 text-amber-600 rounded-xl text-sm hover:bg-amber-50 transition-colors"
+                      >
+                        💡 Hint
+                      </button>
+                    )}
+                    <button
+                      type="submit"
+                      disabled={!userAnswer.trim()}
+                      className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3 rounded-xl text-sm font-medium hover:from-indigo-700 hover:to-violet-700 disabled:opacity-40 transition-all"
+                    >
+                      Check
+                    </button>
+                  </div>
                 </form>
               )}
 
@@ -212,8 +479,8 @@ export default function SessionPage() {
                     <button
                       key={idx}
                       onClick={() => handleAbcdSelect(opt)}
-                      disabled={loading}
-                      className="w-full text-left px-5 py-3.5 border border-neutral-200 rounded-xl text-sm hover:border-neutral-400 hover:bg-neutral-50 disabled:opacity-50 transition-colors"
+                      disabled={!!feedback}
+                      className="w-full text-left px-5 py-3.5 border border-slate-200 rounded-xl text-sm hover:border-indigo-300 hover:bg-indigo-50 disabled:opacity-50 transition-all"
                     >
                       {opt}
                     </button>
@@ -222,27 +489,60 @@ export default function SessionPage() {
               )}
 
               {currentTask.taskType === 'sentence' && (
-                <form onSubmit={handleSentenceSubmit} className="space-y-4">
-                  <p className="text-sm text-neutral-400">
-                    Write a sentence using: <strong className="text-neutral-900">{currentTask.answer}</strong>
-                  </p>
+                <div className="space-y-5">
+                  {/* Required EN word as pill/chip */}
+                  <div className="flex justify-center">
+                    <span className="inline-block bg-indigo-100 text-indigo-700 font-semibold px-4 py-1.5 rounded-full text-base tracking-wide">
+                      {currentTask.requiredEn || currentTask.answer}
+                    </span>
+                  </div>
+
+                  {/* Textarea */}
                   <textarea
+                    ref={inputRef as React.RefObject<HTMLTextAreaElement>}
                     value={userAnswer}
                     onChange={e => setUserAnswer(e.target.value)}
-                    placeholder="Write a sentence…"
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                        e.preventDefault()
+                        if (userAnswer.trim() && !loading) {
+                          handleSentenceSubmit(e as unknown as React.FormEvent)
+                        }
+                      }
+                    }}
+                    placeholder="Write one sentence…"
                     autoFocus
                     rows={3}
-                    className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-sm focus:border-neutral-900 focus:outline-none resize-none transition-colors"
+                    className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-indigo-500 focus:outline-none resize-none transition-colors"
                     disabled={loading}
                   />
-                  <button
-                    type="submit"
-                    disabled={loading || !userAnswer.trim()}
-                    className="w-full bg-neutral-900 text-white py-3 rounded-xl text-sm font-medium hover:bg-neutral-800 disabled:opacity-40 transition-colors"
-                  >
-                    Check
-                  </button>
-                </form>
+
+                  {/* Hint + Check buttons */}
+                  <div className="flex gap-2">
+                    {!showHint && (
+                      <button
+                        type="button"
+                        onClick={handleHintClick}
+                        className="px-4 py-3 border border-amber-200 text-amber-600 rounded-xl text-sm hover:bg-amber-50 transition-colors"
+                      >
+                        💡 Hint
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={e => {
+                        if (userAnswer.trim() && !loading) {
+                          handleSentenceSubmit(e as unknown as React.FormEvent)
+                        }
+                      }}
+                      disabled={loading || !userAnswer.trim()}
+                      className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3 rounded-xl text-sm font-medium hover:from-indigo-700 hover:to-violet-700 disabled:opacity-40 transition-all"
+                    >
+                      {loading ? 'Checking…' : 'Check'}
+                    </button>
+                  </div>
+                  <p className="text-xs text-slate-300 text-center">Ctrl+Enter to submit</p>
+                </div>
               )}
             </>
           )}

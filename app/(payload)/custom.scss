@@ -1,4 +1,4 @@
-/* Payload Admin – minimal monochrome overrides */
+/* Payload Admin – color overrides */
 :root {
   --theme-elevation-0: #fafafa;
   --theme-elevation-50: #ffffff;
@@ -21,4 +21,48 @@
   --theme-elevation-900: #000000;
   --theme-elevation-950: #000000;
   --theme-elevation-1000: #000000;
+
+  --theme-bg: #fafafa;
+  --theme-text: #0f0f0f;
+  --theme-input-bg: #ffffff;
+  --theme-success-50: #f0fdf4;
+  --theme-success-500: #22c55e;
+  --theme-success-600: #16a34a;
+  --theme-error-50: #fef2f2;
+  --theme-error-500: #ef4444;
+  --theme-error-600: #dc2626;
+}
+
+[data-theme="light"] {
+  --theme-bg: #fafafa;
+  --theme-text: #0f0f0f;
+  --theme-input-bg: #ffffff;
+  --theme-elevation-0: #fafafa;
+  --theme-elevation-50: #ffffff;
+  --theme-elevation-100: #f5f5f5;
+  --theme-elevation-150: #eeeeee;
+  --theme-elevation-200: #e5e5e5;
+  --theme-elevation-250: #d4d4d4;
+  --theme-elevation-300: #a3a3a3;
+  --theme-elevation-350: #737373;
+  --theme-elevation-400: #525252;
+  --theme-elevation-450: #404040;
+  --theme-elevation-500: #262626;
+}
+
+[data-theme="dark"] {
+  --theme-bg: #0f0f0f;
+  --theme-text: #fafafa;
+  --theme-input-bg: #1a1a1a;
+  --theme-elevation-0: #0f0f0f;
+  --theme-elevation-50: #1a1a1a;
+  --theme-elevation-100: #262626;
+  --theme-elevation-150: #333333;
+  --theme-elevation-200: #404040;
+  --theme-elevation-250: #525252;
+  --theme-elevation-300: #737373;
+  --theme-elevation-350: #a3a3a3;
+  --theme-elevation-400: #d4d4d4;
+  --theme-elevation-450: #e5e5e5;
+  --theme-elevation-500: #fafafa;
 }

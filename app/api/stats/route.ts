@@ -10,14 +10,12 @@ export async function GET() {
     const payload = await getPayload()
     const now = new Date()
 
-    // Get today's start and this week's start
     const todayStart = new Date(now)
     todayStart.setHours(0, 0, 0, 0)
     const weekStart = new Date(now)
     weekStart.setDate(weekStart.getDate() - weekStart.getDay())
     weekStart.setHours(0, 0, 0, 0)
 
-    // Sessions today
     const sessionsToday = await payload.find({
       collection: 'sessions',
       where: {
@@ -28,7 +26,6 @@ export async function GET() {
       depth: 0,
     })
 
-    // Sessions this week
     const sessionsThisWeek = await payload.find({
       collection: 'sessions',
       where: {
@@ -39,7 +36,6 @@ export async function GET() {
       depth: 0,
     })
 
-    // Recent sessions (last 20)
     const recentSessions = await payload.find({
       collection: 'sessions',
       where: { owner: { equals: user.id } },
@@ -48,13 +44,12 @@ export async function GET() {
       depth: 1,
     })
 
-    // Calculate average accuracy from recent sessions
     const completedSessions = recentSessions.docs.filter(s => s.endedAt)
     const avgAccuracy = completedSessions.length > 0
       ? Math.round(completedSessions.reduce((sum, s) => sum + (s.accuracy || 0), 0) / completedSessions.length)
       : 0
 
-    // Calculate streak (consecutive days with at least one session)
+    // Calculate streak
     const yearAgo = new Date(now)
     yearAgo.setFullYear(yearAgo.getFullYear() - 1)
     const allSessions = await payload.find({
@@ -67,7 +62,6 @@ export async function GET() {
       depth: 0,
     })
 
-    // Build a set of date strings (YYYY-MM-DD) that have sessions
     const sessionDays = new Set<string>()
     for (const s of allSessions.docs) {
       if (s.startedAt) {
@@ -97,14 +91,44 @@ export async function GET() {
       depth: 0,
     })
 
-    const deckStats = []
+    const deckStats: Array<{
+      deckId: string | number
+      deckName: string
+      cardCount: number
+      dueCount: number
+      levelDistribution: Record<number, number>
+      percentLevel4: number
+    }> = []
+    const allHardestCards: Array<{
+      cardId: string | number
+      front: string
+      back: string
+      totalWrong: number
+      todayWrongCount: number
+      level: number
+      deckName: string
+      deckId: string | number
+    }> = []
+
     for (const deck of decks.docs) {
       const cards = await payload.find({
         collection: 'cards',
         where: { deck: { equals: deck.id }, owner: { equals: user.id } },
-        limit: 0,
+        limit: 1000,
         depth: 0,
       })
+
+      if (cards.docs.length === 0) {
+        deckStats.push({
+          deckId: deck.id,
+          deckName: deck.name,
+          cardCount: 0,
+          dueCount: 0,
+          levelDistribution: { 1: 0, 2: 0, 3: 0, 4: 0 },
+          percentLevel4: 0,
+        })
+        continue
+      }
 
       const reviewStates = await payload.find({
         collection: 'review-states',
@@ -115,6 +139,11 @@ export async function GET() {
         limit: 1000,
         depth: 0,
       })
+
+      const rsMap = new Map<string, (typeof reviewStates.docs)[0]>()
+      for (const rs of reviewStates.docs) {
+        rsMap.set(String(rs.card), rs)
+      }
 
       const dueCount = reviewStates.docs.filter(rs => new Date(rs.dueAt) <= now).length
       const levelDist = { 1: 0, 2: 0, 3: 0, 4: 0 }
@@ -133,9 +162,80 @@ export async function GET() {
         levelDistribution: levelDist,
         percentLevel4,
       })
+
+      // Collect hardest cards
+      for (const card of cards.docs) {
+        const rs = rsMap.get(String(card.id))
+        if (rs && (rs.totalWrong ?? 0) > 0) {
+          allHardestCards.push({
+            cardId: card.id,
+            front: card.front,
+            back: card.back,
+            totalWrong: rs.totalWrong ?? 0,
+            todayWrongCount: rs.todayWrongCount ?? 0,
+            level: rs.level,
+            deckName: deck.name,
+            deckId: deck.id,
+          })
+        }
+      }
     }
 
-    // Format recent sessions for history
+    // Sort hardest cards by totalWrong descending, take top 20
+    allHardestCards.sort((a, b) => b.totalWrong - a.totalWrong)
+    const hardestCards = allHardestCards.slice(0, 20)
+
+    // Per folder stats
+    let folderStats: Array<{
+      folderId: string | number
+      folderName: string
+      deckCount: number
+      totalCards: number
+      totalDue: number
+      avgMastery: number
+    }> = []
+
+    try {
+      const folders = await payload.find({
+        collection: 'folders',
+        where: { owner: { equals: user.id } },
+        limit: 100,
+        depth: 0,
+      })
+
+      folderStats = folders.docs.map(folder => {
+        const folderDecks = deckStats.filter(d => {
+          const matchDeck = decks.docs.find(dd => String(dd.id) === String(d.deckId))
+          return matchDeck && String((matchDeck as any).folder) === String(folder.id)
+        })
+
+        const totalCards = folderDecks.reduce((s, d) => s + d.cardCount, 0)
+        const totalDue = folderDecks.reduce((s, d) => s + d.dueCount, 0)
+        const avgMastery = folderDecks.length > 0
+          ? Math.round(folderDecks.reduce((s, d) => s + d.percentLevel4, 0) / folderDecks.length)
+          : 0
+
+        return {
+          folderId: folder.id,
+          folderName: folder.name,
+          deckCount: folderDecks.length,
+          totalCards,
+          totalDue,
+          avgMastery,
+        }
+      })
+    } catch {
+      // Folders may not exist yet
+    }
+
+    // Global level distribution
+    const globalLevelDist = { 1: 0, 2: 0, 3: 0, 4: 0 }
+    for (const d of deckStats) {
+      for (const lvl of [1, 2, 3, 4] as const) {
+        globalLevelDist[lvl] += d.levelDistribution[lvl] || 0
+      }
+    }
+
     const history = recentSessions.docs.map(s => ({
       id: s.id,
       mode: s.mode,
@@ -153,8 +253,11 @@ export async function GET() {
         sessionsThisWeek: sessionsThisWeek.totalDocs,
         streakDays,
         avgAccuracy,
+        levelDistribution: globalLevelDist,
       },
       deckStats,
+      folderStats,
+      hardestCards,
       history,
     })
   } catch (error: unknown) {

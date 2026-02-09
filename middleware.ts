@@ -9,6 +9,8 @@ const APP_TOKEN_API_ALLOWLIST = [
   '/api/stats',
   '/api/decks',
   '/api/cards',
+  '/api/search',
+  '/api/folders',
 ]
 
 export function middleware(request: NextRequest) {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from '@/src/lib/getPayload'
 import { getUser } from '@/src/lib/getUser'
 import { processCorrectAnswer, processWrongAnswer } from '@/src/lib/srs'
+import { normalizeAnswer } from '@/src/lib/answerCheck'
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,13 +10,33 @@ export async function POST(req: NextRequest) {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const body = await req.json()
-    const { sessionId, cardId, taskType, userAnswer, isCorrect } = body
+    const {
+      sessionId, cardId, taskType, userAnswer,
+      isCorrect: clientIsCorrect, expectedAnswer,
+      attemptsCount, wasWrongBeforeCorrect, usedHint, userOverride,
+      aiUsed: clientAiUsed,
+    } = body
 
     if (!sessionId || !cardId) {
       return NextResponse.json({ error: 'sessionId and cardId are required' }, { status: 400 })
     }
 
     const payload = await getPayload()
+
+    // Determine the authoritative isCorrect value.
+    let isCorrect = !!clientIsCorrect
+
+    if (taskType === 'translate' && expectedAnswer != null) {
+      try {
+        const card = await payload.findByID({ collection: 'cards', id: cardId, depth: 0 })
+        const dbAnswer = card.back || ''
+        if (normalizeAnswer(expectedAnswer) !== normalizeAnswer(dbAnswer)) {
+          isCorrect = normalizeAnswer(userAnswer || '') === normalizeAnswer(dbAnswer)
+        }
+      } catch {
+        // Card not found or error - fall through with client value
+      }
+    }
 
     // Get review state for this card
     const reviewStates = await payload.find({
@@ -46,6 +67,12 @@ export async function POST(req: NextRequest) {
         lastLevelUpAt: rs.lastLevelUpAt,
         lastReviewedAt: rs.lastReviewedAt,
       })
+
+      // If hint was used, prevent level-up (revert level change)
+      if (usedHint && (updateData.level as number) > rs.level) {
+        updateData.level = rs.level
+        updateData.lastLevelUpAt = rs.lastLevelUpAt || undefined
+      }
     } else {
       updateData = processWrongAnswer({
         level: rs.level,
@@ -74,22 +101,45 @@ export async function POST(req: NextRequest) {
     })
 
     if (sessionItems.docs.length > 0) {
-      await payload.update({
-        collection: 'session-items',
-        id: sessionItems.docs[0].id,
-        data: {
-          userAnswer: userAnswer || '',
-          isCorrect: !!isCorrect,
-          taskType: taskType || sessionItems.docs[0].taskType,
-        },
-      })
+      const itemUpdate: Record<string, unknown> = {
+        userAnswer: userAnswer || '',
+        isCorrect,
+        aiUsed: taskType === 'sentence' ? !!clientAiUsed : false,
+        taskType: taskType || sessionItems.docs[0].taskType,
+      }
+
+      // Save new fields if provided (gracefully handle missing columns)
+      if (attemptsCount !== undefined) itemUpdate.attemptsCount = attemptsCount
+      if (wasWrongBeforeCorrect !== undefined) itemUpdate.wasWrongBeforeCorrect = wasWrongBeforeCorrect
+      if (usedHint !== undefined) itemUpdate.usedHint = usedHint
+      if (userOverride !== undefined) itemUpdate.userOverride = userOverride
+
+      try {
+        await payload.update({
+          collection: 'session-items',
+          id: sessionItems.docs[0].id,
+          data: itemUpdate,
+        })
+      } catch (err) {
+        // If new columns don't exist yet, fall back to basic update
+        console.error('SessionItem update with new fields failed, falling back:', err)
+        await payload.update({
+          collection: 'session-items',
+          id: sessionItems.docs[0].id,
+          data: {
+            userAnswer: userAnswer || '',
+            isCorrect,
+            aiUsed: taskType === 'sentence' ? !!clientAiUsed : false,
+            taskType: taskType || sessionItems.docs[0].taskType,
+          },
+        })
+      }
     }
 
     // Update session completedCount and accuracy
     const session = await payload.findByID({ collection: 'sessions', id: sessionId, depth: 0 })
     const newCompleted = (session.completedCount ?? 0) + 1
 
-    // Recalculate accuracy
     const allItems = await payload.find({
       collection: 'session-items',
       where: { session: { equals: sessionId } },
