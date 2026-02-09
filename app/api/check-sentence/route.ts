@@ -7,8 +7,8 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const MODEL = 'gpt-5-nano'
-const PRIMARY_MAX_OUTPUT_TOKENS = 360
-const RETRY_MAX_OUTPUT_TOKENS = 600
+const PRIMARY_MAX_OUTPUT_TOKENS = 300
+const RETRY_MAX_OUTPUT_TOKENS = 300
 const PREVIEW_LENGTH = 200
 
 /** Collapse whitespace and lowercase for phrase containment check */
@@ -137,6 +137,11 @@ export async function POST(req: NextRequest) {
       const userContent = `requiredEn: ${targetPhrase}\n${meaningContext}\nsentence: ${trimmed}`
 
       const runRequest = async (prompt: string, maxTokens: number) => {
+        console.info('[AI] request config', {
+          apiType: 'responses',
+          max_output_tokens: maxTokens,
+          max_tokens: null,
+        })
         const response = await openai.responses.create({
           model: MODEL,
           max_output_tokens: maxTokens,
