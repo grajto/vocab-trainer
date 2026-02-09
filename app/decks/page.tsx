@@ -34,7 +34,7 @@ export default async function DecksPage() {
 
         <div className="space-y-2">
           {decks.docs.length === 0 ? (
-            <p className="text-sm text-neutral-400 py-8 text-center">No decks yet. Create one above.</p>
+            <p className="text-sm text-slate-400 py-8 text-center">No decks yet. Create one above.</p>
           ) : (
             decks.docs.map(deck => (
               <Link key={deck.id} href={`/decks/${deck.id}`} className="block bg-white border border-slate-200 rounded-xl px-5 py-4 hover:border-indigo-300 hover:shadow-sm transition-all">

@@ -41,15 +41,15 @@ export default async function DeckDetailPage({ params }: { params: Promise<{ id:
       <main className="max-w-3xl mx-auto px-6 py-8 space-y-6">
         <div>
           <h2 className="text-xl font-semibold">{deck.name}</h2>
-          {deck.description && <p className="text-sm text-neutral-400 mt-1">{deck.description}</p>}
-          <p className="text-xs text-neutral-400 mt-1">{cards.totalDocs} card{cards.totalDocs !== 1 ? 's' : ''}</p>
+          {deck.description && <p className="text-sm text-slate-400 mt-1">{deck.description}</p>}
+          <p className="text-xs text-slate-400 mt-1">{cards.totalDocs} card{cards.totalDocs !== 1 ? 's' : ''}</p>
         </div>
 
         <AddCardForm deckId={id} />
 
         <div className="space-y-1">
           {cards.docs.length === 0 ? (
-            <p className="text-sm text-neutral-400 py-8 text-center">No cards yet. Add one above.</p>
+            <p className="text-sm text-slate-400 py-8 text-center">No cards yet. Add one above.</p>
           ) : (
             cards.docs.map(card => (
               <div key={card.id} className="bg-white border border-slate-200 rounded-lg px-4 py-3 flex justify-between items-center">

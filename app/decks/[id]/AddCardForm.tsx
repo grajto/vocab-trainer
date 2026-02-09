@@ -51,9 +51,9 @@ export function AddCardForm({ deckId }: { deckId: string }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white border border-neutral-200 rounded-xl p-5 space-y-3">
+    <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-xl p-5 space-y-3 shadow-sm">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-medium">Add Card</p>
+        <p className="text-sm font-medium text-slate-900">Add Card</p>
         <div className="flex gap-1">
           {(['word', 'phrase', 'sentence'] as const).map(t => (
             <button
@@ -63,7 +63,7 @@ export function AddCardForm({ deckId }: { deckId: string }) {
               className={`text-xs px-2.5 py-1 rounded-lg transition-colors capitalize ${
                 cardType === t
                   ? 'bg-indigo-600 text-white'
-                  : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200'
+                  : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
               }`}
             >
               {t}
@@ -81,7 +81,7 @@ export function AddCardForm({ deckId }: { deckId: string }) {
           onChange={e => setFront(e.target.value)}
           placeholder={cardType === 'sentence' ? 'Target word (e.g. however)' : 'Front (e.g. English)'}
           required
-          className="flex-1 border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none transition-colors"
+          className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none transition-colors"
         />
         <input
           type="text"
@@ -89,7 +89,7 @@ export function AddCardForm({ deckId }: { deckId: string }) {
           onChange={e => setBack(e.target.value)}
           placeholder={cardType === 'sentence' ? 'Translation (e.g. jednakże)' : 'Back (e.g. Polish)'}
           required
-          className="flex-1 border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none transition-colors"
+          className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none transition-colors"
         />
       </div>
 
@@ -100,7 +100,7 @@ export function AddCardForm({ deckId }: { deckId: string }) {
           placeholder="Example sentence using the target word…"
           required
           rows={2}
-          className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none resize-none transition-colors"
+          className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none resize-none transition-colors"
         />
       )}
 
