@@ -9,6 +9,7 @@ export function StartSessionForm({ decks }: { decks: Deck[] }) {
   const [deckId, setDeckId] = useState(decks[0]?.id || '')
   const [mode, setMode] = useState('translate')
   const [targetCount, setTargetCount] = useState(10)
+  const [levelFilter, setLevelFilter] = useState('all')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
@@ -23,7 +24,7 @@ export function StartSessionForm({ decks }: { decks: Deck[] }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ deckId, mode, targetCount }),
+        body: JSON.stringify({ deckId, mode, targetCount, levelFilter }),
       })
 
       const data = await res.json()
@@ -58,6 +59,17 @@ export function StartSessionForm({ decks }: { decks: Deck[] }) {
           <option value="abcd">ABCD (multiple choice)</option>
           <option value="sentence">Sentence (use word in sentence)</option>
           <option value="mixed">Mixed</option>
+        </select>
+      </div>
+
+      <div>
+        <label className="block text-xs font-medium text-slate-500 mb-1.5">Card Level</label>
+        <select value={levelFilter} onChange={e => setLevelFilter(e.target.value)} className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none bg-white">
+          <option value="all">All levels</option>
+          <option value="1">Level 1 only (new)</option>
+          <option value="2-3">Level 2-3 (learning)</option>
+          <option value="4">Level 4 (mastered - review)</option>
+          <option value="problematic">Problematic (most errors)</option>
         </select>
       </div>
 

@@ -10,9 +10,8 @@ export async function POST(req: NextRequest) {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const body = await req.json()
-    const { deckId, mode, targetCount = 10 } = body
+    const { deckId, mode, targetCount = 10, levelFilter = 'all' } = body
 
-    // Sentence is available as its own mode; mixed mode intentionally excludes it.
     const allowedModes = ['translate', 'sentence', 'abcd', 'mixed'] as const
     type Mode = (typeof allowedModes)[number]
     const isMode = (value: unknown): value is Mode =>
@@ -29,6 +28,15 @@ export async function POST(req: NextRequest) {
 
     const count = Math.min(Math.max(Number(targetCount), 5), 35)
     const payload = await getPayload()
+
+    // Get deck to check direction setting
+    let deckDirection = 'front-to-back'
+    try {
+      const deck = await payload.findByID({ collection: 'decks', id: numericDeckId, depth: 0 })
+      deckDirection = (deck as any).direction || 'front-to-back'
+    } catch {
+      // Fall through with default
+    }
 
     // Get all cards in deck
     const allCards = await payload.find({
@@ -68,7 +76,7 @@ export async function POST(req: NextRequest) {
     }).length
 
     // Separate cards with/without review state
-    const cardsWithState = allCards.docs
+    let cardsWithState = allCards.docs
       .filter(c => stateMap.has(String(c.id)))
       .map(c => {
         const rs = stateMap.get(String(c.id))!
@@ -79,21 +87,44 @@ export async function POST(req: NextRequest) {
           reviewStateId: rs.id,
           level: rs.level,
           todayWrongCount: rs.todayWrongCount ?? 0,
+          totalWrong: rs.totalWrong ?? 0,
           lastReviewedAt: rs.lastReviewedAt,
         }
       })
 
-    const cardsWithoutState = allCards.docs
+    let cardsWithoutState = allCards.docs
       .filter(c => !stateMap.has(String(c.id)))
       .map(c => ({
         cardId: c.id,
         front: c.front,
         back: c.back,
+        totalWrong: 0,
       }))
+
+    // Apply level filter
+    if (levelFilter === '1') {
+      cardsWithState = cardsWithState.filter(c => c.level === 1)
+    } else if (levelFilter === '2-3') {
+      cardsWithState = cardsWithState.filter(c => c.level === 2 || c.level === 3)
+      cardsWithoutState = [] // Only show existing cards
+    } else if (levelFilter === '4') {
+      cardsWithState = cardsWithState.filter(c => c.level === 4)
+      cardsWithoutState = [] // Only show existing cards
+    } else if (levelFilter === 'problematic') {
+      // Sort by totalWrong descending, pick top cards
+      cardsWithState = cardsWithState
+        .filter(c => (c.totalWrong || 0) > 0)
+        .sort((a, b) => (b.totalWrong || 0) - (a.totalWrong || 0))
+      cardsWithoutState = [] // Only show existing cards
+    }
+
+    if (cardsWithState.length === 0 && cardsWithoutState.length === 0) {
+      return NextResponse.json({ error: 'No cards match the selected level filter' }, { status: 400 })
+    }
 
     const selectedCards = selectCardsForSession(cardsWithState, cardsWithoutState, count, 20, introToday)
 
-    // Precompute numeric card IDs once for review state creation + task payloads.
+    // Precompute numeric card IDs
     const cardIdMap = new Map<string, number>()
     for (const card of selectedCards) {
       const parsedId = parseNumericId(card.cardId)
@@ -139,6 +170,13 @@ export async function POST(req: NextRequest) {
       },
     })
 
+    // Determine direction for each task
+    function getDirection(): 'normal' | 'reverse' {
+      if (deckDirection === 'back-to-front') return 'reverse'
+      if (deckDirection === 'both') return Math.random() > 0.5 ? 'reverse' : 'normal'
+      return 'normal'
+    }
+
     // Build tasks
     type TaskType = Exclude<Mode, 'mixed'>
     type MixedTaskType = Exclude<TaskType, 'sentence'>
@@ -155,7 +193,6 @@ export async function POST(req: NextRequest) {
     for (const card of selectedCards) {
       let taskType: TaskType
       if (mode === 'mixed') {
-        // Mixed mode intentionally excludes sentence tasks to keep sessions fast without AI deps.
         const types: MixedTaskType[] = ['translate', 'abcd']
         taskType = types[Math.floor(Math.random() * types.length)]
       } else {
@@ -163,25 +200,26 @@ export async function POST(req: NextRequest) {
       }
 
       const cardIdValue = cardIdMap.get(String(card.cardId))!
+      const dir = getDirection()
+      const prompt = dir === 'reverse' ? card.back : card.front
+      const answer = dir === 'reverse' ? card.front : card.back
+
       const task: Task = {
         cardId: cardIdValue,
         taskType,
-        prompt: card.front,
-        answer: card.back,
+        prompt,
+        answer,
       }
 
-      // For translate (including translate in mixed), include expectedAnswer for instant client-side checking
       if (taskType === 'translate') {
-        task.expectedAnswer = card.back
+        task.expectedAnswer = answer
       }
 
-      // For ABCD, generate options
       if (taskType === 'abcd') {
         const otherCards = allCards.docs.filter(c => String(c.id) !== String(card.cardId))
         const shuffled = otherCards.sort(() => Math.random() - 0.5).slice(0, 3)
-        const options = shuffled.map(c => c.back)
-        options.push(card.back)
-        // Shuffle options
+        const options = shuffled.map(c => dir === 'reverse' ? c.front : c.back)
+        options.push(answer)
         task.options = options.sort(() => Math.random() - 0.5)
       }
 

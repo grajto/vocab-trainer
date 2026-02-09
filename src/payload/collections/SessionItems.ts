@@ -23,5 +23,9 @@ export const SessionItems: CollectionConfig = {
     { name: 'isCorrect', type: 'checkbox', defaultValue: false },
     { name: 'feedback', type: 'textarea' },
     { name: 'aiUsed', type: 'checkbox', defaultValue: false },
+    { name: 'attemptsCount', type: 'number', defaultValue: 1 },
+    { name: 'wasWrongBeforeCorrect', type: 'checkbox', defaultValue: false },
+    { name: 'usedHint', type: 'checkbox', defaultValue: false },
+    { name: 'userOverride', type: 'checkbox', defaultValue: false },
   ],
 }
