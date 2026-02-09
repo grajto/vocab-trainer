@@ -497,8 +497,6 @@ export default function SessionPage() {
                     </span>
                   </div>
 
-                  <p className="text-sm text-slate-400">Create a sentence with this word.</p>
-
                   {/* Textarea */}
                   <textarea
                     ref={inputRef as React.RefObject<HTMLTextAreaElement>}
