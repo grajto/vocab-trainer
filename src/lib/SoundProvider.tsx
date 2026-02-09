@@ -40,9 +40,13 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
   // Unlock audio on first user interaction (for mobile)
   useEffect(() => {
     if (unlocked) return
+    function unlockAudio(audio: HTMLAudioElement | null) {
+      if (!audio) return
+      audio.play().then(() => { audio.pause(); audio.currentTime = 0 }).catch(() => {})
+    }
     function unlock() {
-      correctRef.current?.play().then(() => { correctRef.current!.pause(); correctRef.current!.currentTime = 0 }).catch(() => {})
-      wrongRef.current?.play().then(() => { wrongRef.current!.pause(); wrongRef.current!.currentTime = 0 }).catch(() => {})
+      unlockAudio(correctRef.current)
+      unlockAudio(wrongRef.current)
       setUnlocked(true)
     }
     document.addEventListener('click', unlock, { once: true })

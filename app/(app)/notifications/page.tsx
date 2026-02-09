@@ -147,7 +147,7 @@ export default async function NotificationsPage() {
       {notifications.length === 0 ? (
         <div className="text-center py-12 bg-white border border-slate-200 rounded-xl">
           <Bell className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-          <p className="text-sm text-slate-400">You&#39;re all caught up! No notifications right now.</p>
+          <p className="text-sm text-slate-400">You&apos;re all caught up! No notifications right now.</p>
         </div>
       ) : (
         <div className="space-y-2">

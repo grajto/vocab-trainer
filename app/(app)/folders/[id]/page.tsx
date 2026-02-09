@@ -38,25 +38,28 @@ export default async function FolderPage({ params }: { params: Promise<{ id: str
 
   if (decks.docs.length > 0) {
     const deckIds = decks.docs.map(d => d.id)
-    const [cardCount, dueCount] = await Promise.all([
-      payload.find({
-        collection: 'cards',
-        where: { owner: { equals: user.id }, deck: { in: deckIds } },
-        limit: 0,
-        depth: 0,
-      }),
-      payload.find({
+    const cardResult = await payload.find({
+      collection: 'cards',
+      where: { owner: { equals: user.id }, deck: { in: deckIds } },
+      limit: 1000,
+      depth: 0,
+    })
+    totalCards = cardResult.totalDocs
+
+    if (cardResult.docs.length > 0) {
+      const cardIds = cardResult.docs.map(c => c.id)
+      const dueResult = await payload.find({
         collection: 'review-states',
         where: {
           owner: { equals: user.id },
+          card: { in: cardIds },
           dueAt: { less_than_equal: now },
         },
         limit: 0,
         depth: 0,
-      }),
-    ])
-    totalCards = cardCount.totalDocs
-    totalDue = dueCount.totalDocs
+      })
+      totalDue = dueResult.totalDocs
+    }
   }
 
   return (
