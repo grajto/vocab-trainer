@@ -82,7 +82,7 @@ export default function LoginPage() {
           </button>
         </form>
         <p className="mt-4 text-xs text-neutral-400 text-center">
-          First time? Create your account at{' '}
+          First time?1 Create your account at{' '}
           <Link href="/admin" className="text-neutral-900 underline underline-offset-2">/admin</Link>
         </p>
       </div>
