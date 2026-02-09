@@ -122,8 +122,7 @@ Jeśli ok=true, ustaw issue_type=null i NIE dodawaj message_pl ani suggested_fix
         console.error('[AI] empty response', { finishReason: completion.choices?.[0]?.finish_reason })
         throw new Error('Empty AI response')
       }
-      const cleaned = content.replace(/```json\\s*/g, '').replace(/```\\s*/g, '').trim()
-      const parsed = JSON.parse(cleaned)
+      const parsed = JSON.parse(content.trim())
       const aiLatencyMs = Date.now() - startedAt
       console.info('[AI] result', parsed)
       return NextResponse.json({
