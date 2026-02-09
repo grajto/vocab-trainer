@@ -37,17 +37,16 @@ errors<=5, comment<=200, corrected!=empty, ok=true => corrected=input.`
 function extractResponseMeta(response: unknown) {
   const typed = response as {
     output_text?: string
-    output?: Array<{ type?: string; finish_reason?: string; content?: Array<{ type?: string; finish_reason?: string }> }>
+    output?: Array<{ type?: string; content?: Array<{ type?: string }> }>
     incomplete_details?: { reason?: string }
   }
-  const finishReason =
-    typed.output?.[0]?.finish_reason ||
-    typed.output?.[0]?.content?.[0]?.finish_reason ||
-    typed.incomplete_details?.reason ||
-    null
+  const finishReason = typed.incomplete_details?.reason || null
   const output = typed.output ?? []
   const hasToolCalls = output.some(item => item.type === 'tool_call' || item.type === 'function_call')
-  return { finishReason, hasToolCalls }
+  const outputTypes = output.map(item => item.type ?? 'unknown')
+  const outputContentTypes = output.map(item => (item.content ?? []).map(content => content.type ?? 'unknown'))
+  const outputTextLength = typed.output_text?.length ?? 0
+  return { finishReason, hasToolCalls, outputTypes, outputContentTypes, outputTextLength, outputLength: output.length }
 }
 
 export async function POST(req: NextRequest) {
@@ -151,13 +150,35 @@ export async function POST(req: NextRequest) {
             { role: 'user', content: userContent },
           ],
         })
-        const text = response.output_text?.trim() ?? ''
-        const { finishReason, hasToolCalls } = extractResponseMeta(response)
+        const text = (response.output_text ?? '').trim()
+        let fallbackText = ''
+        if (!text) {
+          const output = response.output ?? []
+          fallbackText = output
+            .flatMap(item => item.content ?? [])
+            .filter(content => content.type === 'output_text')
+            .map(content => ('text' in content ? String(content.text ?? '') : ''))
+            .join('')
+            .trim()
+        }
+        const finalText = text || fallbackText
+        const {
+          finishReason,
+          hasToolCalls,
+          outputTypes,
+          outputContentTypes,
+          outputTextLength,
+          outputLength,
+        } = extractResponseMeta(response)
         console.info('[AI] response meta', {
           finish_reason: finishReason,
-          text_length: text.length,
+          output_text_length: outputTextLength,
+          text_length: finalText.length,
+          output_length: outputLength,
+          output_types: outputTypes,
+          output_content_types: outputContentTypes,
           has_tool_calls: hasToolCalls,
-          has_text: text.length > 0,
+          has_text: finalText.length > 0,
         })
         const responseHeaders = (response as unknown as { response?: { headers?: Record<string, string> } }).response?.headers
         if (responseHeaders) {
@@ -165,7 +186,7 @@ export async function POST(req: NextRequest) {
             requestId: responseHeaders['x-request-id'] || responseHeaders['request-id'] || null,
           })
         }
-        return { text, finishReason, hasToolCalls }
+        return { text: finalText, finishReason, hasToolCalls }
       }
 
       const attempts = [
