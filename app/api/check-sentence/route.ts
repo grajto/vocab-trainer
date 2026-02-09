@@ -112,6 +112,7 @@ Jeśli ok=true, ustaw issue_type=null i NIE dodawaj message_pl ani suggested_fix
         },
       ] satisfies Array<{ role: 'system' | 'user'; content: string }>
 
+      // Keep logs compact while showing enough context from truncated JSON responses.
       const PREVIEW_LENGTH = 200
       const makeCompletion = (maxTokens: number) =>
         openai.chat.completions.create({
