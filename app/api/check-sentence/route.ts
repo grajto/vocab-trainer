@@ -93,14 +93,10 @@ export async function POST(req: NextRequest) {
         : ''
 
       console.info('[AI] calling OpenAI')
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-5-nano',
-        temperature: 0,
-        max_completion_tokens: 220,
-        messages: [
-          {
-            role: 'system',
-            content: `Jesteś surowym nauczycielem języka angielskiego. Twoim zadaniem jest ocenić zdanie ucznia.
+      const messages = [
+        {
+          role: 'system',
+          content: `Jesteś surowym nauczycielem języka angielskiego. Twoim zadaniem jest ocenić zdanie ucznia.
 Sprawdź:
 1) Czy to jest prawdziwe zdanie po angielsku (nie zlepek słów)?
 2) Czy użycie "${targetPhrase}" jest poprawne gramatycznie?
@@ -109,20 +105,44 @@ Sprawdź:
 Zwróć WYŁĄCZNIE JSON w formacie:
 {"ok":true/false,"issue_type":null|"not_a_sentence"|"grammar"|"usage"|"meaning_mismatch"|"missing_phrase"|"other","message_pl":null|string,"suggested_fix":null|string}
 Jeśli ok=true, ustaw issue_type=null i NIE dodawaj message_pl ani suggested_fix.`,
-          },
-          {
-            role: 'user',
-            content: `requiredEn: ${targetPhrase}\nsentence: ${trimmed}`,
-          },
-        ],
-      })
+        },
+        {
+          role: 'user',
+          content: `requiredEn: ${targetPhrase}\nsentence: ${trimmed}`,
+        },
+      ] satisfies Array<{ role: 'system' | 'user'; content: string }>
 
-      const content = completion.choices?.[0]?.message?.content
-      if (!content) {
+      // Keep logs compact while showing enough context from truncated JSON responses.
+      const PREVIEW_LENGTH = 200
+      const makeCompletion = (maxTokens: number) =>
+        openai.chat.completions.create({
+          model: 'gpt-5-nano',
+          max_completion_tokens: maxTokens,
+          response_format: { type: 'json_object' },
+          messages,
+        })
+
+      let completion = await makeCompletion(220)
+      let content = completion.choices?.[0]?.message?.content ?? ''
+      let finishReason = completion.choices?.[0]?.finish_reason
+
+      if (finishReason === 'length') {
+        const preview = content.trim().slice(0, PREVIEW_LENGTH)
+        console.warn('[AI] response truncated, retrying', { finish_reason: finishReason, preview })
+        completion = await makeCompletion(420)
+        content = completion.choices?.[0]?.message?.content ?? ''
+        finishReason = completion.choices?.[0]?.finish_reason
+        if (finishReason === 'length') {
+          console.error('[AI] response still truncated after retry', { finish_reason: finishReason })
+          throw new Error('AI response truncated')
+        }
+      }
+
+      if (!content.trim()) {
+        console.error('[AI] empty response', { finish_reason: finishReason })
         throw new Error('Empty AI response')
       }
-      const cleaned = content.replace(/```json\\s*/g, '').replace(/```\\s*/g, '').trim()
-      const parsed = JSON.parse(cleaned)
+      const parsed = JSON.parse(content.trim())
       const aiLatencyMs = Date.now() - startedAt
       console.info('[AI] result', parsed)
       return NextResponse.json({

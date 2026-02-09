@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from '@/src/lib/getPayload'
 import { getUser } from '@/src/lib/getUser'
+import { requireAppToken } from '@/src/lib/requireAppToken'
 import { processCorrectAnswer, processWrongAnswer } from '@/src/lib/srs'
 import { normalizeAnswer } from '@/src/lib/answerCheck'
 
 export async function POST(req: NextRequest) {
   try {
+    if (!requireAppToken(req)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const user = await getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 

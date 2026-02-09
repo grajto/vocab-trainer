@@ -28,11 +28,11 @@ Copy `.env.example` to `.env.local` and fill in the values:
 | `PAYLOAD_SECRET` | Yes | Secret for Payload CMS encryption (min 32 chars) |
 | `PAYLOAD_PUBLIC_SERVER_URL` | No | `http://localhost:3000` locally. In prod set to your domain (fallback to `VERCEL_URL` if unset) |
 | `OPENAI_API_KEY` | No | OpenAI API key for sentence validation (sentence mode works without it using stub) |
-| `APP_ACCESS_TOKEN` | No | Optional shared token; middleware injects it as `x-app-token` to enable single-user UI + API access without login (admin still requires login) |
+| `APP_ACCESS_TOKEN` | Recommended | Shared token for single-user mode; middleware injects it as `x-app-token` to enable UI + `/api/session/*` access without login (admin still requires login). In production set this to avoid 401s for session endpoints. |
 
 ### Single-user mode (optional)
 
-Set `APP_ACCESS_TOKEN` to let the middleware inject `x-app-token` for app + custom API requests (`/api/session`, `/api/import`, `/api/check-sentence`, `/api/stats`, `/api/decks`, `/api/cards`), so the UI works without logging in. The Payload Admin panel still uses normal authentication. Single-user mode expects exactly one `owner` user; if multiple owners exist, app-token mode is disabled and you'll need to log in. Remove `APP_ACCESS_TOKEN` to enforce login for UI + API routes.
+Set `APP_ACCESS_TOKEN` to let the middleware inject `x-app-token` for app + custom API requests (`/api/session`, `/api/import`, `/api/check-sentence`, `/api/stats`, `/api/decks`, `/api/cards`), so the UI works without logging in. The Payload Admin panel still uses normal authentication. Single-user mode expects exactly one `owner` user; if the owner is missing or multiple owners exist, app-token mode is disabled and you'll need to log in. When `APP_ACCESS_TOKEN` is set, `/api/session/*` requires the `x-app-token` header (injected by middleware).
 
 ## Getting Started
 
@@ -78,7 +78,12 @@ Set these environment variables in Vercel project settings:
 - `PAYLOAD_SECRET` — a strong random secret (min 32 chars)
 - `PAYLOAD_PUBLIC_SERVER_URL` — `https://www.vocab-trainer.pl`
 - `OPENAI_API_KEY` (optional)
-- `APP_ACCESS_TOKEN` (optional, enables single-user UI access)
+- `APP_ACCESS_TOKEN` (recommended for single-user UI access; required for `/api/session/*` without login)
+
+### Production test plan
+
+- Start a session (POST `/api/session/start`) → 200 OK, no 401 Unauthorized.
+- Sentence mode check → `/api/check-sentence` returns `ai_used: true` when `OPENAI_API_KEY` is set, and the session UI shows “AI: ON (xx ms)”.
 
 ## Project Structure
 
