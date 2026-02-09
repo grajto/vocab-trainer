@@ -12,7 +12,8 @@ export async function getUser() {
   if (!appToken) return null
 
   const headerToken = headersList.get('x-app-token')
-  const cookieToken = getCookies().get('app-token')?.value
+  const cookieStore = await getCookies()
+  const cookieToken = cookieStore.get('app-token')?.value
   const incomingToken = headerToken || cookieToken
   if (!incomingToken) return null
 
