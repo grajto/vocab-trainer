@@ -98,7 +98,7 @@ export default function LoginPage() {
             </button>
           </form>
           <p className="mt-4 text-xs text-slate-400 text-center">
-            Pierwszy raz? Utwórz konto w{' '}
+            Pierwszy raz? Utwórz dkonto w{' '}
             <Link href="/admin" className="text-indigo-600 underline underline-offset-2">/admin</Link>
           </p>
         </div>
