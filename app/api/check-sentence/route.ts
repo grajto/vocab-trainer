@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     if (!targetPhrase) {
       return NextResponse.json({
         ok: false,
-        issue_type: 'missing_phrase',
+        issue_type: 'usage',
         message_pl: 'Brak wymaganej frazy do sprawdzenia.',
         ai_used: false,
         ai_latency_ms: 0,
@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
     if (!norm(trimmed).includes(norm(targetPhrase))) {
       return NextResponse.json({
         ok: false,
-        issue_type: 'missing_phrase',
+        issue_type: 'usage',
         message_pl: `Zdanie nie zawiera wymaganego zwrotu: "${targetPhrase}".`,
         ai_used: false,
         ai_latency_ms: 0,
@@ -92,19 +92,20 @@ export async function POST(req: NextRequest) {
         ? ` Polskie znaczenie: "${promptPl}". Zdanie musi pokazywać poprawne użycie słowa/zwrotu.`
         : ''
 
-      console.info('[AI] calling OpenAI')
+      console.info('[AI] calling OpenAI', { model: 'gpt-5-nano' })
       const messages = [
         {
           role: 'system',
-          content: `Jesteś surowym nauczycielem języka angielskiego. Twoim zadaniem jest ocenić zdanie ucznia.
+          content: `Jesteś surowym nauczycielem języka angielskiego. Oceń zdanie ucznia.
 Sprawdź:
 1) Czy to jest prawdziwe zdanie po angielsku (nie zlepek słów)?
-2) Czy użycie "${targetPhrase}" jest poprawne gramatycznie?
+2) Czy użycie "${targetPhrase}" jest poprawne gramatycznie i znaczeniowo?
 3) Czy zdanie jest naturalne jako przykład użycia?
 4) Czy znaczenie pasuje do "${promptPl ?? ''}"?${meaningContext}
+5) Wykryj spam (np. powtórzenia, "blue blue blue") oraz nonsens znaczeniowy (np. "orange is blue").
 Zwróć WYŁĄCZNIE JSON w formacie:
-{"ok":true/false,"issue_type":null|"not_a_sentence"|"grammar"|"usage"|"meaning_mismatch"|"missing_phrase"|"other","message_pl":null|string,"suggested_fix":null|string}
-Jeśli ok=true, ustaw issue_type=null i NIE dodawaj message_pl ani suggested_fix.`,
+{"ok":true/false,"issue_type":"not_a_sentence"|"grammar"|"usage"|"meaning"|"spam"|"other","message_pl":string,"suggested_fix":string|null}
+Jeśli ok=true, issue_type ustaw na "other" i message_pl jako "OK".`,
         },
         {
           role: 'user',
@@ -143,12 +144,26 @@ Jeśli ok=true, ustaw issue_type=null i NIE dodawaj message_pl ani suggested_fix
         throw new Error('Empty AI response')
       }
       const parsed = JSON.parse(content.trim())
+      const rawIssueType = typeof parsed.issue_type === 'string' ? parsed.issue_type : 'other'
+      const issueTypeMap: Record<string, string> = {
+        not_a_sentence: 'not_a_sentence',
+        grammar: 'grammar',
+        usage: 'usage',
+        meaning: 'meaning',
+        meaning_mismatch: 'meaning',
+        missing_phrase: 'usage',
+        spam: 'spam',
+        other: 'other',
+      }
+      const normalizedIssueType = issueTypeMap[rawIssueType] ?? 'other'
+      const normalizedOk = typeof parsed.ok === 'boolean' ? parsed.ok : false
       const aiLatencyMs = Date.now() - startedAt
       console.info('[AI] result', parsed)
+      const message = parsed.message_pl ?? ''
       return NextResponse.json({
-        ok: !!parsed.ok,
-        issue_type: parsed.issue_type ?? null,
-        message_pl: parsed.message_pl ?? '',
+        ok: normalizedOk,
+        issue_type: normalizedIssueType,
+        message_pl: normalizedOk ? (message || 'OK') : message,
         suggested_fix: parsed.suggested_fix ?? null,
         ai_used: true,
         ai_latency_ms: aiLatencyMs,

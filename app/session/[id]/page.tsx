@@ -307,7 +307,15 @@ export default function SessionPage() {
           promptPl: currentTask.promptPl || currentTask.prompt,
         }),
       })
-      const data = await res.json()
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        const message = data?.message_pl || data?.error || 'AI validation failed. Try again.'
+        setFeedback({ correct: false, message })
+        playWrong()
+        requeueCard(currentTask)
+        advanceToNext(FEEDBACK_DELAY_WRONG_SLOW)
+        return
+      }
       const correct = !!data.ok
       setAiInfo({
         used: !!data.ai_used,

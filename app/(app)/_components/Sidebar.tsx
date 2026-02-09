@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Library, Bell, FolderOpen, Plus, BookOpen, GraduationCap, X, Menu, BarChart3 } from 'lucide-react'
+import { Home, Library, Bell, FolderOpen, Plus, BookOpen, GraduationCap, X, Menu, BarChart3, CalendarDays, Settings } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
 interface FolderItem {
@@ -10,7 +10,12 @@ interface FolderItem {
   name: string
 }
 
-export function Sidebar({ folders }: { folders: FolderItem[] }) {
+interface DeckItem {
+  id: string
+  name: string
+}
+
+export function Sidebar({ folders, decks }: { folders: FolderItem[]; decks: DeckItem[] }) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
 
@@ -20,8 +25,10 @@ export function Sidebar({ folders }: { folders: FolderItem[] }) {
   const navItems = [
     { href: '/', label: 'Strona główna', icon: Home },
     { href: '/library', label: 'Twoje zasoby', icon: Library },
-    { href: '/stats', label: 'Statystyki', icon: BarChart3 },
     { href: '/notifications', label: 'Powiadomienia', icon: Bell },
+    { href: '/stats', label: 'Statystyki', icon: BarChart3 },
+    { href: '/calendar', label: 'Kalendarz', icon: CalendarDays },
+    { href: '/settings', label: 'Ustawienia', icon: Settings },
   ]
 
   const isActive = (href: string) => {
@@ -82,6 +89,19 @@ export function Sidebar({ folders }: { folders: FolderItem[] }) {
             </Link>
           ))}
 
+          <Link
+            href="/learn"
+            prefetch={true}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              isActive('/learn')
+                ? 'bg-indigo-50 text-indigo-700'
+                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+            }`}
+          >
+            <BookOpen className="w-5 h-5 flex-shrink-0" />
+            Ucz się
+          </Link>
+
           {/* Folders section */}
           <div className="pt-4">
             <p className="px-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">
@@ -110,18 +130,37 @@ export function Sidebar({ folders }: { folders: FolderItem[] }) {
               Nowy folder
             </Link>
           </div>
+
+          <div className="pt-4">
+            <p className="px-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">
+              Twoje zestawy
+            </p>
+            {decks.map(deck => (
+              <Link
+                key={deck.id}
+                href={`/decks/${deck.id}`}
+                prefetch={true}
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                  pathname === `/decks/${deck.id}`
+                    ? 'bg-indigo-50 text-indigo-700'
+                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                }`}
+              >
+                <BookOpen className="w-4 h-4 flex-shrink-0" />
+                <span className="truncate">{deck.name}</span>
+              </Link>
+            ))}
+            <Link
+              href="/library"
+              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-500 hover:text-indigo-600 hover:bg-slate-100 transition-colors"
+            >
+              Zobacz wszystkie
+            </Link>
+          </div>
         </nav>
 
-        {/* Bottom quick links */}
-        <div className="border-t border-slate-200 px-3 py-3 space-y-1">
-          <Link
-            href="/learn"
-            prefetch={true}
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors"
-          >
-            <BookOpen className="w-4 h-4" />
-            Ucz się
-          </Link>
+        <div className="border-t border-slate-200 px-3 py-3 text-xs text-slate-400">
+          Quizlet-style navigation
         </div>
       </aside>
     </>
