@@ -15,6 +15,10 @@ export default async function LibraryPage() {
   let decks: any = { docs: [] }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let folders: any = { docs: [] }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let cards: any = { docs: [] }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let reviewStates: any = { docs: [] }
 
   try {
     const results = await Promise.all([
@@ -35,25 +39,75 @@ export default async function LibraryPage() {
     ])
     decks = results[0]
     folders = results[1]
+    if (decks.docs.length > 0) {
+      cards = await payload.find({
+        collection: 'cards',
+        where: { owner: { equals: user.id }, deck: { in: decks.docs.map((d: any) => d.id) } },
+        limit: 2000,
+        depth: 0,
+      })
+      if (cards.docs.length > 0) {
+        reviewStates = await payload.find({
+          collection: 'review-states',
+          where: { owner: { equals: user.id }, card: { in: cards.docs.map((c: any) => c.id) } },
+          limit: 2000,
+          depth: 0,
+        })
+      }
+    }
   } catch (err) {
     console.error('Library page data fetch error (migration may be pending):', err)
   }
 
+  const cardCountByDeck = new Map<string, number>()
+  for (const card of cards.docs) {
+    const deckId = String(card.deck)
+    cardCountByDeck.set(deckId, (cardCountByDeck.get(deckId) || 0) + 1)
+  }
+  const level4ByDeck = new Map<string, number>()
+  const totalByDeck = new Map<string, number>()
+  const cardDeckMap = new Map<string, string>()
+  for (const card of cards.docs) {
+    cardDeckMap.set(String(card.id), String(card.deck))
+  }
+  for (const rs of reviewStates.docs) {
+    const deckId = cardDeckMap.get(String(rs.card))
+    if (!deckId) continue
+    totalByDeck.set(deckId, (totalByDeck.get(deckId) || 0) + 1)
+    if (rs.level === 4) {
+      level4ByDeck.set(deckId, (level4ByDeck.get(deckId) || 0) + 1)
+    }
+  }
+
   return (
     <div className="p-6 lg:p-8 max-w-4xl mx-auto space-y-6">
-      <h2 className="text-xl font-semibold text-slate-900">Your library</h2>
+      <h2 className="text-xl font-semibold text-slate-900">Twoje zasoby</h2>
       <LibraryTabs
         decks={decks.docs.map((d: any) => ({
           id: String(d.id),
           name: d.name,
-          description: d.description || '',
-          folder: d.folder ? String(d.folder) : null,
+          cardCount: cardCountByDeck.get(String(d.id)) || 0,
+          author: 'Ty',
+          createdAt: new Date(d.createdAt || d.updatedAt || new Date()).toLocaleString('pl-PL', { month: 'long', year: 'numeric' }),
         }))}
-        folders={folders.docs.map((f: any) => ({
-          id: String(f.id),
-          name: f.name,
-          description: f.description || '',
-        }))}
+        folders={folders.docs.map((f: any) => {
+          const folderDecks = decks.docs.filter((d: any) => String(d.folder) === String(f.id))
+          const totalCards = folderDecks.reduce((sum: number, d: any) => sum + (cardCountByDeck.get(String(d.id)) || 0), 0)
+          const masteryAvg = folderDecks.length > 0
+            ? Math.round(folderDecks.reduce((sum: number, d: any) => {
+              const total = totalByDeck.get(String(d.id)) || 0
+              const l4 = level4ByDeck.get(String(d.id)) || 0
+              return sum + (total > 0 ? Math.round((l4 / total) * 100) : 0)
+            }, 0) / folderDecks.length)
+            : 0
+          return {
+            id: String(f.id),
+            name: f.name,
+            deckCount: folderDecks.length,
+            cardCount: totalCards,
+            mastery: masteryAvg,
+          }
+        })}
       />
     </div>
   )

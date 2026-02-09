@@ -47,10 +47,13 @@ interface StatsData {
   global: {
     sessionsToday: number
     sessionsThisWeek: number
+    minutesLast7Days: number
     streakDays: number
     avgAccuracy: number
     levelDistribution?: Record<string, number>
   }
+  sessionsByDay?: Array<{ date: string; count: number; minutes: number }>
+  problematicDecks?: Array<{ deckId: string; deckName: string; totalWrong: number }>
   deckStats: DeckStat[]
   folderStats?: FolderStat[]
   hardestCards?: HardestCard[]
@@ -72,6 +75,10 @@ export function StatsView() {
 
   if (loading) return <p className="text-sm text-slate-400 py-8 text-center">Loading stats…</p>
   if (!stats) return <p className="text-sm text-red-500 py-8 text-center">Failed to load stats.</p>
+
+  const topMastered = [...stats.deckStats]
+    .sort((a, b) => b.percentLevel4 - a.percentLevel4)
+    .slice(0, 5)
 
   return (
     <div className="space-y-6">
@@ -95,10 +102,10 @@ export function StatsView() {
         <div className="space-y-6">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { value: stats.global.sessionsToday, label: 'Today', bg: 'bg-gradient-to-br from-violet-500 to-indigo-600 text-white' },
-              { value: stats.global.sessionsThisWeek, label: 'This Week', bg: 'bg-gradient-to-br from-amber-400 to-orange-500 text-white' },
-              { value: stats.global.streakDays, label: 'Day Streak', bg: 'bg-gradient-to-br from-emerald-400 to-teal-500 text-white' },
-              { value: `${stats.global.avgAccuracy}%`, label: 'Avg Accuracy', bg: 'bg-gradient-to-br from-rose-400 to-pink-500 text-white' },
+              { value: stats.global.sessionsThisWeek, label: 'Sesje (7 dni)', bg: 'bg-gradient-to-br from-violet-500 to-indigo-600 text-white' },
+              { value: `${stats.global.minutesLast7Days} min`, label: 'Czas (7 dni)', bg: 'bg-gradient-to-br from-amber-400 to-orange-500 text-white' },
+              { value: stats.global.streakDays, label: 'Streak', bg: 'bg-gradient-to-br from-emerald-400 to-teal-500 text-white' },
+              { value: `${stats.global.avgAccuracy}%`, label: 'Śr. accuracy', bg: 'bg-gradient-to-br from-rose-400 to-pink-500 text-white' },
             ].map(item => (
               <div key={item.label} className={`${item.bg} rounded-xl px-4 py-3 text-center shadow-sm`}>
                 <p className="text-xl font-bold tabular-nums">{item.value}</p>
@@ -106,6 +113,33 @@ export function StatsView() {
               </div>
             ))}
           </div>
+
+          {stats.sessionsByDay && stats.sessionsByDay.length > 0 && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="bg-white border border-slate-200 rounded-xl p-4">
+                <h3 className="text-xs font-semibold text-slate-500 mb-3">Sesje w czasie (7 dni)</h3>
+                <div className="flex items-end gap-2 h-24">
+                  {stats.sessionsByDay.map(day => (
+                    <div key={day.date} className="flex-1 text-center">
+                      <div className="bg-indigo-400 rounded-t-lg" style={{ height: `${Math.max(10, day.count * 10)}px` }} />
+                      <p className="text-[10px] text-slate-400 mt-1">{day.date}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="bg-white border border-slate-200 rounded-xl p-4">
+                <h3 className="text-xs font-semibold text-slate-500 mb-3">Czas nauki (7 dni)</h3>
+                <div className="flex items-end gap-2 h-24">
+                  {stats.sessionsByDay.map(day => (
+                    <div key={day.date} className="flex-1 text-center">
+                      <div className="bg-amber-400 rounded-t-lg" style={{ height: `${Math.max(10, day.minutes / 2)}px` }} />
+                      <p className="text-[10px] text-slate-400 mt-1">{day.date}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Global level distribution */}
           {stats.global.levelDistribution && (
@@ -130,6 +164,36 @@ export function StatsView() {
               </div>
             </div>
           )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="bg-white border border-slate-200 rounded-xl p-4">
+              <h3 className="text-sm font-medium text-slate-500 mb-3">Najlepiej opanowane zestawy</h3>
+              <div className="space-y-2">
+                {topMastered.map(deck => (
+                  <Link key={deck.deckId} href={`/decks/${deck.deckId}`} className="flex items-center justify-between text-sm">
+                    <span className="text-slate-700">{deck.deckName}</span>
+                    <span className="text-emerald-600 font-semibold">{deck.percentLevel4}%</span>
+                  </Link>
+                ))}
+                {topMastered.length === 0 && <p className="text-xs text-slate-400">Brak danych.</p>}
+              </div>
+            </div>
+
+            <div className="bg-white border border-slate-200 rounded-xl p-4">
+              <h3 className="text-sm font-medium text-slate-500 mb-3">Najbardziej problematyczne</h3>
+              <div className="space-y-2">
+                {(stats.problematicDecks || []).map(deck => (
+                  <Link key={deck.deckId} href={`/decks/${deck.deckId}`} className="flex items-center justify-between text-sm">
+                    <span className="text-slate-700">{deck.deckName}</span>
+                    <span className="text-rose-600 font-semibold">{deck.totalWrong} błędów</span>
+                  </Link>
+                ))}
+                {(!stats.problematicDecks || stats.problematicDecks.length === 0) && (
+                  <p className="text-xs text-slate-400">Brak danych.</p>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
