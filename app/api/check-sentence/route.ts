@@ -93,60 +93,35 @@ export async function POST(req: NextRequest) {
         : ''
 
       console.info('[AI] calling OpenAI')
-      const response = await openai.responses.create({
+      const completion = await openai.chat.completions.create({
         model: 'gpt-5-nano',
         temperature: 0,
-        max_output_tokens: 220,
-        response_format: {
-          type: 'json_schema',
-          json_schema: {
-            name: 'sentence_check',
-            strict: true,
-            schema: {
-              type: 'object',
-              additionalProperties: false,
-              properties: {
-                ok: { type: 'boolean' },
-                issue_type: {
-                  type: ['string', 'null'],
-                  enum: ['not_a_sentence', 'grammar', 'usage', 'meaning_mismatch', 'missing_phrase', 'other', null],
-                },
-                message_pl: { type: ['string', 'null'] },
-                suggested_fix: { type: ['string', 'null'] },
-              },
-              required: ['ok'],
-            },
-          },
-        },
-        input: [
+        max_tokens: 220,
+        messages: [
           {
             role: 'system',
-            content: [
-              {
-                type: 'input_text',
-                text: `Jesteś surowym nauczycielem języka angielskiego. Twoim zadaniem jest ocenić zdanie ucznia.
+            content: `Jesteś surowym nauczycielem języka angielskiego. Twoim zadaniem jest ocenić zdanie ucznia.
 Sprawdź:
 1) Czy to jest prawdziwe zdanie po angielsku (nie zlepek słów)?
 2) Czy użycie "${targetPhrase}" jest poprawne gramatycznie?
 3) Czy zdanie jest naturalne jako przykład użycia?
 4) Czy znaczenie pasuje do "${promptPl ?? ''}"?${meaningContext}
-Zwróć WYŁĄCZNIE JSON zgodny ze schematem.
-Jeśli ok=true, nie dodawaj message_pl i suggested_fix.`,
-              },
-            ],
+Zwróć WYŁĄCZNIE JSON w formacie:
+{"ok":true/false,"issue_type":null|"not_a_sentence"|"grammar"|"usage"|"meaning_mismatch"|"missing_phrase"|"other","message_pl":null|string,"suggested_fix":null|string}
+Jeśli ok=true, ustaw issue_type=null i NIE dodawaj message_pl ani suggested_fix.`,
           },
           {
             role: 'user',
-            content: [{ type: 'input_text', text: `requiredEn: ${targetPhrase}\nsentence: ${trimmed}` }],
+            content: `requiredEn: ${targetPhrase}\nsentence: ${trimmed}`,
           },
         ],
       })
 
-      const outputText = response.output_text ?? ''
-      const cleaned = outputText.trim()
-      if (!cleaned) {
+      const content = completion.choices?.[0]?.message?.content
+      if (!content) {
         throw new Error('Empty AI response')
       }
+      const cleaned = content.replace(/```json\\s*/g, '').replace(/```\\s*/g, '').trim()
       const parsed = JSON.parse(cleaned)
       const aiLatencyMs = Date.now() - startedAt
       console.info('[AI] result', parsed)
