@@ -85,8 +85,10 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
   }
 
   function parseImport(): CardRow[] {
-    const tSep = termDel === 'tab' ? '\t' : termDel === 'comma' ? ',' : ';'
-    const cSep = cardDel === 'newline' ? '\n' : ';'
+    const termSepMap: Record<string, string> = { tab: '\t', comma: ',', semicolon: ';' }
+    const cardSepMap: Record<string, string> = { newline: '\n', semicolon: ';' }
+    const tSep = termSepMap[termDel] ?? '\t'
+    const cSep = cardSepMap[cardDel] ?? '\n'
     return importText
       .split(cSep)
       .map(line => line.trim())
