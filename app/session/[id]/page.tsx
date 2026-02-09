@@ -92,7 +92,13 @@ export default function SessionPage() {
       let parsed: Task[] = JSON.parse(stored)
       const shufflePref = localStorage.getItem('vocab-shuffle') === 'true'
       if (shufflePref) {
-        parsed = [...parsed].sort(() => Math.random() - 0.5)
+        // Fisher-Yates shuffle for uniform randomization
+        const arr = [...parsed]
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]]
+        }
+        parsed = arr
       }
       setTasks(parsed)
     }

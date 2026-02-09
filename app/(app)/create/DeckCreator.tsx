@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 
+const CARD_CREATION_BATCH_SIZE = 5
+
 interface CardRow {
   id: string
   front: string
@@ -93,10 +95,9 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
       const deckData = await deckRes.json()
       const deckId = deckData.id || deckData.deck?.id
 
-      // Create all cards in parallel (batch of 5 at a time)
-      const batchSize = 5
-      for (let i = 0; i < validCards.length; i += batchSize) {
-        const batch = validCards.slice(i, i + batchSize)
+      // Create all cards in parallel (batch of CARD_CREATION_BATCH_SIZE at a time)
+      for (let i = 0; i < validCards.length; i += CARD_CREATION_BATCH_SIZE) {
+        const batch = validCards.slice(i, i + CARD_CREATION_BATCH_SIZE)
         await Promise.all(batch.map(card =>
           fetch('/api/cards', {
             method: 'POST',

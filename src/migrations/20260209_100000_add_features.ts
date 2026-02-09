@@ -53,5 +53,5 @@ export async function down({ db }: MigrateDownArgs): Promise<void> {
     ALTER TABLE "decks" DROP COLUMN IF EXISTS "direction";
   `)
 
-  await db.execute(sql`DROP TYPE IF EXISTS "enum_decks_direction";`)
+  await db.execute(sql`DROP TYPE IF EXISTS "enum_decks_direction" CASCADE;`)
 }
