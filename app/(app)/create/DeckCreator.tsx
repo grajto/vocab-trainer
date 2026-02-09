@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSound } from '@/src/lib/SoundProvider'
 
 const CARD_CREATION_BATCH_SIZE = 5
 
@@ -19,6 +20,7 @@ function newId() {
 
 export function DeckCreator({ folders }: { folders: Array<{ id: string; name: string }> }) {
   const router = useRouter()
+  const { unlock } = useSound()
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [folderId, setFolderId] = useState('')
@@ -126,6 +128,9 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
 
     setSaving(true)
     setError('')
+    if (startSession) {
+      unlock()
+    }
 
     try {
       const deckRes = await fetch('/api/decks', {

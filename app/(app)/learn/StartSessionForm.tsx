@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSound } from '@/src/lib/SoundProvider'
 
 type Deck = { id: string; name: string }
 
@@ -13,11 +14,13 @@ export function StartSessionForm({ decks }: { decks: Deck[] }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
+  const { unlock } = useSound()
 
   async function handleStart(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError('')
+    unlock()
 
     try {
       const res = await fetch('/api/session/start', {

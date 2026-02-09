@@ -23,18 +23,20 @@ export async function POST(req: NextRequest) {
     if (!targetPhrase) {
       return NextResponse.json({
         ok: false,
-        issue_type: 'missing_phrase_config',
+        issue_type: 'missing_phrase',
         message_pl: 'Brak wymaganej frazy do sprawdzenia.',
-        aiUsed: false,
+        ai_used: false,
+        ai_latency_ms: 0,
       })
     }
 
     if (!sentence || !sentence.trim()) {
       return NextResponse.json({
         ok: false,
-        issue_type: 'empty_sentence',
+        issue_type: 'not_a_sentence',
         message_pl: 'Zdanie nie może być puste.',
-        aiUsed: false,
+        ai_used: false,
+        ai_latency_ms: 0,
       })
     }
 
@@ -44,17 +46,19 @@ export async function POST(req: NextRequest) {
     if (trimmed.length < 8) {
       return NextResponse.json({
         ok: false,
-        issue_type: 'too_short',
+        issue_type: 'not_a_sentence',
         message_pl: 'Zdanie jest za krótkie (min. 8 znaków).',
-        aiUsed: false,
+        ai_used: false,
+        ai_latency_ms: 0,
       })
     }
     if (trimmed.length > 240) {
       return NextResponse.json({
         ok: false,
-        issue_type: 'too_long',
+        issue_type: 'other',
         message_pl: 'Zdanie jest za długie (max 240 znaków).',
-        aiUsed: false,
+        ai_used: false,
+        ai_latency_ms: 0,
       })
     }
 
@@ -64,21 +68,24 @@ export async function POST(req: NextRequest) {
         ok: false,
         issue_type: 'missing_phrase',
         message_pl: `Zdanie nie zawiera wymaganego zwrotu: "${targetPhrase}".`,
-        aiUsed: false,
+        ai_used: false,
+        ai_latency_ms: 0,
       })
     }
 
     // AI validation via OpenAI SDK
     if (process.env.OPENAI_API_KEY) {
       try {
+        const startedAt = Date.now()
         const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
         const meaningContext = promptPl
           ? ` The word/phrase "${targetPhrase}" means "${promptPl}" in Polish. The sentence should demonstrate correct usage matching this meaning.`
           : ''
 
+        console.info('[AI] calling OpenAI')
         const completion = await openai.chat.completions.create({
-          model: 'gpt-4.1-nano',
+          model: 'gpt-5-nano',
           temperature: 0,
           max_tokens: 200,
           messages: [
@@ -90,7 +97,7 @@ Evaluate:
 2) Is it grammatically correct and natural?
 3) Does it correctly demonstrate the meaning of "${targetPhrase}"?
 Respond ONLY with valid JSON (no markdown, no code fences):
-{"ok":true/false,"issue_type":null|"not_a_sentence"|"grammar"|"unnatural"|"usage"|"meaning_mismatch","message_pl":"short feedback in Polish (1 sentence max)","suggested_fix":null|"corrected sentence"}
+{"ok":true/false,"issue_type":null|"not_a_sentence"|"grammar"|"usage"|"meaning_mismatch"|"missing_phrase"|"other","message_pl":"short feedback in Polish (1 sentence max)","suggested_fix":null|"corrected sentence"}
 If the sentence is correct and natural, set ok=true, issue_type=null, suggested_fix=null.`,
             },
             {
@@ -106,12 +113,15 @@ If the sentence is correct and natural, set ok=true, issue_type=null, suggested_
           const cleaned = content.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim()
           try {
             const parsed = JSON.parse(cleaned)
+            const aiLatencyMs = Date.now() - startedAt
+            console.info('[AI] result', parsed)
             return NextResponse.json({
               ok: !!parsed.ok,
               issue_type: parsed.issue_type ?? null,
               message_pl: parsed.message_pl ?? '',
               suggested_fix: parsed.suggested_fix ?? null,
-              aiUsed: true,
+              ai_used: true,
+              ai_latency_ms: aiLatencyMs,
             })
           } catch {
             console.error('AI response not parseable:', content)
@@ -128,7 +138,8 @@ If the sentence is correct and natural, set ok=true, issue_type=null, suggested_
       issue_type: null,
       message_pl: 'Zdanie zawiera wymaganą frazę (bez weryfikacji AI).',
       suggested_fix: null,
-      aiUsed: false,
+      ai_used: false,
+      ai_latency_ms: 0,
     })
   } catch (error: unknown) {
     console.error('Check sentence error:', error)

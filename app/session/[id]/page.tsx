@@ -65,6 +65,7 @@ export default function SessionPage() {
   const [feedback, setFeedback] = useState<{ correct: boolean; message: string } | null>(null)
   const [loading, setLoading] = useState(false)
   const [sessionDone, setSessionDone] = useState(false)
+  const [aiInfo, setAiInfo] = useState<{ used: boolean; latencyMs: number } | null>(null)
 
   // Typo state
   const [typoState, setTypoState] = useState<{ expected: string; userAnswer: string } | null>(null)
@@ -134,6 +135,7 @@ export default function SessionPage() {
         setUserAnswer('')
         setShowHint(false)
         setTypoState(null)
+        setAiInfo(null)
         setCurrentIndex(prev => prev + 1)
       }, delay)
     }
@@ -241,6 +243,24 @@ export default function SessionPage() {
     advanceToNext(correct ? FEEDBACK_DELAY_CORRECT : FEEDBACK_DELAY_WRONG)
   }
 
+  useEffect(() => {
+    if (!currentTask || currentTask.taskType !== 'abcd' || feedback || typoState) return
+
+    function handleKey(event: KeyboardEvent) {
+      if (!currentTask || currentTask.taskType !== 'abcd' || !currentTask.options) return
+      const index = Number(event.key) - 1
+      if (Number.isNaN(index) || index < 0 || index > 3) return
+      const option = currentTask.options[index]
+      if (option) {
+        event.preventDefault()
+        handleAbcdSelect(option)
+      }
+    }
+
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [currentTask, feedback, typoState])
+
   async function handleSentenceSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!userAnswer.trim() || !currentTask) return
@@ -262,6 +282,10 @@ export default function SessionPage() {
       })
       const data = await res.json()
       const correct = !!data.ok
+      setAiInfo({
+        used: !!data.ai_used,
+        latencyMs: Number(data.ai_latency_ms || 0),
+      })
 
       if (correct) {
         state.wasWrongBefore = state.wasWrongBefore || state.attempts > 1
@@ -289,7 +313,7 @@ export default function SessionPage() {
         attemptsCount: state.attempts,
         wasWrongBeforeCorrect: state.wasWrongBefore,
         usedHint: state.usedHint,
-        aiUsed: data.aiUsed ?? false,
+        aiUsed: data.ai_used ?? false,
       })
 
       advanceToNext(correct ? FEEDBACK_DELAY_CORRECT_SLOW : FEEDBACK_DELAY_WRONG_SLOW)
@@ -482,9 +506,13 @@ export default function SessionPage() {
                       disabled={!!feedback}
                       className="w-full text-left px-5 py-3.5 border border-slate-200 rounded-xl text-sm hover:border-indigo-300 hover:bg-indigo-50 disabled:opacity-50 transition-all"
                     >
+                      <span className="inline-flex items-center justify-center w-6 h-6 mr-3 rounded-full bg-slate-100 text-slate-500 text-xs font-semibold">
+                        {idx + 1}
+                      </span>
                       {opt}
                     </button>
                   ))}
+                  <p className="text-[11px] text-slate-400 text-center">Tip: press 1–4</p>
                 </div>
               )}
 
@@ -542,6 +570,11 @@ export default function SessionPage() {
                     </button>
                   </div>
                   <p className="text-xs text-slate-300 text-center">Ctrl+Enter to submit</p>
+                  {process.env.NODE_ENV === 'development' && aiInfo && (
+                    <p className="text-[11px] text-slate-400 text-center">
+                      AI: {aiInfo.used ? 'ON' : 'OFF'} ({aiInfo.latencyMs} ms)
+                    </p>
+                  )}
                 </div>
               )}
             </>

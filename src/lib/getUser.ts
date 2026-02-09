@@ -1,5 +1,5 @@
 import { timingSafeEqual } from 'crypto'
-import { headers as getHeaders } from 'next/headers'
+import { headers as getHeaders, cookies as getCookies } from 'next/headers'
 import { getPayload } from './getPayload'
 
 export async function getUser() {
@@ -12,10 +12,12 @@ export async function getUser() {
   if (!appToken) return null
 
   const headerToken = headersList.get('x-app-token')
-  if (!headerToken) return null
+  const cookieToken = getCookies().get('app-token')?.value
+  const incomingToken = headerToken || cookieToken
+  if (!incomingToken) return null
 
   const expected = Buffer.from(appToken)
-  const actual = Buffer.from(headerToken)
+  const actual = Buffer.from(incomingToken)
   if (expected.length !== actual.length) return null
 
   try {
