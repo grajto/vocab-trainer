@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
       const itemUpdate: Record<string, unknown> = {
         userAnswer: userAnswer || '',
         isCorrect,
-        aiUsed: taskType === 'sentence' ? !!clientAiUsed : false,
+        aiUsed: taskType === 'sentence' || taskType === 'describe' ? !!clientAiUsed : false,
         taskType: taskType || sessionItems.docs[0].taskType,
       }
 
@@ -134,7 +134,7 @@ export async function POST(req: NextRequest) {
           data: {
             userAnswer: userAnswer || '',
             isCorrect,
-            aiUsed: taskType === 'sentence' ? !!clientAiUsed : false,
+            aiUsed: taskType === 'sentence' || taskType === 'describe' ? !!clientAiUsed : false,
             taskType: taskType || sessionItems.docs[0].taskType,
           },
         })

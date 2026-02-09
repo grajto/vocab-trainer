@@ -6,6 +6,7 @@ const APP_TOKEN_API_ALLOWLIST = [
   '/api/session',
   '/api/import',
   '/api/check-sentence',
+  '/api/check-describe',
   '/api/stats',
   '/api/notifications',
   '/api/calendar',

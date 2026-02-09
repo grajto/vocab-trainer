@@ -17,6 +17,8 @@ export const Sessions: CollectionConfig = {
       { label: 'Sentence', value: 'sentence' },
       { label: 'ABCD', value: 'abcd' },
       { label: 'Mixed', value: 'mixed' },
+      { label: 'Test', value: 'test' },
+      { label: 'Describe', value: 'describe' },
     ]},
     { name: 'deck', type: 'relationship', relationTo: 'decks', required: true },
     { name: 'targetCount', type: 'number', min: 5, max: 35, required: true },

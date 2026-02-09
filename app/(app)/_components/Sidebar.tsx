@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Library, Bell, FolderOpen, Plus, BookOpen, GraduationCap, X, Menu, BarChart3, CalendarDays, Settings } from 'lucide-react'
+import { Home, FolderOpen, Plus, BookOpen, GraduationCap, X, Menu } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
 interface FolderItem {
@@ -21,15 +21,6 @@ export function Sidebar({ folders, decks }: { folders: FolderItem[]; decks: Deck
 
   // Close mobile sidebar on route change
   useEffect(() => { setOpen(false) }, [pathname])
-
-  const navItems = [
-    { href: '/', label: 'Strona główna', icon: Home },
-    { href: '/library', label: 'Twoje zasoby', icon: Library },
-    { href: '/notifications', label: 'Powiadomienia', icon: Bell },
-    { href: '/stats', label: 'Statystyki', icon: BarChart3 },
-    { href: '/calendar', label: 'Kalendarz', icon: CalendarDays },
-    { href: '/settings', label: 'Ustawienia', icon: Settings },
-  ]
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/'
@@ -72,40 +63,34 @@ export function Sidebar({ folders, decks }: { folders: FolderItem[]; decks: Deck
         </div>
 
         {/* Nav links */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-          {navItems.map(item => (
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-4">
+          <div>
+            <p className="px-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Główne</p>
             <Link
-              key={item.href}
-              href={item.href}
+              href="/"
               prefetch={true}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                isActive(item.href)
+                isActive('/')
                   ? 'bg-indigo-50 text-indigo-700'
                   : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
               }`}
             >
-              <item.icon className="w-5 h-5 flex-shrink-0" />
-              {item.label}
+              <Home className="w-5 h-5 flex-shrink-0" />
+              Dashboard
             </Link>
-          ))}
+            <Link
+              href="/learn"
+              prefetch={true}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+            >
+              <BookOpen className="w-5 h-5 flex-shrink-0" />
+              Szybki start
+            </Link>
+          </div>
 
-          <Link
-            href="/learn"
-            prefetch={true}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-              isActive('/learn')
-                ? 'bg-indigo-50 text-indigo-700'
-                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-            }`}
-          >
-            <BookOpen className="w-5 h-5 flex-shrink-0" />
-            Ucz się
-          </Link>
-
-          {/* Folders section */}
-          <div className="pt-4">
+          <div>
             <p className="px-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">
-              Twoje foldery
+              Foldery i decki
             </p>
             {folders.map(folder => (
               <Link
@@ -129,12 +114,6 @@ export function Sidebar({ folders, decks }: { folders: FolderItem[]; decks: Deck
               <Plus className="w-4 h-4" />
               Nowy folder
             </Link>
-          </div>
-
-          <div className="pt-4">
-            <p className="px-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">
-              Twoje zestawy
-            </p>
             {decks.map(deck => (
               <Link
                 key={deck.id}
@@ -147,7 +126,7 @@ export function Sidebar({ folders, decks }: { folders: FolderItem[]; decks: Deck
                 }`}
               >
                 <BookOpen className="w-4 h-4 flex-shrink-0" />
-                <span className="truncate">{deck.name}</span>
+              <span className="truncate">{deck.name}</span>
               </Link>
             ))}
             <Link
@@ -155,6 +134,22 @@ export function Sidebar({ folders, decks }: { folders: FolderItem[]; decks: Deck
               className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-500 hover:text-indigo-600 hover:bg-slate-100 transition-colors"
             >
               Zobacz wszystkie
+            </Link>
+          </div>
+
+          <div>
+            <p className="px-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Ucz się</p>
+            <Link
+              href="/learn"
+              prefetch={true}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                isActive('/learn')
+                  ? 'bg-indigo-50 text-indigo-700'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+              }`}
+            >
+              <BookOpen className="w-5 h-5 flex-shrink-0" />
+              Panel Ucz się
             </Link>
           </div>
         </nav>

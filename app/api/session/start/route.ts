@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const { deckId, folderId, mode, targetCount = 10, levels, direction, shuffle = true, requireCorrect = false } = body
 
-    const allowedModes = ['translate', 'sentence', 'abcd', 'mixed'] as const
+    const allowedModes = ['translate', 'sentence', 'abcd', 'mixed', 'test', 'describe'] as const
     type Mode = (typeof allowedModes)[number]
     const isMode = (value: unknown): value is Mode =>
       allowedModes.includes(value as Mode)
@@ -207,8 +207,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Build tasks
-    type TaskType = Exclude<Mode, 'mixed'>
-    type MixedTaskType = TaskType
+    type TaskType = Exclude<Mode, 'mixed' | 'test'>
+    type MixedTaskType = Exclude<TaskType, 'describe'>
     type Task = {
       cardId: number
       taskType: TaskType
@@ -227,7 +227,10 @@ export async function POST(req: NextRequest) {
     const tasks: Task[] = []
     for (const card of selectedCards) {
       let taskType: TaskType
-      if (mode === 'mixed') {
+      if (mode === 'test') {
+        const types: Array<'translate' | 'abcd'> = ['translate', 'abcd']
+        taskType = types[Math.floor(Math.random() * types.length)]
+      } else if (mode === 'mixed') {
         const types: MixedTaskType[] = ['translate', 'abcd', 'sentence']
         const weightedPool: MixedTaskType[] = [
           ...Array(settings.mixTranslate).fill('translate'),
@@ -254,6 +257,11 @@ export async function POST(req: NextRequest) {
 
       if (taskType === 'translate') {
         task.expectedAnswer = answer
+      }
+
+      if (taskType === 'describe') {
+        task.prompt = card.front
+        task.answer = card.back
       }
 
       // For sentence mode: always provide PL meaning + EN required word

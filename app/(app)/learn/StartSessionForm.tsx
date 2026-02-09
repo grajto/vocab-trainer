@@ -67,7 +67,7 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
 
       const data = await res.json()
       if (res.ok && data.sessionId) {
-        sessionStorage.setItem(`session-${data.sessionId}`, JSON.stringify(data.tasks))
+        sessionStorage.setItem(`session-${data.sessionId}`, JSON.stringify({ tasks: data.tasks, mode }))
         router.push(`/session/${data.sessionId}`)
       } else {
         setError(data.error || 'Failed to start session')
@@ -108,10 +108,12 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
       <div>
         <label className="block text-xs font-medium text-slate-500 mb-1.5">Mode</label>
         <select value={mode} onChange={e => setMode(e.target.value)} className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none bg-white">
-          <option value="translate">Translate (typed answer)</option>
-          <option value="abcd">ABCD (multiple choice)</option>
-          <option value="sentence">Sentence (use word in sentence)</option>
+          <option value="translate">Wpisywanie</option>
+          <option value="abcd">ABCD</option>
+          <option value="sentence">Sentence</option>
+          <option value="describe">Opisz słowo (AI)</option>
           <option value="mixed">Mixed</option>
+          <option value="test">Test</option>
         </select>
       </div>
 
