@@ -89,27 +89,21 @@ export async function POST(req: NextRequest) {
       const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
       const meaningContext = promptPl
-        ? ` Polskie znaczenie: "${promptPl}". Zdanie musi pokazywać poprawne użycie słowa/zwrotu.`
+        ? `PL znaczenie: "${promptPl}".`
         : ''
 
       console.info('[AI] calling OpenAI', { model: 'gpt-5-nano' })
       const messages = [
         {
           role: 'system',
-          content: `Jesteś surowym nauczycielem języka angielskiego. Oceń zdanie ucznia.
-Sprawdź:
-1) Czy to jest prawdziwe zdanie po angielsku (nie zlepek słów)?
-2) Czy użycie "${targetPhrase}" jest poprawne gramatycznie i znaczeniowo?
-3) Czy zdanie jest naturalne jako przykład użycia?
-4) Czy znaczenie pasuje do "${promptPl ?? ''}"?${meaningContext}
-5) Wykryj spam (np. powtórzenia, "blue blue blue") oraz nonsens znaczeniowy (np. "orange is blue").
-Zwróć WYŁĄCZNIE JSON w formacie:
+          content: `Oceń zdanie ucznia. Sprawdź: poprawność zdania, poprawne użycie "${targetPhrase}", sens znaczeniowy, brak spamu.
+Zwróć WYŁĄCZNIE krótki JSON:
 {"ok":true/false,"issue_type":"not_a_sentence"|"grammar"|"usage"|"meaning"|"spam"|"other","message_pl":string,"suggested_fix":string|null}
-Jeśli ok=true, issue_type ustaw na "other" i message_pl jako "OK".`,
+Zasady: message_pl max 200 znaków, suggested_fix max 120 znaków. Jeśli ok=true: issue_type="other", message_pl="OK", suggested_fix=null.`,
         },
         {
           role: 'user',
-          content: `requiredEn: ${targetPhrase}\nsentence: ${trimmed}`,
+          content: `requiredEn: ${targetPhrase}\n${meaningContext}\nsentence: ${trimmed}`,
         },
       ] satisfies Array<{ role: 'system' | 'user'; content: string }>
 
@@ -123,27 +117,33 @@ Jeśli ok=true, issue_type ustaw na "other" i message_pl jako "OK".`,
           messages,
         })
 
-      let completion = await makeCompletion(220)
+      let completion = await makeCompletion(400)
       let content = completion.choices?.[0]?.message?.content ?? ''
       let finishReason = completion.choices?.[0]?.finish_reason
 
       if (finishReason === 'length') {
         const preview = content.trim().slice(0, PREVIEW_LENGTH)
         console.warn('[AI] response truncated, retrying', { finish_reason: finishReason, preview })
-        completion = await makeCompletion(420)
+        completion = await makeCompletion(800)
         content = completion.choices?.[0]?.message?.content ?? ''
         finishReason = completion.choices?.[0]?.finish_reason
-        if (finishReason === 'length') {
-          console.error('[AI] response still truncated after retry', { finish_reason: finishReason })
-          throw new Error('AI response truncated')
-        }
       }
 
       if (!content.trim()) {
         console.error('[AI] empty response', { finish_reason: finishReason })
         throw new Error('Empty AI response')
       }
-      const parsed = JSON.parse(content.trim())
+      let parsed: any
+      try {
+        parsed = JSON.parse(content.trim())
+      } catch (parseError) {
+        if (finishReason === 'length') {
+          console.error('[AI] response truncated after retry', { finish_reason: finishReason })
+          throw new Error('AI response truncated')
+        }
+        console.error('[AI] JSON parse failed', parseError)
+        throw parseError
+      }
       const rawIssueType = typeof parsed.issue_type === 'string' ? parsed.issue_type : 'other'
       const issueTypeMap: Record<string, string> = {
         not_a_sentence: 'not_a_sentence',
