@@ -112,6 +112,7 @@ Jeśli ok=true, ustaw issue_type=null i NIE dodawaj message_pl ani suggested_fix
         },
       ] satisfies Array<{ role: 'system' | 'user'; content: string }>
 
+      const PREVIEW_LENGTH = 200
       const makeCompletion = (maxTokens: number) =>
         openai.chat.completions.create({
           model: 'gpt-5-nano',
@@ -125,7 +126,7 @@ Jeśli ok=true, ustaw issue_type=null i NIE dodawaj message_pl ani suggested_fix
       let finishReason = completion.choices?.[0]?.finish_reason
 
       if (finishReason === 'length') {
-        const preview = content.trim().slice(0, 200)
+        const preview = content.trim().slice(0, PREVIEW_LENGTH)
         console.warn('[AI] response truncated, retrying', { finish_reason: finishReason, preview })
         completion = await makeCompletion(420)
         content = completion.choices?.[0]?.message?.content ?? ''
