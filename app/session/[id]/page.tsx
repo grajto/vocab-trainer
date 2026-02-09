@@ -4,8 +4,9 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { checkAnswer } from '@/src/lib/answerCheck'
 
-const FEEDBACK_DELAY_CORRECT = 200
-const FEEDBACK_DELAY_WRONG = 1500
+// Translate mode: instant feedback with short delays for a "Quizlet-like" feel
+const FEEDBACK_DELAY_CORRECT = 200      // just enough to flash green check
+const FEEDBACK_DELAY_WRONG = 1500       // show correct answer long enough to read
 const FEEDBACK_DELAY_DONE = 1200
 
 // Non-translate modes still use server round-trip timings
@@ -39,7 +40,7 @@ function saveAnswerInBackground(data: {
     credentials: 'include',
     body: JSON.stringify(data),
   }).catch(err => {
-    console.error('Background save failed:', err)
+    console.error(`Background save failed (session=${data.sessionId}, card=${data.cardId}):`, err)
   })
 }
 
