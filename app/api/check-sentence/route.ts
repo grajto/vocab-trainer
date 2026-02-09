@@ -123,7 +123,7 @@ export async function POST(req: NextRequest) {
             role: 'system',
             content: [
               {
-                type: 'text',
+                type: 'input_text',
                 text: `Jesteś surowym nauczycielem języka angielskiego. Twoim zadaniem jest ocenić zdanie ucznia.
 Sprawdź:
 1) Czy to jest prawdziwe zdanie po angielsku (nie zlepek słów)?
@@ -137,7 +137,7 @@ Jeśli ok=true, nie dodawaj message_pl i suggested_fix.`,
           },
           {
             role: 'user',
-            content: [{ type: 'text', text: `requiredEn: ${targetPhrase}\nsentence: ${trimmed}` }],
+            content: [{ type: 'input_text', text: `requiredEn: ${targetPhrase}\nsentence: ${trimmed}` }],
           },
         ],
       })
