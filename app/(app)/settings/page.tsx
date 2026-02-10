@@ -50,13 +50,13 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="p-6 lg:p-8 max-w-3xl mx-auto space-y-6">
+    <div className="p-8 lg:p-10 max-w-3xl mx-auto space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-slate-900">Ustawienia</h2>
+        <h2 className="text-2xl font-bold text-slate-900">Ustawienia</h2>
         <p className="text-sm text-slate-400">Cele dzienne, preferencje językowe i mix trybów.</p>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-5">
+      <div className="bg-white border border-slate-100 rounded-3xl p-8 shadow-md space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1.5">Min. sesji dziennie</label>
@@ -66,7 +66,7 @@ export default function SettingsPage() {
               max={10}
               value={settings.minSessionsPerDay}
               onChange={e => setSettings({ ...settings, minSessionsPerDay: Number(e.target.value) })}
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+              className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-colors"
             />
           </div>
           <div>
@@ -77,7 +77,7 @@ export default function SettingsPage() {
               max={180}
               value={settings.minMinutesPerDay}
               onChange={e => setSettings({ ...settings, minMinutesPerDay: Number(e.target.value) })}
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+              className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-colors"
             />
           </div>
         </div>
@@ -87,7 +87,7 @@ export default function SettingsPage() {
           <select
             value={settings.dailyGoalMode}
             onChange={e => setSettings({ ...settings, dailyGoalMode: e.target.value as Settings['dailyGoalMode'] })}
-            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white"
+            className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-colors"
           >
             <option value="sessions">Sesje</option>
             <option value="minutes">Minuty</option>
@@ -100,7 +100,7 @@ export default function SettingsPage() {
           <select
             value={settings.defaultDirection}
             onChange={e => setSettings({ ...settings, defaultDirection: e.target.value as Settings['defaultDirection'] })}
-            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white"
+            className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-colors"
           >
             <option value="pl-en">PL → EN</option>
             <option value="en-pl">EN → PL</option>
@@ -117,7 +117,7 @@ export default function SettingsPage() {
               max={100}
               value={settings.mixTranslate}
               onChange={e => setSettings({ ...settings, mixTranslate: Number(e.target.value) })}
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+              className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-colors"
             />
           </div>
           <div>
@@ -128,7 +128,7 @@ export default function SettingsPage() {
               max={100}
               value={settings.mixAbcd}
               onChange={e => setSettings({ ...settings, mixAbcd: Number(e.target.value) })}
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+              className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-colors"
             />
           </div>
           <div>
@@ -139,7 +139,7 @@ export default function SettingsPage() {
               max={100}
               value={settings.mixSentence}
               onChange={e => setSettings({ ...settings, mixSentence: Number(e.target.value) })}
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+              className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-colors"
             />
           </div>
         </div>
@@ -152,7 +152,7 @@ export default function SettingsPage() {
             max={200}
             value={settings.maxNewPerDay}
             onChange={e => setSettings({ ...settings, maxNewPerDay: Number(e.target.value) })}
-            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+            className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-colors"
           />
         </div>
       </div>
@@ -162,7 +162,7 @@ export default function SettingsPage() {
           type="button"
           onClick={save}
           disabled={saving}
-          className="px-5 py-2 rounded-xl bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+          className="px-6 py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-violet-600 text-white text-sm font-medium hover:from-blue-700 hover:to-violet-700 disabled:opacity-50 transition-all hover:scale-[1.02] active:scale-[0.98]"
         >
           {saving ? 'Zapisywanie…' : 'Zapisz'}
         </button>

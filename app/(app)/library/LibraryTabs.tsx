@@ -59,19 +59,19 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
     <div className="space-y-4">
       {/* Tabs + search */}
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex bg-slate-100 rounded-lg p-0.5">
+        <div className="flex bg-slate-100 rounded-xl p-0.5">
           <button
             onClick={() => setTab('decks')}
-            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
-              tab === 'decks' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            className={`px-4 py-2 text-sm font-medium rounded-xl transition-colors ${
+              tab === 'decks' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100'
             }`}
           >
             Decks ({decks.length})
           </button>
           <button
             onClick={() => setTab('folders')}
-            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
-              tab === 'folders' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            className={`px-4 py-2 text-sm font-medium rounded-xl transition-colors ${
+              tab === 'folders' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100'
             }`}
           >
             Folders ({folders.length})
@@ -84,7 +84,7 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Filter…"
-            className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:border-indigo-400 focus:outline-none"
+            className="w-full pl-9 pr-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-colors"
           />
         </div>
       </div>
@@ -96,7 +96,7 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
             <p className="text-sm text-slate-400 text-center py-8">No decks found.</p>
           ) : (
             filteredDecks.map(d => (
-              <div key={d.id} className="bg-white border border-slate-200 rounded-2xl px-5 py-4 flex items-center justify-between hover:border-indigo-300 hover:shadow-sm transition-all">
+              <div key={d.id} className="bg-white border border-slate-100 rounded-3xl px-6 py-5 flex items-center justify-between shadow-md hover:shadow-lg hover:scale-[1.01] transition-all duration-200">
                 <Link href={`/decks/${d.id}`} prefetch={true} className="min-w-0">
                   <p className="font-medium text-slate-900 truncate">{d.name}</p>
                   <p className="text-xs text-slate-400 mt-1">
@@ -116,16 +116,16 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
       {tab === 'folders' && (
         <div className="space-y-3">
           {showCreateFolder && (
-            <form onSubmit={createFolder} className="bg-white border border-slate-200 rounded-xl p-4 flex gap-2">
+            <form onSubmit={createFolder} className="bg-white border border-slate-100 rounded-2xl p-5 flex gap-2 shadow-md">
               <input
                 type="text"
                 value={folderName}
                 onChange={e => setFolderName(e.target.value)}
                 placeholder="Folder name"
                 autoFocus
-                className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-indigo-400 focus:outline-none"
+                className="flex-1 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-colors"
               />
-              <button type="submit" disabled={creating} className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50">
+              <button type="submit" disabled={creating} className="bg-gradient-to-r from-blue-600 to-violet-600 text-white px-5 py-3 rounded-2xl text-sm font-medium hover:from-blue-700 hover:to-violet-700 disabled:opacity-50 transition-all hover:scale-[1.02] active:scale-[0.98]">
                 {creating ? 'Creating…' : 'Create'}
               </button>
               <button type="button" onClick={() => setShowCreateFolder(false)} className="text-sm text-slate-400 hover:text-slate-600 px-2">
@@ -136,7 +136,7 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
           {!showCreateFolder && (
             <button
               onClick={() => setShowCreateFolder(true)}
-              className="w-full bg-white border border-dashed border-slate-300 rounded-xl p-4 text-sm text-slate-400 hover:border-indigo-400 hover:text-indigo-600 transition-colors"
+              className="w-full bg-white border border-dashed border-slate-300 rounded-2xl p-5 text-sm text-slate-400 hover:border-blue-400 hover:text-blue-600 transition-colors"
             >
               + New folder
             </button>
@@ -145,9 +145,9 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
             <p className="text-sm text-slate-400 text-center py-4">No folders yet.</p>
           ) : (
             filteredFolders.map(f => (
-              <div key={f.id} className="flex items-center justify-between gap-3 bg-white border border-slate-200 rounded-2xl px-5 py-4 hover:border-indigo-300 hover:shadow-sm transition-all">
+              <div key={f.id} className="flex items-center justify-between gap-3 bg-white border border-slate-100 rounded-3xl px-6 py-5 shadow-md hover:shadow-lg hover:scale-[1.01] transition-all duration-200">
                 <Link href={`/folders/${f.id}`} prefetch={true} className="flex items-center gap-3 min-w-0">
-                  <FolderOpen className="w-5 h-5 text-indigo-500 flex-shrink-0" />
+                  <FolderOpen className="w-5 h-5 text-blue-500 flex-shrink-0" />
                   <div className="min-w-0">
                     <p className="font-medium text-slate-900 truncate">{f.name}</p>
                     <p className="text-xs text-slate-400 mt-1">{f.deckCount} decków · {f.cardCount} kart · {f.mastery}% mastery</p>
