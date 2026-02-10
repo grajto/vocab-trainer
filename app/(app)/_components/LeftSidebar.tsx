@@ -23,7 +23,7 @@ export function LeftSidebar({
   const pathname = usePathname()
   const active = (href: string) => pathname === href || pathname.startsWith(`${href}/`)
 
-  const groupTitle = 'px-2 text-[13px] font-semibold' + ' ' + 'text-[var(--muted)]'
+  const groupTitle = 'px-2 text-[13px] font-semibold'
   const itemClass = (isActive: boolean) =>
     `flex min-h-[40px] items-center gap-[10px] rounded-[var(--radiusSm)] border px-[10px] py-2 text-sm transition-colors ${
       isActive
