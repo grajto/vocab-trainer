@@ -1,7 +1,8 @@
-import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
+import { SetsListPage } from '@/src/page-views/SetsListPage'
+
 export const dynamic = 'force-dynamic'
 
 export default async function DecksPage() {
@@ -25,12 +26,12 @@ export default async function DecksPage() {
       cards = await payload.find({
         collection: 'cards',
         where: { owner: { equals: user.id }, deck: { in: decks.docs.map((d: any) => d.id) } },
-        limit: 2000,
+        limit: 5000,
         depth: 0,
       })
     }
   } catch (err) {
-    console.error('Decks page data fetch error (migration may be pending):', err)
+    console.error('Decks page data fetch error:', err)
   }
 
   const cardCountByDeck = new Map<string, number>()
@@ -39,27 +40,12 @@ export default async function DecksPage() {
     cardCountByDeck.set(deckId, (cardCountByDeck.get(deckId) || 0) + 1)
   }
 
-  return (
-    <div className="p-6 lg:p-8 max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-slate-900">Decki</h2>
-        <Link href="/create" className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">Utwórz zestaw</Link>
-      </div>
+  const sets = decks.docs.map((deck: any) => ({
+    id: String(deck.id),
+    name: deck.name,
+    cardCount: cardCountByDeck.get(String(deck.id)) || 0,
+    updatedLabel: new Date(deck.updatedAt || deck.createdAt || Date.now()).toLocaleDateString('pl-PL'),
+  }))
 
-      <div className="space-y-2">
-        {decks.docs.length === 0 ? (
-          <p className="text-sm text-slate-400 py-8 text-center">Brak zestawów. Utwórz pierwszy.</p>
-        ) : (
-          decks.docs.map((deck: any) => (
-            <Link key={deck.id} href={`/decks/${deck.id}`} prefetch={true} className="block bg-white border border-slate-200 rounded-xl px-5 py-4 hover:border-indigo-300 hover:shadow-sm transition-all">
-              <p className="font-medium text-slate-900">{deck.name}</p>
-              <p className="text-xs text-slate-400 mt-1">
-                {cardCountByDeck.get(String(deck.id)) || 0} kart · {new Date(deck.createdAt || new Date()).toLocaleString('pl-PL', { month: 'long', year: 'numeric' })}
-              </p>
-            </Link>
-          ))
-        )}
-      </div>
-    </div>
-  )
+  return <SetsListPage sets={sets} />
 }

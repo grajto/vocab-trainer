@@ -3,6 +3,10 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSound } from '@/src/lib/SoundProvider'
+import { Card } from '@/src/components/Card'
+import { Button } from '@/src/components/Button'
+import { Modal } from '@/src/components/Modal'
+import { Toggle } from '@/src/components/Toggle'
 
 interface Props {
   deckId: string
@@ -11,24 +15,24 @@ interface Props {
 
 export function DeckStudyLauncher({ deckId, cardCount }: Props) {
   const router = useRouter()
-  const [selectedMode, setSelectedMode] = useState<string | null>(null)
-  const [targetCount, setTargetCount] = useState(Math.min(cardCount, 10))
-  const [levelFilter, setLevelFilter] = useState('all')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
   const { unlock } = useSound()
+  const [selectedMode, setSelectedMode] = useState<string | null>(null)
+  const [showConfig, setShowConfig] = useState(false)
+  const [targetCount, setTargetCount] = useState(Math.min(cardCount, 13))
+  const [multipleChoice, setMultipleChoice] = useState(true)
+  const [written, setWritten] = useState(true)
+  const [loading, setLoading] = useState(false)
 
   const modes = [
-    { mode: 'translate', label: 'Learn', icon: '📖', color: 'from-indigo-500 to-violet-500', desc: 'Type translations' },
-    { mode: 'abcd', label: 'Test', icon: '✅', color: 'from-emerald-500 to-teal-500', desc: 'Multiple choice' },
-    { mode: 'sentence', label: 'Sentences', icon: '✍️', color: 'from-amber-500 to-orange-500', desc: 'Write sentences' },
-    { mode: 'mixed', label: 'Mixed', icon: '🔀', color: 'from-rose-500 to-pink-500', desc: 'All modes combined' },
+    { mode: 'translate', label: 'Learn', desc: 'Single-card written response' },
+    { mode: 'abcd', label: 'Test', desc: 'Single-card multiple choice' },
+    { mode: 'sentence', label: 'Write', desc: 'Sentence-based card prompts' },
+    { mode: 'mixed', label: 'Mixed', desc: 'Rotates across all styles' },
   ]
 
   async function handleStart() {
     if (!selectedMode) return
     setLoading(true)
-    setError('')
     unlock()
 
     try {
@@ -36,91 +40,61 @@ export function DeckStudyLauncher({ deckId, cardCount }: Props) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ deckId, mode: selectedMode, targetCount, levelFilter }),
+        body: JSON.stringify({ deckId, mode: selectedMode, targetCount, levelFilter: 'all', options: { multipleChoice, written } }),
       })
 
       const data = await res.json()
       if (res.ok && data.sessionId) {
         sessionStorage.setItem(`session-${data.sessionId}`, JSON.stringify(data.tasks))
         router.push(`/session/${data.sessionId}`)
-      } else {
-        setError(data.error || 'Failed to start session')
       }
-    } catch {
-      setError('Network error')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="space-y-4">
-      {/* Mode tiles */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {modes.map(m => (
-          <button
-            key={m.mode}
-            onClick={() => setSelectedMode(selectedMode === m.mode ? null : m.mode)}
-            className={`bg-gradient-to-br ${m.color} text-white rounded-xl p-4 text-center transition-all shadow-sm ${
-              selectedMode === m.mode ? 'ring-2 ring-offset-2 ring-indigo-500 scale-[1.02]' : 'hover:opacity-90'
-            }`}
-          >
-            <span className="text-2xl block mb-1">{m.icon}</span>
-            <span className="text-sm font-medium block">{m.label}</span>
-            <span className="text-[10px] opacity-70">{m.desc}</span>
-          </button>
-        ))}
-      </div>
-
-      {/* Session settings - show when mode selected */}
-      {selectedMode && (
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4 animate-in fade-in duration-200">
-          {error && <p className="text-red-600 text-sm bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-slate-500 mb-1.5">
-                Cards: <span className="text-indigo-600 font-semibold">{targetCount}</span>
-              </label>
-              <input
-                type="range"
-                min={5}
-                max={Math.min(cardCount, 35)}
-                value={targetCount}
-                onChange={e => setTargetCount(Number(e.target.value))}
-                className="w-full accent-indigo-600"
-              />
-              <div className="flex justify-between text-[10px] text-slate-400 mt-1">
-                <span>5</span>
-                <span>{Math.min(cardCount, 35)}</span>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-slate-500 mb-1.5">Card Level</label>
-              <select
-                value={levelFilter}
-                onChange={e => setLevelFilter(e.target.value)}
-                className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none bg-white"
-              >
-                <option value="all">All levels</option>
-                <option value="1">Level 1 (new)</option>
-                <option value="2-3">Level 2-3 (learning)</option>
-                <option value="4">Level 4 (mastered)</option>
-                <option value="problematic">Problematic (most errors)</option>
-              </select>
-            </div>
-          </div>
-
-          <button
-            onClick={handleStart}
-            disabled={loading}
-            className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3 rounded-xl text-sm font-medium hover:from-indigo-700 hover:to-violet-700 disabled:opacity-50 transition-all"
-          >
-            {loading ? 'Starting…' : `Start ${modes.find(m => m.mode === selectedMode)?.label || 'Session'}`}
-          </button>
+    <>
+      <Card className="p-4 lg:p-6">
+        <h2 className="mb-4 text-2xl font-semibold text-vt-text">Choose mode</h2>
+        <div className="grid gap-3 md:grid-cols-2">
+          {modes.map(mode => (
+            <button
+              key={mode.mode}
+              onClick={() => setSelectedMode(mode.mode)}
+              className={`rounded-vt border p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vt-primary ${selectedMode === mode.mode ? 'border-vt-primary bg-vt-soft' : 'border-vt-border bg-vt-surface hover:border-vt-primary/60'}`}
+            >
+              <p className="text-xl font-semibold text-vt-text">{mode.label}</p>
+              <p className="mt-1 text-sm text-vt-muted">{mode.desc}</p>
+            </button>
+          ))}
         </div>
-      )}
-    </div>
+        <div className="mt-4 flex justify-end">
+          <Button disabled={!selectedMode} onClick={() => setShowConfig(true)}>Configure test</Button>
+        </div>
+      </Card>
+
+      <Modal open={showConfig} onClose={() => setShowConfig(false)} title="Test options">
+        <div className="space-y-5">
+          <label className="block">
+            <span className="mb-2 block text-sm font-semibold text-vt-muted">Questions ({Math.min(cardCount, 50)} max)</span>
+            <input
+              type="range"
+              min={5}
+              max={Math.min(cardCount, 50)}
+              value={targetCount}
+              onChange={e => setTargetCount(Number(e.target.value))}
+              className="w-full accent-[#4255FF]"
+            />
+            <span className="text-sm text-vt-text">{targetCount}</span>
+          </label>
+          <Toggle checked={multipleChoice} onChange={setMultipleChoice} label="Multiple-choice questions" />
+          <Toggle checked={written} onChange={setWritten} label="Written questions" />
+          <div className="flex justify-end">
+            <Button onClick={handleStart} disabled={loading}>{loading ? 'Starting…' : 'Start test'}</Button>
+          </div>
+        </div>
+      </Modal>
+    </>
   )
 }
