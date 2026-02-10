@@ -1,8 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #F6F7FB;
+  --foreground: #282E3E;
+  --primary: #4255FF;
+  --primary-dark: #3642CC;
+  --accent: #FFCD1F;
+  --text-secondary: #586380;
+  --text-muted: #939BB4;
+  --border: #E4E6EF;
 }
 
 @theme inline {
@@ -14,8 +20,8 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  font-size: 16px;
-  line-height: 1.6;
+  font-size: 18px;
+  line-height: 1.7;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

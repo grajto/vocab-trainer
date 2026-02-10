@@ -54,7 +54,7 @@ export function Sidebar({ folders, decks }: { folders: FolderItem[]; decks: Deck
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-4 border-b border-slate-200">
           <Link href="/" className="flex items-center gap-2">
-            <GraduationCap className="w-6 h-6 text-indigo-600" />
+            <GraduationCap className="w-6 h-6 text-blue-600" />
             <span className="font-semibold text-lg text-slate-900 tracking-tight">VocabTrainer</span>
           </Link>
           <button onClick={() => setOpen(false)} className="lg:hidden p-1 rounded hover:bg-slate-100">
@@ -69,10 +69,10 @@ export function Sidebar({ folders, decks }: { folders: FolderItem[]; decks: Deck
             <Link
               href="/dashboard"
               prefetch={true}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center gap-3 py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
                 isActive('/dashboard')
-                  ? 'bg-indigo-50 text-indigo-700'
-                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                  ? 'bg-blue-50 text-blue-700'
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
               }`}
             >
               <Home className="w-5 h-5 flex-shrink-0" />
@@ -81,10 +81,10 @@ export function Sidebar({ folders, decks }: { folders: FolderItem[]; decks: Deck
             <Link
               href="/notifications"
               prefetch={true}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+              className={`flex items-center gap-3 py-3 px-4 rounded-lg text-sm transition-colors ${
                 isActive('/notifications')
-                  ? 'bg-indigo-50 text-indigo-700'
-                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                  ? 'bg-blue-50 text-blue-700'
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
               }`}
             >
               <span className="w-5 h-5 flex items-center justify-center">🔔</span>
@@ -93,10 +93,10 @@ export function Sidebar({ folders, decks }: { folders: FolderItem[]; decks: Deck
             <Link
               href="/stats"
               prefetch={true}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+              className={`flex items-center gap-3 py-3 px-4 rounded-lg text-sm transition-colors ${
                 isActive('/stats')
-                  ? 'bg-indigo-50 text-indigo-700'
-                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                  ? 'bg-blue-50 text-blue-700'
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
               }`}
             >
               <span className="w-5 h-5 flex items-center justify-center">📊</span>
@@ -105,10 +105,10 @@ export function Sidebar({ folders, decks }: { folders: FolderItem[]; decks: Deck
             <Link
               href="/calendar"
               prefetch={true}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+              className={`flex items-center gap-3 py-3 px-4 rounded-lg text-sm transition-colors ${
                 isActive('/calendar')
-                  ? 'bg-indigo-50 text-indigo-700'
-                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                  ? 'bg-blue-50 text-blue-700'
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
               }`}
             >
               <span className="w-5 h-5 flex items-center justify-center">🗓️</span>
@@ -117,10 +117,10 @@ export function Sidebar({ folders, decks }: { folders: FolderItem[]; decks: Deck
             <Link
               href="/settings"
               prefetch={true}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+              className={`flex items-center gap-3 py-3 px-4 rounded-lg text-sm transition-colors ${
                 isActive('/settings')
-                  ? 'bg-indigo-50 text-indigo-700'
-                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                  ? 'bg-blue-50 text-blue-700'
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
               }`}
             >
               <span className="w-5 h-5 flex items-center justify-center">⚙️</span>
@@ -137,10 +137,10 @@ export function Sidebar({ folders, decks }: { folders: FolderItem[]; decks: Deck
                 key={folder.id}
                 href={`/folders/${folder.id}`}
                 prefetch={true}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                className={`flex items-center gap-3 py-3 px-4 rounded-lg text-sm transition-colors ${
                   pathname === `/folders/${folder.id}`
-                    ? 'bg-indigo-50 text-indigo-700'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                    ? 'bg-blue-50 text-blue-700'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                 }`}
               >
                 <FolderOpen className="w-4 h-4 flex-shrink-0" />
@@ -149,7 +149,7 @@ export function Sidebar({ folders, decks }: { folders: FolderItem[]; decks: Deck
             ))}
             <Link
               href="/folders"
-              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-500 hover:text-indigo-600 hover:bg-slate-100 transition-colors"
+              className="flex items-center gap-3 py-3 px-4 rounded-lg text-sm text-slate-500 hover:text-blue-600 hover:bg-slate-50 transition-colors"
             >
               <FolderOpen className="w-4 h-4" />
               Wszystkie foldery
@@ -159,10 +159,10 @@ export function Sidebar({ folders, decks }: { folders: FolderItem[]; decks: Deck
                 key={deck.id}
                 href={`/decks/${deck.id}`}
                 prefetch={true}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                className={`flex items-center gap-3 py-3 px-4 rounded-lg text-sm transition-colors ${
                   pathname === `/decks/${deck.id}`
-                    ? 'bg-indigo-50 text-indigo-700'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                    ? 'bg-blue-50 text-blue-700'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                 }`}
               >
                 <BookOpen className="w-4 h-4 flex-shrink-0" />
@@ -171,7 +171,7 @@ export function Sidebar({ folders, decks }: { folders: FolderItem[]; decks: Deck
             ))}
             <Link
               href="/decks"
-              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-500 hover:text-indigo-600 hover:bg-slate-100 transition-colors"
+              className="flex items-center gap-3 py-3 px-4 rounded-lg text-sm text-slate-500 hover:text-blue-600 hover:bg-slate-50 transition-colors"
             >
               Zobacz wszystkie decki
             </Link>
@@ -182,10 +182,10 @@ export function Sidebar({ folders, decks }: { folders: FolderItem[]; decks: Deck
             <Link
               href="/study"
               prefetch={true}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center gap-3 py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
                 isActive('/study')
-                  ? 'bg-indigo-50 text-indigo-700'
-                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                  ? 'bg-blue-50 text-blue-700'
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
               }`}
             >
               <BookOpen className="w-5 h-5 flex-shrink-0" />
@@ -194,10 +194,10 @@ export function Sidebar({ folders, decks }: { folders: FolderItem[]; decks: Deck
             <Link
               href="/create"
               prefetch={true}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+              className={`flex items-center gap-3 py-3 px-4 rounded-lg text-sm transition-colors ${
                 isActive('/create')
-                  ? 'bg-indigo-50 text-indigo-700'
-                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                  ? 'bg-blue-50 text-blue-700'
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
               }`}
             >
               <Plus className="w-4 h-4" />

@@ -60,7 +60,7 @@ export function Header({ username }: { username: string }) {
               onChange={e => setQuery(e.target.value)}
               onFocus={() => results.length > 0 && setShowResults(true)}
               placeholder="Szukaj zestawów, folderów, pytań"
-              className="w-full pl-10 pr-4 py-2.5 text-sm bg-white border border-slate-200 rounded-full text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-indigo-500 focus:outline-none transition-colors"
+              className="w-full pl-10 pr-4 py-3 text-sm bg-white border border-slate-200 rounded-2xl text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-colors"
             />
           </div>
           {showResults && results.length > 0 && (
@@ -87,7 +87,7 @@ export function Header({ username }: { username: string }) {
         <div className="relative">
           <button
             onClick={() => setShowCreate(!showCreate)}
-            className="p-2 rounded-full bg-indigo-600 text-white hover:bg-indigo-500 transition-colors"
+            className="p-2 rounded-full bg-gradient-to-r from-blue-600 to-violet-600 text-white hover:from-blue-700 hover:to-violet-700 transition-all"
             aria-label="Create"
           >
             {showCreate ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}

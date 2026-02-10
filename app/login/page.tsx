@@ -43,7 +43,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex items-center justify-center px-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-violet-50 flex items-center justify-center px-6">
       <div className="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
         <div className="space-y-4">
           <h1 className="text-3xl font-semibold tracking-tight text-slate-900">Vocab Trainer</h1>
@@ -60,7 +60,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-xl">
           <div className="mb-6">
             <h2 className="text-xl font-semibold text-slate-900">Zaloguj się</h2>
             <p className="text-sm text-slate-400">Wprowadź dane, aby kontynuować.</p>
@@ -74,7 +74,7 @@ export default function LoginPage() {
                 value={login}
                 onChange={e => setLogin(e.target.value)}
                 required
-                className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none transition-colors"
+                className="w-full border border-slate-200 rounded-lg px-3 py-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-colors"
                 placeholder="username123 lub you@example.com"
               />
             </div>
@@ -85,21 +85,21 @@ export default function LoginPage() {
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 required
-                className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none transition-colors"
+                className="w-full border border-slate-200 rounded-lg px-3 py-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-colors"
                 placeholder="••••••••"
               />
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-2.5 rounded-lg text-sm font-medium hover:from-indigo-700 hover:to-violet-700 disabled:opacity-50 transition-all"
+              className="w-full bg-gradient-to-r from-blue-600 to-violet-600 text-white py-3 rounded-2xl text-sm font-medium hover:from-blue-700 hover:to-violet-700 disabled:opacity-50 transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
               {loading ? 'Logowanie…' : 'Zaloguj'}
             </button>
           </form>
           <p className="mt-4 text-xs text-slate-400 text-center">
             Pierwszy raz? Utwórz konto w{' '}
-            <Link href="/admin" className="text-indigo-600 underline underline-offset-2">/admin</Link>
+            <Link href="/admin" className="text-blue-600 underline underline-offset-2">/admin</Link>
           </p>
         </div>
       </div>
