@@ -12,8 +12,13 @@ export function TopNav({ username, onOpenSidebar }: { username: string; onOpenSi
   return (
     <header className="top-nav">
       <div className="top-nav__inner">
-        <button className="btn btn--ghost show-mobile" onClick={onOpenSidebar} aria-label="Open menu">
-          <Menu size={16} />
+        <button
+          className="btn btn--ghost show-mobile"
+          onClick={onOpenSidebar}
+          aria-label="Otwórz menu"
+          style={{ minHeight: '44px', minWidth: '44px' }}
+        >
+          <Menu size={18} />
         </button>
 
         <Link href="/dashboard" className="top-nav__logo">Vocab Trainer</Link>
@@ -29,16 +34,29 @@ export function TopNav({ username, onOpenSidebar }: { username: string; onOpenSi
           <input
             value={q}
             onChange={e => setQ(e.target.value)}
-            placeholder="Szukaj zestawów, folderów, pytań"
+            placeholder="Szukaj zestawów / folderów / słówek"
             className="top-nav__search-input"
+            aria-label="Szukaj"
           />
         </form>
 
         <div className="top-nav__actions">
-          <Link href="/create" className="top-nav__plus" aria-label="Nowy zestaw">
-            <Plus size={16} />
+          <Link
+            href="/library?action=import"
+            className="btn btn--secondary hidden-mobile"
+            style={{ height: '40px', minHeight: '40px' }}
+          >
+            Import
           </Link>
-          <span className="top-nav__user">{username}</span>
+          <Link
+            href="/create"
+            className="btn btn--primary"
+            style={{ height: '40px', minHeight: '40px' }}
+          >
+            <Plus size={16} className="show-mobile" />
+            <span className="hidden-mobile">Nowy zestaw</span>
+          </Link>
+          <span className="top-nav__user hidden-mobile">{username}</span>
         </div>
       </div>
     </header>
