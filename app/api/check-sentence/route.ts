@@ -49,6 +49,10 @@ function extractResponseMeta(response: unknown) {
   return { finishReason, hasToolCalls, outputTypes, outputContentTypes, outputTextLength, outputLength: output.length }
 }
 
+function hasContent(item: unknown): item is { content: Array<{ type: string; text?: string }> } {
+  return !!item && typeof item === 'object' && 'content' in item && Array.isArray((item as { content?: unknown }).content)
+}
+
 export async function POST(req: NextRequest) {
   try {
     const user = await getUser()
@@ -155,9 +159,9 @@ export async function POST(req: NextRequest) {
         if (!text) {
           const output = response.output ?? []
           fallbackText = output
-            .flatMap(item => item.content ?? [])
+            .flatMap(item => (hasContent(item) ? item.content : []))
             .filter(content => content.type === 'output_text')
-            .map(content => ('text' in content ? String(content.text ?? '') : ''))
+            .map(content => String(content.text ?? ''))
             .join('')
             .trim()
         }
