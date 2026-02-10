@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Link from 'next/link'
-import { redirect, notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
+import { Pencil, Star, Volume2 } from 'lucide-react'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { AddCardForm } from './AddCardForm'
-import { Card } from '@/app/(app)/_components/ui/Card'
-import { SectionHeader } from '@/app/(app)/_components/ui/SectionHeader'
-import { Button } from '@/app/(app)/_components/ui/Button'
+import { DeckStudyLauncher } from './DeckStudyLauncher'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,62 +15,98 @@ export default async function DeckDetailPage({ params }: { params: Promise<{ id:
   if (!user) redirect('/login')
 
   const payload = await getPayload()
-  let deck
+
+  let deck: any
   try {
     deck = await payload.findByID({ collection: 'decks', id, depth: 0 })
   } catch {
     notFound()
   }
+
   if (String(deck.owner) !== String(user.id)) notFound()
+
+  let folderName = 'Bez folderu'
+  if (deck.folder) {
+    try {
+      const folder = await payload.findByID({ collection: 'folders', id: deck.folder, depth: 0 })
+      folderName = folder.name
+    } catch {
+      folderName = 'Bez folderu'
+    }
+  }
 
   let cards: any = { totalDocs: 0, docs: [] }
   try {
-    cards = await payload.find({ collection: 'cards', where: { deck: { equals: id }, owner: { equals: user.id } }, sort: '-createdAt', limit: 200, depth: 0 })
+    cards = await payload.find({
+      collection: 'cards',
+      where: { deck: { equals: id }, owner: { equals: user.id } },
+      sort: 'createdAt',
+      limit: 300,
+      depth: 0,
+    })
   } catch (err) {
     console.error('Deck detail data fetch error:', err)
   }
 
-  return (
-    <div style={{ display: 'grid', gap: '24px' }}>
-      <Card>
-        <SectionHeader
-          title={deck.name}
-          description={`${cards.totalDocs} terms${deck.description ? ` • ${deck.description}` : ''}`}
-          action={
-            <div style={{ display: 'inline-flex', gap: '8px', flexWrap: 'wrap' }}>
-              <Link href={`/study?deck=${id}`}><Button>Learn</Button></Link>
-              <Link href={`/study?deck=${id}&mode=translate`}><Button variant="secondary">Flashcards</Button></Link>
-              <Link href="/create"><Button variant="ghost">Edit</Button></Link>
-            </div>
-          }
-        />
-      </Card>
+  const firstCard = cards.docs[0]
 
-      <Card>
-        <SectionHeader title="Add card" />
-        <AddCardForm deckId={id} />
-      </Card>
+  return (
+    <div className="deck-page">
+      <div className="deck-header-path">
+        <Link href={deck.folder ? `/folders/${deck.folder}` : '/folders'}>📁 {folderName}</Link>
+      </div>
+
+      <h1 className="deck-title">{deck.name}</h1>
+
+      <DeckStudyLauncher deckId={id} cardCount={cards.totalDocs} />
+
+      <section className="deck-preview">
+        <div className="deck-preview__top">
+          <p>Podgląd fiszki</p>
+          <div className="deck-preview__icons">
+            <Pencil size={15} />
+            <Volume2 size={15} />
+            <Star size={15} />
+          </div>
+        </div>
+
+        <div className="deck-preview__card">
+          {firstCard ? firstCard.front : 'Brak kart w zestawie'}
+        </div>
+
+        <div className="deck-preview__bottom">
+          <span>{cards.totalDocs > 0 ? `1 / ${cards.totalDocs}` : '0 / 0'}</span>
+        </div>
+      </section>
+
+      <section className="deck-terms">
+        <div className="deck-terms__head">
+          <h2>Liczba pojęć w tym zestawie ({cards.totalDocs})</h2>
+        </div>
+
+        {cards.docs.length === 0 ? (
+          <div className="dash-empty">Brak kart. Dodaj pierwszą kartę poniżej.</div>
+        ) : (
+          <div className="deck-terms__list">
+            {cards.docs.map((card: any) => (
+              <article key={card.id} className="deck-term-row">
+                <div className="deck-term-row__text">
+                  <p>{card.front}</p>
+                  <p>{card.back}</p>
+                </div>
+                <div className="deck-term-row__actions">
+                  <button type="button" aria-label="Ulubione"><Star size={15} /></button>
+                  <button type="button" aria-label="Dźwięk"><Volume2 size={15} /></button>
+                  <button type="button" aria-label="Edytuj"><Pencil size={15} /></button>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
 
       <section>
-        <SectionHeader title="Cards" />
-        <div className="list">
-          {cards.docs.length === 0 ? (
-            <Card><p className="p-muted">No cards yet.</p></Card>
-          ) : cards.docs.map((card: any) => (
-            <Card key={card.id} compact>
-              <div className="resource-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
-                <div>
-                  <p className="row__meta">Term</p>
-                  <p className="row__title">{card.front}</p>
-                </div>
-                <div>
-                  <p className="row__meta">Definition</p>
-                  <p className="row__title">{card.back}</p>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
+        <AddCardForm deckId={id} />
       </section>
     </div>
   )
