@@ -1,15 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { ArrowRight, BarChart3, BookOpen, FolderOpen, Sparkles, Target } from 'lucide-react'
+import { AlertCircle, ArrowRight, BarChart3, BookOpen, Calendar, FolderOpen, Play } from 'lucide-react'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { getStudySettings, isDailyGoalMet } from '@/src/lib/userSettings'
+import { IconSquare } from '../_components/ui/IconSquare'
+import { Chip } from '../_components/ui/Chip'
+import { Card } from '../_components/ui/Card'
+import { Button } from '../_components/ui/Button'
 import { type ContinueItem } from './_components/ContinueCard'
 import { JumpBackInCarousel } from './_components/JumpBackInCarousel'
-import { RecentItem } from './_components/RecentItem'
-import { SimpleCard } from './_components/SimpleCard'
-import { StatCard } from './_components/StatCard'
 
 export const dynamic = 'force-dynamic'
 
@@ -128,8 +129,6 @@ export default async function DashboardPage() {
     recentDeckIds.add(String(s.deck))
   }
 
-  const problematic = [...jumpBackIn].sort((a, b) => a.progressPercent - b.progressPercent).slice(0, 3)
-
   const recents = [
     ...decks.docs
       .filter((d: any) => recentDeckIds.has(String(d.id)))
@@ -149,15 +148,10 @@ export default async function DashboardPage() {
         meta: `${count} zestawów`,
       }
     }),
-  ].slice(0, 8)
-
-  const recommendation = jumpBackIn.length > 0
-    ? `Do dokończenia masz ${jumpBackIn.length} sesji — zacznij od „${jumpBackIn[0].deckName}”.`
-    : `Masz ${decks.docs.length} zestawów. Zaplanuj minimum ${Math.max(1, settings.minSessionsPerDay)} sesję.`
+  ].slice(0, 6)
 
   const remainingToGoal = Math.max(0, Math.max(1, settings.minSessionsPerDay) - sessionsToday.totalDocs)
   const todayProgress = Math.min(100, Math.round((sessionsToday.totalDocs / Math.max(1, settings.minSessionsPerDay)) * 100))
-  const avgMinutes = sessionsToday.totalDocs > 0 ? Math.round(timeTodayMinutes / sessionsToday.totalDocs) : 0
 
   const last5Days = [4, 3, 2, 1, 0].map((offset) => {
     const d = new Date(now)
@@ -171,159 +165,217 @@ export default async function DashboardPage() {
     }
   })
 
-  const sectionLabelClass = 'text-[.875rem] leading-[1.4285714286] font-semibold tracking-normal'
+  // Get hardest decks for recommendations
+  const hardestDecks = [...jumpBackIn]
+    .sort((a, b) => a.progressPercent - b.progressPercent)
+    .slice(0, 3)
+    .map((item) => ({
+      id: item.resumeHref,
+      title: item.deckName,
+      reason: item.progressPercent < 30 ? 'Wysoki % błędów' : `${item.progressPercent}% ukończone`,
+      href: item.resumeHref,
+    }))
 
   return (
-    <div className="mx-auto w-full space-y-8 px-4 lg:px-0" style={{ maxWidth: 'var(--containerMax)' }}>
-      <section className="space-y-4">
-        <div>
-          <h2 className={`mb-3 ${sectionLabelClass}`} style={{ color: 'var(--gray600)' }}>Informacje</h2>
-          <div className="grid gap-4 md:grid-cols-3">
-            <StatCard label="Sesje dziś" value={`${sessionsToday.totalDocs}`} />
-            <StatCard label="Czas dziś" value={`${timeTodayMinutes} min`} />
-            <StatCard label="Seria" value={`${streakDays} dni`} />
-          </div>
-        </div>
-
-        <SimpleCard className="p-5">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-sm font-semibold" style={{ color: 'var(--primary)' }}>
-              <Sparkles size={16} />
-              Co powtórzyć dziś
+    <div className="mx-auto w-full space-y-8 px-4 py-6 lg:px-0" style={{ maxWidth: 'var(--container-max)' }}>
+      {/* Section A - Informacje (unified analytical card) */}
+      <section>
+        <h2 className="section-heading mb-3" style={{ color: 'var(--gray600)', fontWeight: 600 }}>Informacje</h2>
+        <Card>
+          {/* A1: Three compact stats */}
+          <div className="grid grid-cols-3 gap-4 pb-5 border-b" style={{ borderColor: 'var(--border)' }}>
+            <div>
+              <p className="text-xs" style={{ color: 'var(--text-muted)', marginBottom: '4px' }}>Sesje dzisiaj</p>
+              <p className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{sessionsToday.totalDocs}</p>
             </div>
-            <span className="rounded-full px-2 py-1 text-xs font-semibold" style={{ background: 'var(--surface2)', color: 'var(--gray600)' }}>Tryb: tłumaczenie</span>
+            <div>
+              <p className="text-xs" style={{ color: 'var(--text-muted)', marginBottom: '4px' }}>Czas dzisiaj</p>
+              <p className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{timeTodayMinutes} min</p>
+            </div>
+            <div>
+              <p className="text-xs" style={{ color: 'var(--text-muted)', marginBottom: '4px' }}>Seria</p>
+              <p className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{streakDays} dni</p>
+            </div>
           </div>
 
-          <p className="mt-3 text-sm font-medium" style={{ color: 'var(--text)' }}>{recommendation}</p>
-
-          <div className="mt-4 h-[6px] w-full overflow-hidden rounded-full" style={{ background: '#e9edf7' }}>
-            <div className="h-full rounded-full" style={{ background: '#22c55e', width: `${todayProgress}%` }} />
+          {/* A2: Goal + progress */}
+          <div className="py-5 border-b" style={{ borderColor: 'var(--border)' }}>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Cel dzienny: {settings.minSessionsPerDay} sesji</p>
+              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Pozostało: {remainingToGoal}</p>
+            </div>
+            <div className="h-2 w-full overflow-hidden rounded-full" style={{ background: '#e9edf7' }}>
+              <div className="h-full rounded-full" style={{ background: '#16a34a', width: `${todayProgress}%` }} />
+            </div>
+            <p className="mt-2 text-xs" style={{ color: 'var(--text-muted)' }}>Do końca celu brakuje: {remainingToGoal} sesji</p>
           </div>
 
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-sm">
-            <p style={{ color: 'var(--muted)' }}>Do celu zostało: <strong>{remainingToGoal}</strong> sesji</p>
-            <Link href="/study" className="inline-flex min-h-9 items-center rounded-full px-4 text-sm font-semibold" style={{ background: 'var(--primaryBg)', color: 'var(--primary)' }}>
-              Rozpocznij sesję
-            </Link>
+          {/* A3: Co powtórzyć dziś */}
+          <div className="py-5 border-b" style={{ borderColor: 'var(--border)' }}>
+            <p className="text-sm font-semibold mb-3" style={{ color: 'var(--text)' }}>Co powtórzyć dziś</p>
+            <div className="space-y-2">
+              {hardestDecks.length === 0 ? (
+                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Wszystko aktualne! Możesz rozpocząć nową sesję.</p>
+              ) : (
+                hardestDecks.map((item) => (
+                  <div key={item.id} className="flex items-center gap-3">
+                    <IconSquare variant="muted" size={32}>
+                      <BookOpen size={16} />
+                    </IconSquare>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>{item.title}</p>
+                      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{item.reason}</p>
+                    </div>
+                    <Link href={item.href}>
+                      <Button variant="secondary" className="px-4 h-8 text-xs">Start</Button>
+                    </Link>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
-        </SimpleCard>
+
+          {/* A4: Mode chip + quick start */}
+          <div className="pt-5">
+            <div className="flex flex-wrap items-center gap-3 mb-4">
+              <span className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>Tryb:</span>
+              <Chip>Tłumaczenie</Chip>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Link href="/study" className="flex-1">
+                <Button variant="primary" className="w-full">Rozpocznij sesję</Button>
+              </Link>
+              <Link href="/study">
+                <Button variant="secondary">Zmień tryb</Button>
+              </Link>
+            </div>
+          </div>
+        </Card>
       </section>
 
-      <section className="space-y-3">
-        <h2 className={sectionLabelClass} style={{ color: 'var(--gray600)' }}>Jump back in</h2>
-
+      {/* Section B - Jump back in */}
+      <section>
+        <h2 className="section-heading mb-3" style={{ color: 'var(--gray600)', fontWeight: 600 }}>Jump back in</h2>
         {jumpBackIn.length === 0 ? (
-          <SimpleCard className="p-4">
-            <p className="text-sm" style={{ color: 'var(--muted)' }}>Brak przerwanych sesji.</p>
-          </SimpleCard>
+          <Card compact>
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Brak przerwanych sesji.</p>
+          </Card>
         ) : (
           <JumpBackInCarousel items={jumpBackIn} />
         )}
       </section>
 
-      <section className="space-y-3">
-        <h2 className={sectionLabelClass} style={{ color: 'var(--gray600)' }}>Recents</h2>
-
+      {/* Section C - Recents */}
+      <section>
+        <h2 className="section-heading mb-3" style={{ color: 'var(--gray600)', fontWeight: 600 }}>Recents</h2>
         {recents.length === 0 ? (
-          <SimpleCard className="p-4">
-            <p className="text-sm" style={{ color: 'var(--muted)' }}>Brak ostatnich materiałów.</p>
-          </SimpleCard>
+          <Card compact>
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Brak ostatnich materiałów.</p>
+          </Card>
         ) : (
-          <div className="grid gap-1 md:grid-cols-2">
+          <div className="grid grid-cols-2 gap-3">
             {recents.map((item) => (
-              <RecentItem
+              <Link
                 key={`${item.type}-${item.id}`}
                 href={item.type === 'deck' ? `/decks/${item.id}` : `/folders/${item.id}`}
-                title={item.name}
-                meta={item.meta}
-                type={item.type}
-              />
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--hover-bg)] transition-colors"
+                style={{ border: '1px solid var(--border)' }}
+              >
+                <IconSquare variant={item.type === 'deck' ? 'primary' : 'muted'} size={36}>
+                  {item.type === 'deck' ? <BookOpen size={18} /> : <FolderOpen size={18} />}
+                </IconSquare>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>{item.name}</p>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{item.meta}</p>
+                </div>
+              </Link>
             ))}
           </div>
         )}
       </section>
 
+      {/* Section D - Bottom row (two cards) */}
       <section className="grid gap-4 lg:grid-cols-2">
-        <SimpleCard className="p-5">
-          <h3 className="mb-4 flex items-center gap-2 text-base font-bold tracking-tight" style={{ color: 'var(--text)' }}>
+        {/* D1: Twoja aktywność */}
+        <Card>
+          <h3 className="flex items-center gap-2 text-base font-bold mb-4" style={{ color: 'var(--text)' }}>
             <BarChart3 size={18} />
             Twoja aktywność
           </h3>
 
-          <div className="mb-4 grid grid-cols-3 gap-2">
-            <div className="rounded-[var(--radiusSm)] p-3" style={{ background: 'var(--surface2)' }}>
-              <p className="text-xs" style={{ color: 'var(--muted)' }}>Sesje dziś</p>
+          {/* Summary stats */}
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            <div className="rounded-lg p-3" style={{ background: 'var(--surface-muted)' }}>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Sesje dziś</p>
               <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>{sessionsToday.totalDocs}</p>
             </div>
-            <div className="rounded-[var(--radiusSm)] p-3" style={{ background: 'var(--surface2)' }}>
-              <p className="text-xs" style={{ color: 'var(--muted)' }}>Śr. czas / sesję</p>
-              <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>{avgMinutes} min</p>
-            </div>
-            <div className="rounded-[var(--radiusSm)] p-3" style={{ background: 'var(--surface2)' }}>
-              <p className="text-xs" style={{ color: 'var(--muted)' }}>Seria</p>
+            <div className="rounded-lg p-3" style={{ background: 'var(--surface-muted)' }}>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Seria</p>
               <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>{streakDays} dni</p>
+            </div>
+            <div className="rounded-lg p-3" style={{ background: 'var(--surface-muted)' }}>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Łącznie</p>
+              <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>{allSessionsYear.totalDocs}</p>
             </div>
           </div>
 
-          <div className="mb-4 grid grid-cols-5 gap-2">
+          {/* Calendar heatmap (simplified) */}
+          <div className="grid grid-cols-5 gap-2">
             {last5Days.map((day) => (
-              <div key={day.label} className="rounded-[8px] p-2 text-center" style={{ background: day.met ? '#eaf8ef' : 'var(--surface2)' }}>
-                <p className="text-[11px]" style={{ color: 'var(--muted)' }}>{day.label}</p>
+              <div
+                key={day.label}
+                className="rounded-lg p-2 text-center"
+                style={{ background: day.met ? '#eaf8ef' : 'var(--surface-muted)' }}
+              >
+                <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{day.label}</p>
                 <p className="mt-1 text-xs font-semibold" style={{ color: 'var(--text)' }}>{day.sessions}</p>
               </div>
             ))}
           </div>
+        </Card>
 
-          <div className="rounded-[var(--radiusSm)] p-3" style={{ background: 'var(--surface2)' }}>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--muted)' }}>Najbardziej problematyczne zestawy</p>
-            <div className="space-y-1">
-              {problematic.length === 0 ? (
-                <p className="text-sm" style={{ color: 'var(--muted)' }}>Brak danych o problematycznych zestawach.</p>
-              ) : (
-                problematic.map((item) => (
-                  <p key={item.resumeHref} className="text-sm" style={{ color: 'var(--text)' }}>• {item.deckName} — {item.progressMeta}</p>
-                ))
-              )}
-            </div>
-          </div>
-        </SimpleCard>
-
-        <SimpleCard className="p-5">
-          <h3 className="mb-4 flex items-center gap-2 text-base font-bold tracking-tight" style={{ color: 'var(--text)' }}>
-            <Target size={18} />
+        {/* D2: Rozpocznij */}
+        <Card>
+          <h3 className="flex items-center gap-2 text-base font-bold mb-4" style={{ color: 'var(--text)' }}>
+            <Play size={18} />
             Rozpocznij
           </h3>
 
-          <p className="mb-4 text-sm" style={{ color: 'var(--muted)' }}>Uruchom naukę jednym kliknięciem albo przejdź do tworzenia nowych zestawów.</p>
-
-          <div className="space-y-2">
-            <Link href="/study" className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold" style={{ background: 'var(--primaryBg)', color: 'var(--primary)' }}>
-              Ucz się
-              <ArrowRight size={15} />
+          <div className="space-y-3">
+            <Link href="/study" className="flex items-center gap-3 p-4 rounded-xl transition-colors" style={{ background: 'var(--primary-soft)', border: '1px solid transparent' }}>
+              <IconSquare variant="primary" size={36}>
+                <BookOpen size={18} />
+              </IconSquare>
+              <div className="flex-1">
+                <p className="text-sm font-semibold" style={{ color: 'var(--primary)' }}>Ucz się</p>
+                <p className="text-xs" style={{ color: 'var(--primary)' }}>Rozpocznij nową sesję nauki</p>
+              </div>
+              <ArrowRight size={18} style={{ color: 'var(--primary)' }} />
             </Link>
-            <Link href="/create" className="inline-flex min-h-10 w-full items-center justify-center rounded-full px-4 text-sm font-semibold" style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}>
-              Kreator zestawów
+
+            <Link href="/study" className="flex items-center gap-3 p-4 rounded-xl transition-colors hover:bg-[var(--hover-bg)]" style={{ border: '1px solid var(--border)' }}>
+              <IconSquare variant="muted" size={36}>
+                <AlertCircle size={18} />
+              </IconSquare>
+              <div className="flex-1">
+                <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Wykonaj test</p>
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Sprawdź swoją wiedzę</p>
+              </div>
+              <ArrowRight size={18} style={{ color: 'var(--text-muted)' }} />
+            </Link>
+
+            <Link href="/create" className="flex items-center gap-3 p-4 rounded-xl transition-colors hover:bg-[var(--hover-bg)]" style={{ border: '1px solid var(--border)' }}>
+              <IconSquare variant="muted" size={36}>
+                <Calendar size={18} />
+              </IconSquare>
+              <div className="flex-1">
+                <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Kreator zestawów</p>
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Twórz nowe materiały</p>
+              </div>
+              <ArrowRight size={18} style={{ color: 'var(--text-muted)' }} />
             </Link>
           </div>
-
-          <div className="mt-4 pt-3 text-sm" style={{ borderTop: '1px solid var(--border)', color: 'var(--muted)' }}>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--muted)' }}>Szybki dostęp</p>
-            <div className="space-y-1">
-              {folders.docs.slice(0, 2).map((folder: any) => (
-                <Link key={`f-${folder.id}`} href={`/folders/${folder.id}`} className="flex items-center gap-2 rounded-md px-1 py-1 hover:bg-[#f8fafc]">
-                  <FolderOpen size={14} />
-                  <span className="truncate">{folder.name}</span>
-                </Link>
-              ))}
-              {decks.docs.slice(0, 2).map((deck: any) => (
-                <Link key={`d-${deck.id}`} href={`/decks/${deck.id}`} className="flex items-center gap-2 rounded-md px-1 py-1 hover:bg-[#f8fafc]">
-                  <BookOpen size={14} />
-                  <span className="truncate">{deck.name}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </SimpleCard>
+        </Card>
       </section>
     </div>
   )
