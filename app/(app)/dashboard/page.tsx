@@ -226,9 +226,9 @@ export default async function DashboardPage() {
                       <p className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>{item.title}</p>
                       <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{item.reason}</p>
                     </div>
-                    <Link href={item.href}>
-                      <Button variant="secondary" className="px-4 h-8 text-xs">Start</Button>
-                    </Link>
+                    <a href={item.href}>
+                      <button className="btn btn--secondary px-4 h-8 text-xs">Start</button>
+                    </a>
                   </div>
                 ))
               )}
@@ -273,7 +273,7 @@ export default async function DashboardPage() {
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Brak ostatnich materiałów.</p>
           </Card>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {recents.map((item) => (
               <Link
                 key={`${item.type}-${item.id}`}
@@ -353,7 +353,7 @@ export default async function DashboardPage() {
               <ArrowRight size={18} style={{ color: 'var(--primary)' }} />
             </Link>
 
-            <Link href="/study" className="flex items-center gap-3 p-4 rounded-xl transition-colors hover:bg-[var(--hover-bg)]" style={{ border: '1px solid var(--border)' }}>
+            <Link href="/learn" className="flex items-center gap-3 p-4 rounded-xl transition-colors hover:bg-[var(--hover-bg)]" style={{ border: '1px solid var(--border)' }}>
               <IconSquare variant="muted" size={36}>
                 <AlertCircle size={18} />
               </IconSquare>
