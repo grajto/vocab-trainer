@@ -3,6 +3,8 @@ import * as migration_20260208_204800_add_users_role from './20260208_204800_add
 import * as migration_20260208_211500_add_users_username from './20260208_211500_add_users_username.ts';
 import * as migration_20260209_090000_add_folders from './20260209_090000_add_folders.ts';
 import * as migration_20260209_100000_add_features from './20260209_100000_add_features.ts';
+import * as migration_20260210_090000_add_user_settings from './20260210_090000_add_user_settings.ts';
+import * as migration_20260210_120000_add_session_modes from './20260210_120000_add_session_modes.ts';
 
 export const migrations = [
   {
@@ -29,5 +31,15 @@ export const migrations = [
     up: migration_20260209_100000_add_features.up,
     down: migration_20260209_100000_add_features.down,
     name: '20260209_100000_add_features'
+  },
+  {
+    up: migration_20260210_090000_add_user_settings.up,
+    down: migration_20260210_090000_add_user_settings.down,
+    name: '20260210_090000_add_user_settings'
+  },
+  {
+    up: migration_20260210_120000_add_session_modes.up,
+    down: migration_20260210_120000_add_session_modes.down,
+    name: '20260210_120000_add_session_modes'
   },
 ];

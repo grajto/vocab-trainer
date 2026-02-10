@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Library, Bell, FolderOpen, Plus, BookOpen, GraduationCap, X, Menu, BarChart3 } from 'lucide-react'
+import { Home, FolderOpen, Plus, BookOpen, GraduationCap, X, Menu } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
 interface FolderItem {
@@ -10,19 +10,17 @@ interface FolderItem {
   name: string
 }
 
-export function Sidebar({ folders }: { folders: FolderItem[] }) {
+interface DeckItem {
+  id: string
+  name: string
+}
+
+export function Sidebar({ folders, decks }: { folders: FolderItem[]; decks: DeckItem[] }) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
 
   // Close mobile sidebar on route change
   useEffect(() => { setOpen(false) }, [pathname])
-
-  const navItems = [
-    { href: '/', label: 'Strona główna', icon: Home },
-    { href: '/library', label: 'Twoje zasoby', icon: Library },
-    { href: '/stats', label: 'Statystyki', icon: BarChart3 },
-    { href: '/notifications', label: 'Powiadomienia', icon: Bell },
-  ]
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/'
@@ -65,27 +63,74 @@ export function Sidebar({ folders }: { folders: FolderItem[] }) {
         </div>
 
         {/* Nav links */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-          {navItems.map(item => (
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-4">
+          <div>
+            <p className="px-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Główne</p>
             <Link
-              key={item.href}
-              href={item.href}
+              href="/dashboard"
               prefetch={true}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                isActive(item.href)
+                isActive('/dashboard')
                   ? 'bg-indigo-50 text-indigo-700'
                   : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
               }`}
             >
-              <item.icon className="w-5 h-5 flex-shrink-0" />
-              {item.label}
+              <Home className="w-5 h-5 flex-shrink-0" />
+              Dashboard
             </Link>
-          ))}
+            <Link
+              href="/notifications"
+              prefetch={true}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                isActive('/notifications')
+                  ? 'bg-indigo-50 text-indigo-700'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+              }`}
+            >
+              <span className="w-5 h-5 flex items-center justify-center">🔔</span>
+              Powiadomienia
+            </Link>
+            <Link
+              href="/stats"
+              prefetch={true}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                isActive('/stats')
+                  ? 'bg-indigo-50 text-indigo-700'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+              }`}
+            >
+              <span className="w-5 h-5 flex items-center justify-center">📊</span>
+              Statystyki
+            </Link>
+            <Link
+              href="/calendar"
+              prefetch={true}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                isActive('/calendar')
+                  ? 'bg-indigo-50 text-indigo-700'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+              }`}
+            >
+              <span className="w-5 h-5 flex items-center justify-center">🗓️</span>
+              Kalendarz
+            </Link>
+            <Link
+              href="/settings"
+              prefetch={true}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                isActive('/settings')
+                  ? 'bg-indigo-50 text-indigo-700'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+              }`}
+            >
+              <span className="w-5 h-5 flex items-center justify-center">⚙️</span>
+              Ustawienia
+            </Link>
+          </div>
 
-          {/* Folders section */}
-          <div className="pt-4">
+          <div>
             <p className="px-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">
-              Twoje foldery
+              Foldery i decki
             </p>
             {folders.map(folder => (
               <Link
@@ -103,25 +148,66 @@ export function Sidebar({ folders }: { folders: FolderItem[] }) {
               </Link>
             ))}
             <Link
-              href="/library?tab=folders&create=true"
+              href="/folders"
               className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-500 hover:text-indigo-600 hover:bg-slate-100 transition-colors"
             >
+              <FolderOpen className="w-4 h-4" />
+              Wszystkie foldery
+            </Link>
+            {decks.map(deck => (
+              <Link
+                key={deck.id}
+                href={`/decks/${deck.id}`}
+                prefetch={true}
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                  pathname === `/decks/${deck.id}`
+                    ? 'bg-indigo-50 text-indigo-700'
+                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                }`}
+              >
+                <BookOpen className="w-4 h-4 flex-shrink-0" />
+              <span className="truncate">{deck.name}</span>
+              </Link>
+            ))}
+            <Link
+              href="/decks"
+              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-500 hover:text-indigo-600 hover:bg-slate-100 transition-colors"
+            >
+              Zobacz wszystkie decki
+            </Link>
+          </div>
+
+          <div>
+            <p className="px-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Ucz się</p>
+            <Link
+              href="/study"
+              prefetch={true}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                isActive('/study')
+                  ? 'bg-indigo-50 text-indigo-700'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+              }`}
+            >
+              <BookOpen className="w-5 h-5 flex-shrink-0" />
+              Panel Ucz się
+            </Link>
+            <Link
+              href="/create"
+              prefetch={true}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                isActive('/create')
+                  ? 'bg-indigo-50 text-indigo-700'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+              }`}
+            >
               <Plus className="w-4 h-4" />
-              Nowy folder
+              Kreator zestawów
             </Link>
           </div>
         </nav>
 
-        {/* Bottom quick links */}
-        <div className="border-t border-slate-200 px-3 py-3 space-y-1">
-          <Link
-            href="/learn"
-            prefetch={true}
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors"
-          >
-            <BookOpen className="w-4 h-4" />
-            Ucz się
-          </Link>
+        <div className="border-t border-slate-200 px-3 py-3 text-xs text-slate-400">
+          Vocab Trainer
         </div>
       </aside>
     </>
