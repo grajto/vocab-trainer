@@ -8,9 +8,6 @@ interface Notification {
   type: 'stale' | 'due' | 'goal' | 'hard'
   message: string
   deckId?: string
-  deckName?: string
-  count?: number
-  cardId?: string
 }
 
 export default function NotificationsPage() {
@@ -19,8 +16,8 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     fetch('/api/notifications', { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => setNotifications(data.notifications || []))
+      .then((res) => res.json())
+      .then((data) => setNotifications(data.notifications || []))
       .finally(() => setLoading(false))
   }, [])
 
@@ -34,22 +31,22 @@ export default function NotificationsPage() {
   const colorMap = {
     stale: 'text-amber-500 bg-amber-50',
     due: 'text-red-500 bg-red-50',
-    goal: 'text-indigo-500 bg-indigo-50',
+    goal: 'text-[#4255ff] bg-[#eef1ff]',
     hard: 'text-emerald-500 bg-emerald-50',
   }
 
   return (
-    <div className="p-6 lg:p-8 max-w-4xl mx-auto space-y-6">
+    <div className="mx-auto w-full max-w-[1120px] space-y-6">
       <div className="flex items-center gap-2">
-        <Bell className="w-5 h-5 text-slate-400" />
-        <h2 className="text-xl font-semibold text-slate-900">Powiadomienia</h2>
+        <Bell className="h-5 w-5 text-slate-500" />
+        <h2 className="text-2xl font-semibold text-slate-900">Powiadomienia</h2>
       </div>
 
       {loading ? (
         <p className="text-sm text-slate-400">Ładowanie powiadomień…</p>
       ) : notifications.length === 0 ? (
-        <div className="text-center py-12 bg-white border border-slate-200 rounded-xl">
-          <Bell className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+        <div className="rounded-xl border border-slate-200 bg-white py-12 text-center">
+          <Bell className="mx-auto mb-3 h-10 w-10 text-slate-300" />
           <p className="text-sm text-slate-400">Brak nowych powiadomień.</p>
         </div>
       ) : (
@@ -59,18 +56,14 @@ export default function NotificationsPage() {
             const color = colorMap[n.type]
             const ctaHref = n.deckId ? `/study?deck=${n.deckId}` : '/study'
             return (
-              <div key={i} className="bg-white border border-slate-200 rounded-xl px-5 py-4 flex items-center gap-4">
-                <div className={`p-2 rounded-lg ${color}`}>
-                  <Icon className="w-4 h-4" />
+              <div key={i} className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white px-5 py-4">
+                <div className={`rounded-lg p-2 ${color}`}>
+                  <Icon className="h-4 w-4" />
                 </div>
-                <div className="flex-1 min-w-0">
+                <div className="min-w-0 flex-1">
                   <p className="text-sm text-slate-700">{n.message}</p>
                 </div>
-                <Link
-                  href={ctaHref}
-                  prefetch={true}
-                  className="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-indigo-700 transition-colors whitespace-nowrap"
-                >
+                <Link href={ctaHref} prefetch className="whitespace-nowrap rounded-lg bg-[#eef1ff] px-3 py-1.5 text-xs font-semibold text-[#4255ff] hover:bg-[#e4e9ff]">
                   Start
                 </Link>
               </div>

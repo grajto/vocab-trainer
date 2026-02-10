@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { FolderOpen, Search, MoreHorizontal } from 'lucide-react'
+import { FolderOpen, Search } from 'lucide-react'
 
 interface Deck {
   id: string
@@ -31,8 +31,8 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
   const [creating, setCreating] = useState(false)
   const router = useRouter()
 
-  const filteredDecks = decks.filter(d => d.name.toLowerCase().includes(search.toLowerCase()))
-  const filteredFolders = folders.filter(f => f.name.toLowerCase().includes(search.toLowerCase()))
+  const filteredDecks = decks.filter((d) => d.name.toLowerCase().includes(search.toLowerCase()))
+  const filteredFolders = folders.filter((f) => f.name.toLowerCase().includes(search.toLowerCase()))
 
   async function createFolder(e: React.FormEvent) {
     e.preventDefault()
@@ -55,110 +55,86 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
     }
   }
 
+  const tabClass = (active: boolean) =>
+    `border-b-2 pb-2 text-sm font-semibold ${active ? 'border-[#4255ff] text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700'}`
+
   return (
-    <div className="space-y-4">
-      {/* Tabs + search */}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex bg-slate-100 rounded-lg p-0.5">
-          <button
-            onClick={() => setTab('decks')}
-            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
-              tab === 'decks' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-            }`}
-          >
-            Decks ({decks.length})
-          </button>
-          <button
-            onClick={() => setTab('folders')}
-            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
-              tab === 'folders' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-            }`}
-          >
-            Folders ({folders.length})
-          </button>
-        </div>
-        <div className="relative flex-1 min-w-[180px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center gap-6 border-b border-slate-200 pb-2">
+        <button onClick={() => setTab('decks')} className={tabClass(tab === 'decks')}>Zestawy fiszek</button>
+        <button onClick={() => setTab('folders')} className={tabClass(tab === 'folders')}>Foldery</button>
+      </div>
+
+      <div className="grid items-center gap-3 lg:grid-cols-[220px_minmax(0,1fr)]">
+        <p className="text-lg text-slate-600">Ostatnie zestawy</p>
+        <div className="relative w-full lg:justify-self-end lg:max-w-[500px]">
+          <Search className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
           <input
             type="text"
             value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Filter…"
-            className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:border-indigo-400 focus:outline-none"
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={tab === 'decks' ? 'Wyszukaj fiszki' : 'Wyszukaj folder'}
+            className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 pr-12 text-base text-slate-700 placeholder:text-slate-400 focus:outline-none"
           />
         </div>
       </div>
 
-      {/* Decks tab */}
       {tab === 'decks' && (
-        <div className="space-y-3">
-          {filteredDecks.length === 0 ? (
-            <p className="text-sm text-slate-400 text-center py-8">No decks found.</p>
-          ) : (
-            filteredDecks.map(d => (
-              <div key={d.id} className="bg-white border border-slate-200 rounded-2xl px-5 py-4 flex items-center justify-between hover:border-indigo-300 hover:shadow-sm transition-all">
-                <Link href={`/decks/${d.id}`} prefetch={true} className="min-w-0">
-                  <p className="font-medium text-slate-900 truncate">{d.name}</p>
-                  <p className="text-xs text-slate-400 mt-1">
-                    {d.cardCount} kart · {d.author} · {d.createdAt}
-                  </p>
+        <div className="space-y-6">
+          <section className="space-y-3">
+            <div className="flex items-center gap-3">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-600">W tym tygodniu</h3>
+              <div className="h-px flex-1 bg-slate-200" />
+            </div>
+
+            {filteredDecks.length === 0 ? (
+              <p className="text-sm text-slate-500">Brak zestawów.</p>
+            ) : (
+              filteredDecks.map((d) => (
+                <Link key={d.id} href={`/decks/${d.id}`} className="block rounded-md border border-slate-200 bg-white px-4 py-3 hover:bg-slate-50">
+                  <p className="text-sm text-slate-600">{d.cardCount} pojęć · {d.author}</p>
+                  <p className="text-3xl font-semibold leading-tight tracking-tight text-slate-800">{d.name}</p>
                 </Link>
-                <button className="p-2 rounded-lg hover:bg-slate-100 text-slate-400">
-                  <MoreHorizontal className="w-4 h-4" />
-                </button>
-              </div>
-            ))
-          )}
+              ))
+            )}
+          </section>
         </div>
       )}
 
-      {/* Folders tab */}
       {tab === 'folders' && (
         <div className="space-y-3">
-          {showCreateFolder && (
-            <form onSubmit={createFolder} className="bg-white border border-slate-200 rounded-xl p-4 flex gap-2">
+          {showCreateFolder ? (
+            <form onSubmit={createFolder} className="flex gap-2 rounded-xl border border-slate-200 bg-white p-4">
               <input
                 type="text"
                 value={folderName}
-                onChange={e => setFolderName(e.target.value)}
-                placeholder="Folder name"
+                onChange={(e) => setFolderName(e.target.value)}
+                placeholder="Nazwa folderu"
                 autoFocus
-                className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-indigo-400 focus:outline-none"
+                className="h-11 flex-1 rounded-lg border border-slate-200 px-3 text-sm focus:outline-none"
               />
-              <button type="submit" disabled={creating} className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50">
-                {creating ? 'Creating…' : 'Create'}
+              <button type="submit" disabled={creating} className="h-11 rounded-lg bg-[#eef1ff] px-4 text-sm font-semibold text-[#4255ff] hover:bg-[#e4e9ff]">
+                {creating ? 'Tworzenie…' : 'Utwórz'}
               </button>
-              <button type="button" onClick={() => setShowCreateFolder(false)} className="text-sm text-slate-400 hover:text-slate-600 px-2">
-                Cancel
+              <button type="button" onClick={() => setShowCreateFolder(false)} className="h-11 rounded-lg border border-slate-200 px-3 text-sm text-slate-600">
+                Anuluj
               </button>
             </form>
-          )}
-          {!showCreateFolder && (
-            <button
-              onClick={() => setShowCreateFolder(true)}
-              className="w-full bg-white border border-dashed border-slate-300 rounded-xl p-4 text-sm text-slate-400 hover:border-indigo-400 hover:text-indigo-600 transition-colors"
-            >
-              + New folder
+          ) : (
+            <button onClick={() => setShowCreateFolder(true)} className="w-full rounded-xl border border-dashed border-slate-300 p-4 text-sm text-slate-500 hover:bg-slate-50">
+              + Nowy folder
             </button>
           )}
-          {filteredFolders.length === 0 && !showCreateFolder ? (
-            <p className="text-sm text-slate-400 text-center py-4">No folders yet.</p>
-          ) : (
-            filteredFolders.map(f => (
-              <div key={f.id} className="flex items-center justify-between gap-3 bg-white border border-slate-200 rounded-2xl px-5 py-4 hover:border-indigo-300 hover:shadow-sm transition-all">
-                <Link href={`/folders/${f.id}`} prefetch={true} className="flex items-center gap-3 min-w-0">
-                  <FolderOpen className="w-5 h-5 text-indigo-500 flex-shrink-0" />
-                  <div className="min-w-0">
-                    <p className="font-medium text-slate-900 truncate">{f.name}</p>
-                    <p className="text-xs text-slate-400 mt-1">{f.deckCount} decków · {f.cardCount} kart · {f.mastery}% mastery</p>
-                  </div>
-                </Link>
-                <button className="p-2 rounded-lg hover:bg-slate-100 text-slate-400">
-                  <MoreHorizontal className="w-4 h-4" />
-                </button>
+
+          {filteredFolders.map((f) => (
+            <Link key={f.id} href={`/folders/${f.id}`} className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 hover:bg-slate-50">
+              <FolderOpen className="h-5 w-5 text-[#4255ff]" />
+              <div>
+                <p className="text-base font-semibold text-slate-900">{f.name}</p>
+                <p className="text-xs text-slate-500">{f.deckCount} zestawów · {f.cardCount} pojęć</p>
               </div>
-            ))
-          )}
+            </Link>
+          ))}
         </div>
       )}
     </div>
