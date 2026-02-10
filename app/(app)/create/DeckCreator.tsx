@@ -22,9 +22,9 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
   const router = useRouter()
   const { unlock } = useSound()
   const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
+  const [description, setOpis] = useState('')
   const [folderId, setFolderId] = useState('')
-  const [direction, setDirection] = useState<'front-to-back' | 'back-to-front' | 'both'>('front-to-back')
+  const [direction, setKierunek] = useState<'front-to-back' | 'back-to-front' | 'both'>('front-to-back')
   const [cards, setCards] = useState<CardRow[]>([
     { id: newId(), front: '', back: '', examples: '', notes: '' },
   ])
@@ -203,21 +203,21 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
   return (
     <div className="max-w-4xl mx-auto p-6 lg:p-8 space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-slate-900">Create New Deck</h2>
+        <h2 className="text-xl font-semibold text-slate-900">Kreator zestawów</h2>
         <div className="flex gap-2">
           <button
             onClick={() => saveDeck(true)}
             disabled={saving}
             className="bg-white border border-indigo-200 text-indigo-600 px-4 py-2 rounded-xl text-sm font-medium hover:bg-indigo-50 disabled:opacity-50 transition-all"
           >
-            {saving ? 'Saving…' : 'Create & Practice'}
+            {saving ? 'Zapisywanie…' : 'Utwórz i ćwicz'}
           </button>
           <button
             onClick={() => saveDeck(false)}
             disabled={saving}
             className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-5 py-2 rounded-xl text-sm font-medium hover:from-indigo-700 hover:to-violet-700 disabled:opacity-50 transition-all"
           >
-            {saving ? 'Saving…' : 'Create'}
+            {saving ? 'Zapisywanie…' : 'Utwórz zestaw'}
           </button>
         </div>
       </div>
@@ -227,7 +227,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
       {/* Deck meta */}
       <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-4 shadow-sm">
         <div>
-          <label className="block text-xs font-medium text-slate-500 mb-1.5">Deck Name *</label>
+          <label className="block text-xs font-medium text-slate-500 mb-1.5">Nazwa zestawu *</label>
           <input
             type="text"
             value={name}
@@ -239,37 +239,37 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1.5">Folder (optional)</label>
+            <label className="block text-xs font-medium text-slate-500 mb-1.5">Folder (opcjonalnie)</label>
             <select
               value={folderId}
               onChange={e => setFolderId(e.target.value)}
               className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none bg-white"
             >
-              <option value="">No folder</option>
+              <option value="">Bez folderu</option>
               {folders.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
             </select>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1.5">Direction</label>
+            <label className="block text-xs font-medium text-slate-500 mb-1.5">Kierunek</label>
             <select
               value={direction}
-              onChange={e => setDirection(e.target.value as typeof direction)}
+              onChange={e => setKierunek(e.target.value as typeof direction)}
               className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none bg-white"
             >
-              <option value="front-to-back">Front → Back</option>
-              <option value="back-to-front">Back → Front</option>
-              <option value="both">Both (random)</option>
+              <option value="front-to-back">Przód → Tył</option>
+              <option value="back-to-front">Tył → Przód</option>
+              <option value="both">Oba (losowo)</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1.5">Description</label>
+            <label className="block text-xs font-medium text-slate-500 mb-1.5">Opis</label>
             <input
               type="text"
               value={description}
-              onChange={e => setDescription(e.target.value)}
-              placeholder="Optional description"
+              onChange={e => setOpis(e.target.value)}
+              placeholder="Opcjonalny opis"
               className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none"
             />
           </div>
@@ -359,7 +359,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
             disabled={saving}
             className="bg-white border border-indigo-200 text-indigo-600 px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-indigo-50 disabled:opacity-50 transition-all"
           >
-            {saving ? 'Saving…' : 'Create & Practice'}
+            {saving ? 'Zapisywanie…' : 'Utwórz i ćwicz'}
           </button>
           <button
             onClick={() => saveDeck(false)}

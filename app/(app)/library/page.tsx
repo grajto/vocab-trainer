@@ -1,7 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { redirect } from 'next/navigation'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { LibraryTabs } from './LibraryTabs'
+import { Card } from '@/app/(app)/_components/ui/Card'
+import { SectionHeader } from '@/app/(app)/_components/ui/SectionHeader'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,13 +14,9 @@ export default async function LibraryPage() {
 
   const payload = await getPayload()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let decks: any = { docs: [] }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let folders: any = { docs: [] }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let cards: any = { docs: [] }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let reviewStates: any = { docs: [] }
 
   try {
@@ -80,9 +79,10 @@ export default async function LibraryPage() {
   }
 
   return (
-    <div className="p-6 lg:p-8 max-w-4xl mx-auto space-y-6">
-      <h2 className="text-xl font-semibold text-slate-900">Twoje zasoby</h2>
-      <LibraryTabs
+    <div style={{ display: 'grid', gap: '24px' }}>
+      <SectionHeader title="Twoje zasoby" description="Folders and sets in one place" />
+      <Card>
+        <LibraryTabs
         decks={decks.docs.map((d: any) => ({
           id: String(d.id),
           name: d.name,
@@ -109,6 +109,7 @@ export default async function LibraryPage() {
           }
         })}
       />
+      </Card>
     </div>
   )
 }

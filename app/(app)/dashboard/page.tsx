@@ -1,11 +1,17 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { BookOpen, CalendarClock, FolderOpen } from 'lucide-react'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { getStudySettings, isDailyGoalMet } from '@/src/lib/userSettings'
-import { BookOpen, CalendarCheck, Clock, Flame, PlayCircle, RotateCcw } from 'lucide-react'
+import { JumpBackInList } from './JumpBackInList'
 
 export const dynamic = 'force-dynamic'
+
+function getDayKey(date: Date) {
+  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
+}
 
 export default async function DashboardPage() {
   const user = await getUser()
@@ -16,50 +22,27 @@ export default async function DashboardPage() {
   const todayStart = new Date(now)
   todayStart.setHours(0, 0, 0, 0)
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let sessionsToday: any = { totalDocs: 0, docs: [] }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let decks: any = { totalDocs: 0, docs: [] }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let decks: any = { docs: [] }
+  let folders: any = { docs: [] }
   let recentSessions: any = { docs: [] }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let allSessionsYear: any = { docs: [] }
 
   try {
     const results = await Promise.all([
-      payload.find({
-        collection: 'sessions',
-        where: { owner: { equals: user.id }, startedAt: { greater_than_equal: todayStart.toISOString() } },
-        limit: 100,
-        depth: 0,
-      }),
-      payload.find({
-        collection: 'decks',
-        where: { owner: { equals: user.id } },
-        limit: 200,
-        depth: 0,
-      }),
-      payload.find({
-        collection: 'sessions',
-        where: { owner: { equals: user.id } },
-        sort: '-startedAt',
-        limit: 24,
-        depth: 0,
-      }),
-      payload.find({
-        collection: 'sessions',
-        where: { owner: { equals: user.id }, startedAt: { greater_than_equal: new Date(now.getFullYear() - 1, now.getMonth(), now.getDate()).toISOString() } },
-        sort: '-startedAt',
-        limit: 0,
-        depth: 0,
-      }),
+      payload.find({ collection: 'sessions', where: { owner: { equals: user.id }, startedAt: { greater_than_equal: todayStart.toISOString() } }, limit: 100, depth: 0 }),
+      payload.find({ collection: 'decks', where: { owner: { equals: user.id } }, sort: '-updatedAt', limit: 200, depth: 0 }),
+      payload.find({ collection: 'folders', where: { owner: { equals: user.id } }, sort: '-updatedAt', limit: 200, depth: 0 }),
+      payload.find({ collection: 'sessions', where: { owner: { equals: user.id } }, sort: '-startedAt', limit: 30, depth: 0 }),
+      payload.find({ collection: 'sessions', where: { owner: { equals: user.id }, startedAt: { greater_than_equal: new Date(now.getFullYear() - 1, now.getMonth(), now.getDate()).toISOString() } }, sort: '-startedAt', limit: 0, depth: 0 }),
     ])
     sessionsToday = results[0]
     decks = results[1]
-    recentSessions = results[2]
-    allSessionsYear = results[3]
+    folders = results[2]
+    recentSessions = results[3]
+    allSessionsYear = results[4]
   } catch (err) {
-    console.error('Dashboard data fetch error (migration may be pending):', err)
+    console.error('Dashboard data fetch error:', err)
   }
 
   const settings = getStudySettings(user as Record<string, unknown>)
@@ -75,11 +58,10 @@ export default async function DashboardPage() {
     if (!s.startedAt) continue
     const start = new Date(s.startedAt)
     const end = s.endedAt ? new Date(s.endedAt) : now
-    const key = `${start.getFullYear()}-${start.getMonth()}-${start.getDate()}`
-    const minutes = Math.max(1, Math.round((end.getTime() - start.getTime()) / 60000))
+    const key = getDayKey(start)
     const existing = sessionsByDay.get(key) ?? { sessions: 0, minutes: 0 }
     existing.sessions += 1
-    existing.minutes += minutes
+    existing.minutes += Math.max(1, Math.round((end.getTime() - start.getTime()) / 60000))
     sessionsByDay.set(key, existing)
   }
 
@@ -87,207 +69,170 @@ export default async function DashboardPage() {
   const checkDate = new Date(now)
   checkDate.setHours(0, 0, 0, 0)
   for (let i = 0; i < 365; i++) {
-    const key = `${checkDate.getFullYear()}-${checkDate.getMonth()}-${checkDate.getDate()}`
-    const dayStats = sessionsByDay.get(key)
+    const dayStats = sessionsByDay.get(getDayKey(checkDate))
     if (dayStats && isDailyGoalMet(settings, dayStats.sessions, dayStats.minutes)) {
       streakDays++
       checkDate.setDate(checkDate.getDate() - 1)
-    } else {
-      break
-    }
+    } else break
   }
 
   const deckMap = new Map<string, any>(decks.docs.map((d: any) => [String(d.id), d]))
   const recentDeckIds = new Set<string>()
-  const jumpBackIn: Array<{ deckId: string; name: string; mode: string; sessionId: string; progress: string; startedAt: string }> = []
-  const recentDecks: Array<{ deckId: string; name: string; lastUsed: string }> = []
+  const jumpBackIn: Array<{ deckId: string; name: string; mode: string; sessionId: string; progress: string; progressRatio: number; startedAt: string }> = []
 
   for (const s of recentSessions.docs) {
     const did = String(s.deck)
-    if (recentDeckIds.has(did)) continue
-    recentDeckIds.add(did)
     const deck = deckMap.get(did)
-    if (deck) {
-      if (s.endedAt === null || (s.completedCount ?? 0) < (s.targetCount ?? 0)) {
-        jumpBackIn.push({
-          deckId: did,
-          name: deck.name,
-          mode: s.mode || 'translate',
-          sessionId: String(s.id),
-          progress: `${s.completedCount ?? 0}/${s.targetCount ?? 0}`,
-          startedAt: s.startedAt,
-        })
-      }
-      recentDecks.push({
+    if (!deck) continue
+
+    const completed = Number(s.completedCount ?? 0)
+    const target = Number(s.targetCount ?? 0)
+    const ratio = target > 0 ? Math.min(100, Math.round((completed / target) * 100)) : 0
+
+    if ((s.endedAt === null || completed < target) && !jumpBackIn.find(item => item.sessionId === String(s.id))) {
+      jumpBackIn.push({
         deckId: did,
         name: deck.name,
-        lastUsed: s.startedAt,
+        mode: s.mode || 'translate',
+        sessionId: String(s.id),
+        progress: `${completed}/${target}`,
+        progressRatio: ratio,
+        startedAt: s.startedAt,
       })
     }
+
+    recentDeckIds.add(did)
   }
 
-  const recentDeckIdsList = recentDecks.slice(0, 6).map(r => r.deckId)
-  let recentDeckStats: Record<string, { cardCount: number; mastery: number }> = {}
-  if (recentDeckIdsList.length > 0) {
-    const cards = await payload.find({
-      collection: 'cards',
-      where: { owner: { equals: user.id }, deck: { in: recentDeckIdsList } },
-      limit: 1000,
-      depth: 0,
-    })
-    const cardsByDeck = new Map<string, string[]>()
-    for (const card of cards.docs) {
-      const did = String(card.deck)
-      if (!cardsByDeck.has(did)) cardsByDeck.set(did, [])
-      cardsByDeck.get(did)!.push(String(card.id))
-    }
-
-    const reviewStates = cards.docs.length > 0 ? await payload.find({
-      collection: 'review-states',
-      where: { owner: { equals: user.id }, card: { in: cards.docs.map((c: any) => c.id) } },
-      limit: 1000,
-      depth: 0,
-    }) : { docs: [] }
-
-    const level4ByDeck = new Map<string, number>()
-    const totalByDeck = new Map<string, number>()
-    for (const rs of reviewStates.docs) {
-      const cardId = String(rs.card)
-      const deckId = cards.docs.find((c: any) => String(c.id) === cardId)?.deck
-      if (!deckId) continue
-      const did = String(deckId)
-      totalByDeck.set(did, (totalByDeck.get(did) || 0) + 1)
-      if (rs.level === 4) {
-        level4ByDeck.set(did, (level4ByDeck.get(did) || 0) + 1)
-      }
-    }
-
-    recentDeckStats = Object.fromEntries(recentDeckIdsList.map(did => {
-      const total = totalByDeck.get(did) || 0
-      const l4 = level4ByDeck.get(did) || 0
-      return [did, {
-        cardCount: cardsByDeck.get(did)?.length || 0,
-        mastery: total > 0 ? Math.round((l4 / total) * 100) : 0,
-      }]
+  const recentDecks = decks.docs
+    .filter((d: any) => recentDeckIds.has(String(d.id)))
+    .slice(0, 6)
+    .map((d: any) => ({
+      id: String(d.id),
+      name: d.name,
+      cardCount: Number(d.cardCount || 0),
+      type: 'deck' as const,
     }))
-  }
+
+  const recentFolders = folders.docs.slice(0, 4).map((f: any) => ({
+    id: String(f.id),
+    name: f.name,
+    cardCount: decks.docs.filter((d: any) => String(d.folder) === String(f.id)).reduce((sum: number, d: any) => sum + Number(d.cardCount || 0), 0),
+    type: 'folder' as const,
+  }))
+
+  const recents = [...recentDecks, ...recentFolders].slice(0, 8)
+
+  const last3Days = [2, 1, 0].map(offset => {
+    const d = new Date(now)
+    d.setDate(now.getDate() - offset)
+    const key = getDayKey(d)
+    const stats = sessionsByDay.get(key) ?? { sessions: 0, minutes: 0 }
+    return {
+      label: d.toLocaleDateString('pl-PL', { weekday: 'short', day: '2-digit', month: '2-digit' }),
+      sessions: stats.sessions,
+      minutes: stats.minutes,
+      met: isDailyGoalMet(settings, stats.sessions, stats.minutes),
+    }
+  })
+
+  const yesterday = last3Days[1]
+  const recommendation = jumpBackIn.length > 0
+    ? `Do dokończenia masz ${jumpBackIn.length} sesji — zacznij od "${jumpBackIn[0].name}".`
+    : `Masz ${decks.docs.length} zestawów. Dziś zaplanuj minimum ${Math.max(1, settings.minSessionsPerDay)} sesję.`
 
   return (
-    <div className="p-6 lg:p-8 max-w-6xl mx-auto space-y-10">
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold text-slate-900">Informacje dzisiaj</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Link href="/stats" prefetch={true} className="group bg-white border border-slate-200 rounded-2xl px-5 py-5 shadow-sm hover:border-indigo-300 transition-colors">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs text-slate-400">Sesje dzisiaj</span>
-              <CalendarCheck className="w-5 h-5 text-indigo-500" />
-            </div>
-            <p className="text-3xl font-semibold text-slate-900 tabular-nums">{sessionsToday.totalDocs}</p>
-            <p className="text-xs text-slate-400 mt-2">Kliknij, aby zobaczyć statystyki</p>
-          </Link>
-          <Link href="/stats" prefetch={true} className="group bg-white border border-slate-200 rounded-2xl px-5 py-5 shadow-sm hover:border-indigo-300 transition-colors">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs text-slate-400">Czas dzisiaj</span>
-              <Clock className="w-5 h-5 text-amber-500" />
-            </div>
-            <p className="text-3xl font-semibold text-slate-900 tabular-nums">{timeTodayMinutes} min</p>
-            <p className="text-xs text-slate-400 mt-2">Zobacz historię sesji</p>
-          </Link>
-          <Link href="/calendar" prefetch={true} className="group bg-white border border-slate-200 rounded-2xl px-5 py-5 shadow-sm hover:border-indigo-300 transition-colors">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs text-slate-400">Seria</span>
-              <Flame className="w-5 h-5 text-rose-500" />
-            </div>
-            <p className="text-3xl font-semibold text-slate-900 tabular-nums">{streakDays} dni</p>
-            <p className="text-xs text-slate-400 mt-2">Kliknij, aby zobaczyć kalendarz</p>
-          </Link>
+    <div className="dashboard-wrap">
+      <section className="dash-section">
+        <h2 className="dash-title">Strona główna</h2>
+        <div className="dash-stats-grid">
+          <div className="dash-stat-card">
+            <p className="dash-stat-label">Liczba sesji dzisiaj</p>
+            <p className="dash-stat-value">{sessionsToday.totalDocs}</p>
+          </div>
+          <div className="dash-stat-card">
+            <p className="dash-stat-label">Czas trenowania słówek</p>
+            <p className="dash-stat-value">{timeTodayMinutes} min</p>
+          </div>
+          <div className="dash-stat-card">
+            <p className="dash-stat-label">Seria dni</p>
+            <p className="dash-stat-value">{streakDays} dni</p>
+          </div>
+          <div className="dash-stat-card dash-stat-card--wide">
+            <p className="dash-stat-label">Co powtórzyć dziś</p>
+            <p className="dash-stat-value dash-stat-value--small">{recommendation}</p>
+          </div>
         </div>
       </section>
 
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-slate-900">Jump back in</h2>
-          <Link href="/study" prefetch={true} className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
-            Nowa sesja →
-          </Link>
+      <section className="dash-section">
+        <div className="dash-section__head">
+          <h3>Jump back in</h3>
+          <Link href="/study">Nowa sesja →</Link>
         </div>
-        {jumpBackIn.length === 0 ? (
-          <div className="bg-white border border-dashed border-slate-200 rounded-2xl px-6 py-8 text-center text-sm text-slate-400">
-            Brak przerwanych sesji. Zacznij nową naukę.
-          </div>
+        <JumpBackInList initialItems={jumpBackIn} />
+      </section>
+
+      <section className="dash-section">
+        <div className="dash-section__head">
+          <h3>Recents</h3>
+        </div>
+        {recents.length === 0 ? (
+          <div className="dash-empty">Brak ostatnich materiałów.</div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {jumpBackIn.slice(0, 6).map(item => (
-              <div key={item.sessionId} className="bg-white border border-slate-200 rounded-2xl px-5 py-5 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <p className="font-medium text-slate-900">{item.name}</p>
-                  <span className="text-xs text-slate-400 capitalize">{item.mode}</span>
-                </div>
-                <p className="text-xs text-slate-400 mt-1">Postęp: {item.progress}</p>
-                <p className="text-xs text-slate-400 mt-1">Ostatnio: {new Date(item.startedAt).toLocaleString('pl-PL')}</p>
-                <Link
-                  href={`/session/${item.sessionId}`}
-                  prefetch={true}
-                  className="mt-4 inline-flex items-center gap-2 text-xs font-semibold text-white bg-indigo-600 px-4 py-2 rounded-full hover:bg-indigo-700"
-                >
-                  <PlayCircle className="w-4 h-4" />
-                  Kontynuuj
-                </Link>
-              </div>
+          <div className="dash-recents-grid">
+            {recents.map(item => (
+              <Link key={`${item.type}-${item.id}`} href={item.type === 'deck' ? `/decks/${item.id}` : `/folders/${item.id}`} className="dash-recent-row">
+                <span className="dash-recent-emoji">{item.type === 'deck' ? '📘' : '📁'}</span>
+                <span className="dash-recent-main">
+                  <strong>{item.name}</strong>
+                  <small>{item.cardCount} słówek</small>
+                </span>
+              </Link>
             ))}
           </div>
         )}
       </section>
 
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold text-slate-900">Ostatnie</h2>
-        {recentDecks.length === 0 ? (
-          <div className="bg-white border border-dashed border-slate-200 rounded-2xl px-6 py-8 text-center text-sm text-slate-400">
-            Brak ostatnich sesji. Zacznij naukę, aby zobaczyć statystyki.
+      <section className="dash-split-two">
+        <div className="dash-card-box">
+          <h3 className="dash-card-title"><CalendarClock size={18} /> Mini kalendarz</h3>
+          <div className="dash-mini-calendar">
+            {last3Days.map(day => (
+              <div key={day.label} className={`dash-day ${day.sessions === 0 ? 'is-none' : day.met ? 'is-met' : 'is-partial'}`}>
+                <span>{day.label}</span>
+                <strong>{day.sessions} sesji</strong>
+                <small>{day.minutes} min</small>
+              </div>
+            ))}
           </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {recentDecks.slice(0, 6).map(deck => {
-              const stats = recentDeckStats[deck.deckId] || { cardCount: 0, mastery: 0 }
-              return (
-                <Link
-                  key={deck.deckId}
-                  href={`/decks/${deck.deckId}`}
-                  prefetch={true}
-                  className="bg-white border border-slate-200 rounded-2xl px-5 py-5 shadow-sm hover:border-indigo-300 transition-colors"
-                >
-                  <p className="font-medium text-slate-900">{deck.name}</p>
-                  <p className="text-xs text-slate-400 mt-1">{stats.cardCount} kart</p>
-                  <div className="mt-3 flex items-center gap-2">
-                    <div className="flex-1 bg-slate-100 rounded-full h-2">
-                      <div className="bg-emerald-400 h-2 rounded-full" style={{ width: `${stats.mastery}%` }} />
-                    </div>
-                    <span className="text-xs text-slate-500">{stats.mastery}% L4</span>
-                  </div>
-                  <p className="text-xs text-slate-400 mt-2">Ostatnio użyte: {new Date(deck.lastUsed).toLocaleDateString('pl-PL')}</p>
-                </Link>
-              )
-            })}
+          <p className="dash-hint">Wczoraj zrobiłeś {yesterday.sessions} sesji i {yesterday.minutes} minut nauki.</p>
+          <Link href="/calendar" className="dash-link-inline">Przejdź do pełnego kalendarza</Link>
+        </div>
+
+        <div className="dash-card-box">
+          <h3 className="dash-card-title"><BookOpen size={18} /> Rozpocznij</h3>
+          <div className="dash-actions">
+            <Link href="/study" className="dash-action-btn">Ucz się</Link>
+            <Link href="/create" className="dash-action-btn dash-action-btn--ghost">Kreator zestawów</Link>
           </div>
-        )}
-      </section>
 
-      <section>
-        <Link
-          href="/study"
-          prefetch={true}
-          className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white text-center py-4 rounded-2xl font-semibold hover:from-indigo-700 hover:to-violet-700 transition-all shadow-sm"
-        >
-          <BookOpen className="w-5 h-5" />
-          Rozpocznij naukę
-        </Link>
-      </section>
-
-      <section className="flex justify-center">
-        <Link href="/decks" prefetch={true} className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-indigo-600">
-          <RotateCcw className="w-4 h-4" />
-          Zobacz wszystkie zasoby
-        </Link>
+          <div className="dash-materials">
+            <p className="dash-materials-title">Twoje materiały</p>
+            {folders.docs.slice(0, 3).map((folder: any) => (
+              <Link key={`f-${folder.id}`} href={`/folders/${folder.id}`} className="dash-material-row">
+                <span><FolderOpen size={15} /></span>
+                <span>{folder.name}</span>
+              </Link>
+            ))}
+            {decks.docs.slice(0, 5).map((deck: any) => (
+              <Link key={`d-${deck.id}`} href={`/decks/${deck.id}`} className="dash-material-row">
+                <span><BookOpen size={15} /></span>
+                <span>{deck.name}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
       </section>
     </div>
   )

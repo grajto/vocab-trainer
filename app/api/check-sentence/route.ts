@@ -7,32 +7,141 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const MODEL = 'gpt-5-nano'
-const PRIMARY_MAX_OUTPUT_TOKENS = 300
-const RETRY_MAX_OUTPUT_TOKENS = 300
+const PRIMARY_MAX_OUTPUT_TOKENS = 900
+const RETRY_MAX_OUTPUT_TOKENS = 1200
 const PREVIEW_LENGTH = 200
 
-/** Collapse whitespace and lowercase for phrase containment check */
+const RESPONSE_JSON_SCHEMA = {
+  name: 'check_sentence_response',
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    required: ['ok', 'corrected', 'errors', 'comment'],
+    properties: {
+      ok: { type: 'boolean' },
+      corrected: { type: 'string' },
+      errors: {
+        type: 'array',
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['type', 'from', 'to', 'explain'],
+          properties: {
+            type: { type: 'string' },
+            from: { type: 'string' },
+            to: { type: 'string' },
+            explain: { type: 'string' },
+          },
+        },
+      },
+      comment: { type: 'string' },
+    },
+  },
+  strict: true,
+} as const
+
 function norm(s: string): string {
   return s.trim().replace(/\s+/g, ' ').toLowerCase()
 }
 
-function getFallbackCorrected(sentence: string, targetPhrase?: string) {
-  return sentence.trim() || targetPhrase?.trim() || '[brak zdania]'
+function hasRequiredWord(sentence: string, required: string): boolean {
+  return norm(sentence).includes(norm(required))
 }
 
-const SYSTEM_PROMPT = `Zwróć WYŁĄCZNIE minifikowany JSON o strukturze:
-{"ok":boolean,"corrected":string,"errors":[{"type":string,"from":string,"to":string,"explain":string}],"comment":string}
-Zasady:
-- errors maks 5 elementów
-- comment maks 200 znaków
-- corrected zawsze niepuste
-- jeśli ok=true, corrected musi być identyczne jak input
-- brak dodatkowych kluczy, brak markdown
-Typy błędów: grammar | usage | meaning | spam | other.`
+function hasLikelyGibberishToken(sentence: string, required: string): boolean {
+  const requiredNorm = norm(required)
+  const tokens = (sentence.toLowerCase().match(/[a-z]+/g) ?? []).filter(Boolean)
 
-const RETRY_PROMPT = `JSON only:
+  for (const token of tokens) {
+    if (token === requiredNorm) continue
+    if (token.length <= 2) continue
+
+    const uniqueRatio = new Set(token).size / token.length
+    const hasLongConsonantRun = /[bcdfghjklmnpqrstvwxyz]{5,}/.test(token)
+
+    if (token.length >= 7 && uniqueRatio < 0.45) return true
+    if (hasLongConsonantRun) return true
+  }
+
+  return false
+}
+
+function isMinorExplain(explain: string): boolean {
+  const e = explain.toLowerCase()
+  return (
+    e.includes('capitalization') ||
+    e.includes('uppercase') ||
+    e.includes('lowercase') ||
+    e.includes('final dot') ||
+    e.includes('missing period') ||
+    e.includes('punctuation') ||
+    e.includes('comma') ||
+    e.includes('article') ||
+    e.includes('small style') ||
+    e.includes('minor style')
+  )
+}
+
+function isClearlyBadForAutoPass(
+  parsed: { errors: Array<{ type: string; explain: string }> },
+  sentence: string,
+  required: string,
+): boolean {
+  if (!hasRequiredWord(sentence, required)) return true
+
+  const words = sentence.toLowerCase().match(/[a-z]+/g) ?? []
+  if (words.length < 3) return true
+  if (hasLikelyGibberishToken(sentence, required)) return true
+
+  const severeTypes = new Set(['usage', 'meaning', 'spam'])
+  const spellingErrors = parsed.errors.filter(err => (err.type || '').toLowerCase() === 'spelling')
+
+  if (spellingErrors.length >= 2) return true
+
+  for (const err of parsed.errors) {
+    const t = (err.type || '').toLowerCase()
+    const ex = (err.explain || '').toLowerCase()
+
+    if (severeTypes.has(t)) return true
+    if (ex.includes('does not contain') || ex.includes('missing required')) return true
+    if (ex.includes('incomplete input')) return true
+    if (ex.includes('unintelligible') || ex.includes('gibberish') || ex.includes('nonsense') || ex.includes('non-word')) return true
+  }
+
+  // Allow auto-pass only when errors are minor and mostly style/punctuation/article level.
+  return !parsed.errors.every(err => {
+    const t = (err.type || '').toLowerCase()
+    if (t === 'style' || t === 'punctuation') return true
+    if (t === 'grammar' && isMinorExplain(err.explain || '')) return true
+    return false
+  })
+}
+
+const SYSTEM_PROMPT = `You are an English teacher AI.
+
+Evaluate the user's sentence quality in a practical way.
+Return ONLY minified JSON:
 {"ok":boolean,"corrected":string,"errors":[{"type":string,"from":string,"to":string,"explain":string}],"comment":string}
-errors<=5, comment<=200, corrected!=empty, ok=true => corrected=input.`
+
+Rules:
+- Use English only (B1-B2).
+- Be short, clear, teacher-like.
+- comment: 1-2 short sentences, max 300 chars.
+- errors: max 5 items.
+- If ok=true: corrected MUST equal input sentence exactly.
+- If ok=false: corrected MUST be an empty string.
+- Ignore missing final dot and capitalization at sentence start.
+- Accept understandable grammar; do not fail for small style issues.
+- Point out exact mistakes (e.g. spelling: "greeen" -> "green").
+- Never write meta-comments like "task expects corrected".
+- Error types: grammar, usage, meaning, spelling, punctuation, style, other.
+- No markdown. No extra keys.`
+
+const RETRY_PROMPT = `JSON ONLY.
+{"ok":boolean,"corrected":string,"errors":[{"type":string,"from":string,"to":string,"explain":string}],"comment":string}
+English B1-B2. Ignore capitalization and final punctuation.
+If ok=true corrected=input. If ok=false corrected="".
+comment<=300, errors<=5, no extra keys.`
 
 function extractResponseMeta(response: unknown) {
   const typed = response as {
@@ -59,7 +168,7 @@ export async function POST(req: NextRequest) {
     if (!user) {
       return NextResponse.json(buildCheckSentenceResponse({
         ok: false,
-        corrected: '[brak zdania]',
+        corrected: '',
         errors: [{ type: 'other', from: '', to: '', explain: 'Unauthorized' }],
         comment: 'Unauthorized',
       }), { status: 401 })
@@ -67,54 +176,51 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json()
     const { phrase, requiredPhrase, sentence, promptPl } = body
-    // Support both field names for backwards compat
     const targetPhrase = phrase || requiredPhrase
 
     if (!targetPhrase) {
       return NextResponse.json(buildCheckSentenceResponse({
         ok: false,
-        corrected: getFallbackCorrected(sentence || '', targetPhrase),
-        errors: [{ type: 'usage', from: '', to: '', explain: 'Brak wymaganej frazy do sprawdzenia.' }],
-        comment: 'Brak wymaganej frazy do sprawdzenia.',
+        corrected: '',
+        errors: [{ type: 'usage', from: '', to: '', explain: 'Missing required word to validate.' }],
+        comment: 'Missing required word to validate.',
       }))
     }
 
     if (!sentence || !sentence.trim()) {
       return NextResponse.json(buildCheckSentenceResponse({
         ok: false,
-        corrected: getFallbackCorrected(sentence || '', targetPhrase),
-        errors: [{ type: 'grammar', from: '', to: '', explain: 'Zdanie nie może być puste.' }],
-        comment: 'Zdanie nie może być puste.',
+        corrected: '',
+        errors: [{ type: 'grammar', from: '', to: '', explain: 'Sentence cannot be empty.' }],
+        comment: 'Sentence cannot be empty.',
       }))
     }
 
     const trimmed = sentence.trim()
 
-    // Pre-AI validation: length
     if (trimmed.length < 8) {
       return NextResponse.json(buildCheckSentenceResponse({
         ok: false,
-        corrected: getFallbackCorrected(trimmed, targetPhrase),
-        errors: [{ type: 'grammar', from: trimmed, to: trimmed, explain: 'Zdanie jest za krótkie (min. 8 znaków).' }],
-        comment: 'Zdanie jest za krótkie (min. 8 znaków).',
+        corrected: '',
+        errors: [{ type: 'grammar', from: trimmed, to: trimmed, explain: 'Sentence is too short (minimum 8 characters).' }],
+        comment: 'Sentence is too short (minimum 8 characters).',
       }))
     }
     if (trimmed.length > 240) {
       return NextResponse.json(buildCheckSentenceResponse({
         ok: false,
-        corrected: getFallbackCorrected(trimmed, targetPhrase),
-        errors: [{ type: 'other', from: trimmed, to: trimmed, explain: 'Zdanie jest za długie (max 240 znaków).' }],
-        comment: 'Zdanie jest za długie (max 240 znaków).',
+        corrected: '',
+        errors: [{ type: 'other', from: trimmed, to: trimmed, explain: 'Sentence is too long (maximum 240 characters).' }],
+        comment: 'Sentence is too long (maximum 240 characters).',
       }))
     }
 
-    // Pre-AI validation: phrase containment (case-insensitive, collapsed whitespace)
-    if (!norm(trimmed).includes(norm(targetPhrase))) {
+    if (!hasRequiredWord(trimmed, targetPhrase)) {
       return NextResponse.json(buildCheckSentenceResponse({
         ok: false,
-        corrected: getFallbackCorrected(trimmed, targetPhrase),
-        errors: [{ type: 'usage', from: trimmed, to: trimmed, explain: `Zdanie nie zawiera wymaganego zwrotu: "${targetPhrase}".` }],
-        comment: `Zdanie nie zawiera wymaganego zwrotu: "${targetPhrase}".`,
+        corrected: '',
+        errors: [{ type: 'usage', from: trimmed, to: trimmed, explain: `The sentence must include this required word: "${targetPhrase}".` }],
+        comment: `The sentence must include this required word: "${targetPhrase}".`,
       }))
     }
 
@@ -122,7 +228,7 @@ export async function POST(req: NextRequest) {
       console.error('[AI] Missing OPENAI_API_KEY')
       return NextResponse.json(buildCheckSentenceResponse({
         ok: false,
-        corrected: getFallbackCorrected(trimmed, targetPhrase),
+        corrected: '',
         errors: [{ type: 'other', from: '', to: '', explain: 'Missing OPENAI_API_KEY' }],
         comment: 'Missing OPENAI_API_KEY',
       }), { status: 500 })
@@ -132,28 +238,34 @@ export async function POST(req: NextRequest) {
       const { client: openai, apiKey, baseURL } = createOpenAIClient()
       logOpenAIEnv({ client: openai, apiKey, baseURL })
 
-      const meaningContext = promptPl
-        ? `PL znaczenie: "${promptPl}".`
-        : ''
-
       console.info('[AI] calling OpenAI', { model: MODEL })
-      const userContent = `requiredEn: ${targetPhrase}\n${meaningContext}\nsentence: ${trimmed}`
+      const userContent = JSON.stringify({
+        mode: 'sentence',
+        targetWord: targetPhrase,
+        promptPl: promptPl || '',
+        userAnswer: trimmed,
+      })
 
       const runRequest = async (prompt: string, maxTokens: number) => {
         console.info('[AI] request config', {
           apiType: 'responses',
           max_output_tokens: maxTokens,
-          max_tokens: null,
+          reasoning_effort: 'minimal',
+          response_format: 'json_schema',
         })
+
         const response = await openai.responses.create({
           model: MODEL,
           max_output_tokens: maxTokens,
           tool_choice: 'none',
+          reasoning: { effort: 'minimal' },
+          text: { format: { type: 'json_schema', ...RESPONSE_JSON_SCHEMA } },
           input: [
             { role: 'system', content: prompt },
             { role: 'user', content: userContent },
           ],
         })
+
         const text = (response.output_text ?? '').trim()
         let fallbackText = ''
         if (!text) {
@@ -165,15 +277,10 @@ export async function POST(req: NextRequest) {
             .join('')
             .trim()
         }
+
         const finalText = text || fallbackText
-        const {
-          finishReason,
-          hasToolCalls,
-          outputTypes,
-          outputContentTypes,
-          outputTextLength,
-          outputLength,
-        } = extractResponseMeta(response)
+        const { finishReason, hasToolCalls, outputTypes, outputContentTypes, outputTextLength, outputLength } = extractResponseMeta(response)
+
         console.info('[AI] response meta', {
           finish_reason: finishReason,
           output_text_length: outputTextLength,
@@ -184,12 +291,7 @@ export async function POST(req: NextRequest) {
           has_tool_calls: hasToolCalls,
           has_text: finalText.length > 0,
         })
-        const responseHeaders = (response as unknown as { response?: { headers?: Record<string, string> } }).response?.headers
-        if (responseHeaders) {
-          console.info('[AI] response headers', {
-            requestId: responseHeaders['x-request-id'] || responseHeaders['request-id'] || null,
-          })
-        }
+
         return { text: finalText, finishReason, hasToolCalls }
       }
 
@@ -204,8 +306,9 @@ export async function POST(req: NextRequest) {
         const { text, finishReason, hasToolCalls } = await runRequest(prompt, maxTokens)
         const preview = text.slice(0, PREVIEW_LENGTH)
 
-        if (finishReason === 'length' || !text) {
-          lastError = finishReason === 'length' ? 'finish_reason=length' : 'empty_text'
+        const wasTruncated = finishReason === 'length' || finishReason === 'max_output_tokens'
+        if (wasTruncated || !text) {
+          lastError = wasTruncated ? `finish_reason=${finishReason}` : 'empty_text'
           console.warn('[AI] response truncated or empty, retrying', { attempt, finish_reason: finishReason, preview })
           continue
         }
@@ -218,6 +321,15 @@ export async function POST(req: NextRequest) {
 
         try {
           const parsed = parseCheckSentenceResponse(text, trimmed)
+          if (!parsed.ok) {
+            parsed.corrected = ''
+            if (!isClearlyBadForAutoPass(parsed, trimmed, targetPhrase)) {
+              parsed.ok = true
+              parsed.errors = []
+              parsed.comment = 'Good sentence. Minor style mistakes were ignored.'
+              parsed.corrected = trimmed
+            }
+          }
           return NextResponse.json(parsed)
         } catch (parseError) {
           lastError = (parseError as Error).message
@@ -226,31 +338,27 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      if (lastError?.includes('length') || lastError?.includes('empty_text')) {
-        return NextResponse.json({
-          error: 'AI_TRUNCATED',
-          detail: lastError || 'Response truncated or empty after retries.',
-        }, { status: 502 })
-      }
-
-      return NextResponse.json({
-        error: 'AI_INVALID_JSON',
-        detail: lastError || 'Invalid AI response after retries.',
-      }, { status: 502 })
+      console.error('[AI] final failure', { lastError })
+      return NextResponse.json(buildCheckSentenceResponse({
+        ok: false,
+        corrected: '',
+        errors: [{ type: 'other', from: '', to: '', explain: 'AI could not validate this sentence now. Please try again.' }],
+        comment: 'AI could not validate this sentence now. Please try again.',
+      }), { status: 502 })
     } catch (err: unknown) {
       console.error('OpenAI call failed:', err)
       return NextResponse.json(buildCheckSentenceResponse({
         ok: false,
-        corrected: getFallbackCorrected(trimmed, targetPhrase),
-        errors: [{ type: 'other', from: '', to: '', explain: 'AI nie zwróciło poprawnej odpowiedzi. Spróbuj ponownie.' }],
-        comment: 'AI nie zwróciło poprawnej odpowiedzi. Spróbuj ponownie.',
+        corrected: '',
+        errors: [{ type: 'other', from: '', to: '', explain: 'AI could not validate this sentence now. Please try again.' }],
+        comment: 'AI could not validate this sentence now. Please try again.',
       }), { status: 502 })
     }
   } catch (error: unknown) {
     console.error('Check sentence error:', error)
     return NextResponse.json(buildCheckSentenceResponse({
       ok: false,
-      corrected: '[brak zdania]',
+      corrected: '',
       errors: [{ type: 'other', from: '', to: '', explain: 'Internal server error' }],
       comment: 'Internal server error',
     }), { status: 500 })
