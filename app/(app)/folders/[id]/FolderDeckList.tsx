@@ -2,6 +2,8 @@
 
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
+import { BookOpen } from 'lucide-react'
+import { IconSquare } from '../../_components/ui/IconSquare'
 
 interface DeckItem {
   id: string
@@ -9,6 +11,7 @@ interface DeckItem {
   description?: string
   updatedAt: string
   lastUsed?: string | null
+  cardCount?: number
 }
 
 export function FolderDeckList({ decks }: { decks: DeckItem[] }) {
@@ -16,7 +19,7 @@ export function FolderDeckList({ decks }: { decks: DeckItem[] }) {
   const [sort, setSort] = useState<'date' | 'name' | 'last'>('date')
 
   const filtered = useMemo(() => {
-    const list = decks.filter(deck => deck.name.toLowerCase().includes(search.toLowerCase()))
+    const list = decks.filter((deck) => deck.name.toLowerCase().includes(search.toLowerCase()))
     const sorted = [...list]
     sorted.sort((a, b) => {
       if (sort === 'name') return a.name.localeCompare(b.name)
@@ -31,15 +34,15 @@ export function FolderDeckList({ decks }: { decks: DeckItem[] }) {
       <div className="flex flex-wrap items-center gap-3">
         <input
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
           placeholder="Szukaj w folderze"
-          className="flex-1 min-w-[200px] rounded-[var(--radiusSm)] px-3 py-2 text-sm focus:outline-none"
-          style={{ border: '1px solid var(--border)', color: 'var(--text)' }}
+          className="flex-1 min-w-[200px] rounded-[var(--input-radius)] px-3 py-2 text-sm focus:outline-none"
+          style={{ border: '1px solid var(--border)', color: 'var(--text)', background: 'var(--surface)' }}
         />
         <select
           value={sort}
-          onChange={e => setSort(e.target.value as typeof sort)}
-          className="rounded-[var(--radiusSm)] px-3 py-2 text-sm focus:outline-none"
+          onChange={(e) => setSort(e.target.value as typeof sort)}
+          className="rounded-[var(--input-radius)] px-3 py-2 text-sm focus:outline-none"
           style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
         >
           <option value="date">Wg daty</option>
@@ -49,21 +52,37 @@ export function FolderDeckList({ decks }: { decks: DeckItem[] }) {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="text-center py-12 rounded-[var(--radius)]" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-          <p className="text-sm mb-2" style={{ color: 'var(--gray400)' }}>Brak zestawów w folderze.</p>
+        <div
+          className="text-center py-12 rounded-[var(--card-radius)]"
+          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+        >
+          <p className="text-sm mb-2" style={{ color: 'var(--text-soft)' }}>
+            Brak zestawów w folderze.
+          </p>
         </div>
       ) : (
         <div className="space-y-2">
-          {filtered.map(deck => (
+          {filtered.map((deck) => (
             <Link
               key={deck.id}
               href={`/decks/${deck.id}`}
               prefetch={true}
-              className="block rounded-[var(--radius)] px-5 py-4 transition-colors hover:bg-[var(--hover-bg)]"
+              className="flex items-center gap-3 rounded-[var(--card-radius)] px-4 py-3 transition-colors hover:bg-[var(--hover-bg)]"
               style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
             >
-              <p className="font-medium" style={{ color: 'var(--text)' }}>{deck.name}</p>
-              {deck.description && <p className="text-sm mt-0.5" style={{ color: 'var(--gray400)' }}>{deck.description}</p>}
+              <IconSquare>
+                <BookOpen size={16} />
+              </IconSquare>
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold text-sm" style={{ color: 'var(--text)' }}>
+                  {deck.name}
+                </p>
+                {deck.cardCount !== undefined && (
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                    {deck.cardCount} {deck.cardCount === 1 ? 'słówko' : deck.cardCount < 5 ? 'słówka' : 'słówek'}
+                  </p>
+                )}
+              </div>
             </Link>
           ))}
         </div>

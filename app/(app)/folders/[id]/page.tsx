@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
-import { BookOpen, FolderOpen, MoreHorizontal, Plus, Search } from 'lucide-react'
+import { FolderOpen, Plus } from 'lucide-react'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
+import { FolderDeckList } from './FolderDeckList'
+import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
@@ -38,85 +39,48 @@ export default async function FolderPage({ params }: { params: Promise<{ id: str
   const cardsByDeck = new Map<string, number>()
   for (const card of cardResult.docs) cardsByDeck.set(String(card.deck), (cardsByDeck.get(String(card.deck)) || 0) + 1)
 
+  const deckItems = decks.docs.map((d: any) => ({
+    id: String(d.id),
+    name: d.name,
+    description: d.description || '',
+    updatedAt: d.updatedAt,
+    lastUsed: d.lastUsed || null,
+    cardCount: cardsByDeck.get(String(d.id)) || 0,
+  }))
+
   return (
-    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--containerMax)' }}>
+    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--container-max)' }}>
       {/* Folder header */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
           <span
             className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg"
-            style={{ background: 'var(--primaryBg)', color: 'var(--primary)' }}
+            style={{ background: 'var(--primary-soft)', color: 'var(--primary)' }}
           >
             <FolderOpen size={20} />
           </span>
           <div className="min-w-0">
-            <h1 className="truncate text-xl font-bold" style={{ color: 'var(--text)' }}>{folder.name}</h1>
-            <p className="text-xs" style={{ color: 'var(--muted)' }}>{cardResult.totalDocs} pojęć • przez Ciebie</p>
+            <h1 className="truncate text-xl font-bold" style={{ color: 'var(--text)' }}>
+              {folder.name}
+            </h1>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+              {cardResult.totalDocs} pojęć • przez Ciebie
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <Link
             href="/create"
-            className="inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium"
-            style={{ background: 'var(--primaryBg)', color: 'var(--primary)' }}
+            className="inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition-colors hover:opacity-90"
+            style={{ background: 'var(--primary-soft)', color: 'var(--primary)' }}
           >
             <Plus size={14} /> Dodaj zestaw
           </Link>
-          <button
-            type="button"
-            className="inline-flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-[var(--hover-bg)]"
-            style={{ color: 'var(--gray400)' }}
-          >
-            <MoreHorizontal size={18} />
-          </button>
         </div>
       </div>
 
-      {/* Search */}
-      <div className="relative">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: 'var(--gray400)' }} />
-        <input
-          readOnly
-          value=""
-          placeholder="Przeszukaj ten folder"
-          className="h-10 w-full rounded-lg pl-9 pr-4 text-sm focus:outline-none"
-          style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
-        />
-      </div>
-
-      {/* Deck list */}
-      <div className="space-y-0.5">
-        {decks.docs.length === 0 ? (
-          <p className="py-8 text-center text-sm" style={{ color: 'var(--muted)' }}>Brak zestawów w folderze.</p>
-        ) : (
-          decks.docs.map((deck: any) => (
-            <Link
-              key={deck.id}
-              href={`/decks/${deck.id}`}
-              className="flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-[var(--hover-bg)]"
-            >
-              <span
-                className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md"
-                style={{ background: 'var(--primaryBg)', color: 'var(--primary)' }}
-              >
-                <BookOpen size={16} />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold" style={{ color: 'var(--text)' }}>{deck.name}</p>
-                <p className="text-xs" style={{ color: 'var(--muted)' }}>{cardsByDeck.get(String(deck.id)) || 0} pojęć • przez Ciebie</p>
-              </div>
-              <button
-                type="button"
-                onClick={(e) => e.preventDefault()}
-                className="inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md transition-colors hover:bg-[var(--surface2)]"
-                style={{ color: 'var(--gray400)' }}
-              >
-                <MoreHorizontal size={16} />
-              </button>
-            </Link>
-          ))
-        )}
-      </div>
+      {/* Deck list with client-side filtering */}
+      <FolderDeckList decks={deckItems} />
     </div>
   )
 }
