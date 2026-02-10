@@ -16,7 +16,7 @@ export function RecentItem({ href, title, meta, type, highlighted }: RecentItemP
 
       <div className="min-w-0">
         <div className="truncate text-sm font-semibold leading-5 text-slate-800">{title}</div>
-        <div className="text-xs text-slate-500">{meta}</div>
+        <div className="mt-0.5 inline-flex rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">{meta}</div>
       </div>
     </Link>
   )

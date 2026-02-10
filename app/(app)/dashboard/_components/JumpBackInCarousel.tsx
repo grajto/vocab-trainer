@@ -34,7 +34,7 @@ export function JumpBackInCarousel({ items }: { items: ContinueItem[] }) {
       <button
         type="button"
         onClick={() => slide('left')}
-        className="absolute left-2 top-1/2 z-20 -translate-y-1/2 inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-500 hover:bg-white"
+        className="absolute left-0 top-1/2 z-20 -translate-y-1/2 inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-500 hover:bg-white"
         aria-label="Przesuń w lewo"
       >
         <ChevronLeft size={16} />
@@ -43,7 +43,7 @@ export function JumpBackInCarousel({ items }: { items: ContinueItem[] }) {
       <button
         type="button"
         onClick={() => slide('right')}
-        className="absolute right-2 top-1/2 z-20 -translate-y-1/2 inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-500 hover:bg-white"
+        className="absolute right-0 top-1/2 z-20 -translate-y-1/2 inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-500 hover:bg-white"
         aria-label="Przesuń w prawo"
       >
         <ChevronRight size={16} />
@@ -52,16 +52,16 @@ export function JumpBackInCarousel({ items }: { items: ContinueItem[] }) {
       <div
         ref={railRef}
         onScroll={onScroll}
-        className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex snap-x snap-mandatory gap-4 overflow-x-auto px-12 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {shownItems.map((item) => (
-          <div key={item.resumeHref} className="min-w-[82%] snap-start lg:min-w-[64%]">
+          <div key={item.resumeHref} className="min-w-[78%] snap-start lg:min-w-[58%]">
             <ContinueCard item={item} />
           </div>
         ))}
       </div>
 
-      <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-white via-white/70 to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 right-10 w-24 bg-gradient-to-l from-white via-white/70 to-transparent" />
 
       <div className="mt-1 flex items-center justify-center gap-1.5">
         {shownItems.map((item, idx) => (

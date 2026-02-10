@@ -171,7 +171,7 @@ export default async function DashboardPage() {
     }
   })
 
-  const sectionLabelClass = 'text-sm leading-[1.4285714286] font-semibold tracking-normal text-[var(--gray600-gray400)]'
+  const sectionLabelClass = 'text-base leading-[1.4285714286] font-semibold tracking-normal text-slate-900'
 
   return (
     <div className="mx-auto w-full max-w-[1120px] space-y-8">

@@ -3,8 +3,6 @@ import { redirect } from 'next/navigation'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { LibraryTabs } from './LibraryTabs'
-import { Card } from '@/app/(app)/_components/ui/Card'
-import { SectionHeader } from '@/app/(app)/_components/ui/SectionHeader'
 
 export const dynamic = 'force-dynamic'
 
@@ -63,26 +61,25 @@ export default async function LibraryPage() {
     const deckId = String(card.deck)
     cardCountByDeck.set(deckId, (cardCountByDeck.get(deckId) || 0) + 1)
   }
+
   const level4ByDeck = new Map<string, number>()
   const totalByDeck = new Map<string, number>()
   const cardDeckMap = new Map<string, string>()
-  for (const card of cards.docs) {
-    cardDeckMap.set(String(card.id), String(card.deck))
-  }
+  for (const card of cards.docs) cardDeckMap.set(String(card.id), String(card.deck))
   for (const rs of reviewStates.docs) {
     const deckId = cardDeckMap.get(String(rs.card))
     if (!deckId) continue
     totalByDeck.set(deckId, (totalByDeck.get(deckId) || 0) + 1)
-    if (rs.level === 4) {
-      level4ByDeck.set(deckId, (level4ByDeck.get(deckId) || 0) + 1)
-    }
+    if (rs.level === 4) level4ByDeck.set(deckId, (level4ByDeck.get(deckId) || 0) + 1)
   }
 
   return (
-    <div style={{ display: 'grid', gap: '24px' }}>
-      <SectionHeader title="Twoje zasoby" description="Folders and sets in one place" />
-      <Card>
-        <LibraryTabs
+    <div className="mx-auto w-full max-w-[1120px] space-y-6">
+      <div>
+        <h1 className="text-[46px] font-bold tracking-tight text-slate-900">Twoje zasoby</h1>
+      </div>
+
+      <LibraryTabs
         decks={decks.docs.map((d: any) => ({
           id: String(d.id),
           name: d.name,
@@ -100,6 +97,7 @@ export default async function LibraryPage() {
               return sum + (total > 0 ? Math.round((l4 / total) * 100) : 0)
             }, 0) / folderDecks.length)
             : 0
+
           return {
             id: String(f.id),
             name: f.name,
@@ -109,7 +107,6 @@ export default async function LibraryPage() {
           }
         })}
       />
-      </Card>
     </div>
   )
 }
