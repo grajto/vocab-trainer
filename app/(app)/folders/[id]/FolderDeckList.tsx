@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { BookOpen } from 'lucide-react'
 import { IconSquare } from '../../_components/ui/IconSquare'
+import { pluralizeCards } from '@/src/lib/utils'
 
 interface DeckItem {
   id: string
@@ -79,7 +80,7 @@ export function FolderDeckList({ decks }: { decks: DeckItem[] }) {
                 </p>
                 {deck.cardCount !== undefined && (
                   <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                    {deck.cardCount} {deck.cardCount === 1 ? 'słówko' : deck.cardCount < 5 ? 'słówka' : 'słówek'}
+                    {deck.cardCount} {pluralizeCards(deck.cardCount)}
                   </p>
                 )}
               </div>

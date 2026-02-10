@@ -226,9 +226,9 @@ export default async function DashboardPage() {
                       <p className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>{item.title}</p>
                       <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{item.reason}</p>
                     </div>
-                    <a href={item.href} className="btn btn--secondary px-4 h-8 text-xs flex items-center justify-center">
+                    <Link href={item.href} className="btn btn--secondary px-4 h-8 text-xs flex items-center justify-center">
                       Start
-                    </a>
+                    </Link>
                   </div>
                 ))
               )}
