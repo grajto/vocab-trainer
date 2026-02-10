@@ -40,56 +40,108 @@ const RESPONSE_JSON_SCHEMA = {
   strict: true,
 } as const
 
-/** Collapse whitespace and lowercase for phrase containment check */
 function norm(s: string): string {
   return s.trim().replace(/\s+/g, ' ').toLowerCase()
 }
-
 
 function hasRequiredWord(sentence: string, required: string): boolean {
   return norm(sentence).includes(norm(required))
 }
 
-function isClearlyBadForAutoPass(parsed: { errors: Array<{ type: string; explain: string }> }, sentence: string, required: string): boolean {
-  if (!hasRequiredWord(sentence, required)) return true
+function hasLikelyGibberishToken(sentence: string, required: string): boolean {
+  const requiredNorm = norm(required)
+  const tokens = (sentence.toLowerCase().match(/[a-z]+/g) ?? []).filter(Boolean)
 
-  const words = sentence
-    .toLowerCase()
-    .match(/[a-z]+/g) ?? []
+  for (const token of tokens) {
+    if (token === requiredNorm) continue
+    if (token.length <= 2) continue
 
-  if (words.length < 3) return true
+    const uniqueRatio = new Set(token).size / token.length
+    const hasLongConsonantRun = /[bcdfghjklmnpqrstvwxyz]{5,}/.test(token)
 
-  const severeTypes = new Set(['usage', 'meaning', 'spam'])
-  for (const err of parsed.errors) {
-    const t = (err.type || '').toLowerCase()
-    const ex = (err.explain || '').toLowerCase()
-    if (severeTypes.has(t)) return true
-    if (ex.includes('does not contain') || ex.includes('missing required')) return true
-    if (ex.includes('incomplete input')) return true
+    if (token.length >= 7 && uniqueRatio < 0.45) return true
+    if (hasLongConsonantRun) return true
   }
 
   return false
 }
 
+function isMinorExplain(explain: string): boolean {
+  const e = explain.toLowerCase()
+  return (
+    e.includes('capitalization') ||
+    e.includes('uppercase') ||
+    e.includes('lowercase') ||
+    e.includes('final dot') ||
+    e.includes('missing period') ||
+    e.includes('punctuation') ||
+    e.includes('comma') ||
+    e.includes('article') ||
+    e.includes('small style') ||
+    e.includes('minor style')
+  )
+}
 
-const SYSTEM_PROMPT = `Return ONLY minified JSON:
+function isClearlyBadForAutoPass(
+  parsed: { errors: Array<{ type: string; explain: string }> },
+  sentence: string,
+  required: string,
+): boolean {
+  if (!hasRequiredWord(sentence, required)) return true
+
+  const words = sentence.toLowerCase().match(/[a-z]+/g) ?? []
+  if (words.length < 3) return true
+  if (hasLikelyGibberishToken(sentence, required)) return true
+
+  const severeTypes = new Set(['usage', 'meaning', 'spam'])
+  const spellingErrors = parsed.errors.filter(err => (err.type || '').toLowerCase() === 'spelling')
+
+  if (spellingErrors.length >= 2) return true
+
+  for (const err of parsed.errors) {
+    const t = (err.type || '').toLowerCase()
+    const ex = (err.explain || '').toLowerCase()
+
+    if (severeTypes.has(t)) return true
+    if (ex.includes('does not contain') || ex.includes('missing required')) return true
+    if (ex.includes('incomplete input')) return true
+    if (ex.includes('unintelligible') || ex.includes('gibberish') || ex.includes('nonsense') || ex.includes('non-word')) return true
+  }
+
+  // Allow auto-pass only when errors are minor and mostly style/punctuation/article level.
+  return !parsed.errors.every(err => {
+    const t = (err.type || '').toLowerCase()
+    if (t === 'style' || t === 'punctuation') return true
+    if (t === 'grammar' && isMinorExplain(err.explain || '')) return true
+    return false
+  })
+}
+
+const SYSTEM_PROMPT = `You are an English teacher AI.
+
+Evaluate the user's sentence quality in a practical way.
+Return ONLY minified JSON:
 {"ok":boolean,"corrected":string,"errors":[{"type":string,"from":string,"to":string,"explain":string}],"comment":string}
+
 Rules:
-- Use English only (B2 level), short teacher-style feedback.
-- comment: 1-2 short sentences, max 200 chars.
+- Use English only (B1-B2).
+- Be short, clear, teacher-like.
+- comment: 1-2 short sentences, max 300 chars.
 - errors: max 5 items.
-- For ok=true: corrected must equal input sentence.
-- For ok=false: corrected must be an empty string.
+- If ok=true: corrected MUST equal input sentence exactly.
+- If ok=false: corrected MUST be an empty string.
 - Ignore missing final dot and capitalization at sentence start.
-- Accept understandable grammar (do not fail for small style issues).
-- No markdown, no extra keys.
-Error types: grammar | usage | meaning | spelling | punctuation | style | other.`
+- Accept understandable grammar; do not fail for small style issues.
+- Point out exact mistakes (e.g. spelling: "greeen" -> "green").
+- Never write meta-comments like "task expects corrected".
+- Error types: grammar, usage, meaning, spelling, punctuation, style, other.
+- No markdown. No extra keys.`
 
-const RETRY_PROMPT = `JSON ONLY. English B2 feedback.
+const RETRY_PROMPT = `JSON ONLY.
 {"ok":boolean,"corrected":string,"errors":[{"type":string,"from":string,"to":string,"explain":string}],"comment":string}
-If ok=false then corrected="". If ok=true then corrected=input.
-Ignore capitalization and final punctuation.
-comment<=200, errors<=5, no extra keys.`
+English B1-B2. Ignore capitalization and final punctuation.
+If ok=true corrected=input. If ok=false corrected="".
+comment<=300, errors<=5, no extra keys.`
 
 function extractResponseMeta(response: unknown) {
   const typed = response as {
@@ -163,7 +215,7 @@ export async function POST(req: NextRequest) {
       }))
     }
 
-    if (!norm(trimmed).includes(norm(targetPhrase))) {
+    if (!hasRequiredWord(trimmed, targetPhrase)) {
       return NextResponse.json(buildCheckSentenceResponse({
         ok: false,
         corrected: '',
@@ -188,9 +240,10 @@ export async function POST(req: NextRequest) {
 
       console.info('[AI] calling OpenAI', { model: MODEL })
       const userContent = JSON.stringify({
-        requiredEn: targetPhrase,
+        mode: 'sentence',
+        targetWord: targetPhrase,
         promptPl: promptPl || '',
-        sentence: trimmed,
+        userAnswer: trimmed,
       })
 
       const runRequest = async (prompt: string, maxTokens: number) => {

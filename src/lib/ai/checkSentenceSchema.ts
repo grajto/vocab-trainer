@@ -13,7 +13,7 @@ export type CheckSentenceResponse = {
 }
 
 const MAX_ERRORS = 5
-const MAX_COMMENT_LENGTH = 200
+const MAX_COMMENT_LENGTH = 300
 
 function looksLikePromptLeak(value: string): boolean {
   const lowered = value.toLowerCase()
