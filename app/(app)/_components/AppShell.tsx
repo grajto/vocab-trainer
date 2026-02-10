@@ -19,7 +19,7 @@ export function AppShell({
       <TopNav />
       <div className="app-layout">
         <div className="hidden-mobile">
-          <Sidebar folders={folders} onToggleSidebar={() => setOpen(!open)} />
+          <Sidebar folders={folders} />
         </div>
         <Sidebar folders={folders} mobile open={open} onClose={() => setOpen(false)} />
         <main className="app-main">{children}</main>
