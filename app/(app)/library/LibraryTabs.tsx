@@ -23,10 +23,10 @@ interface Folder {
 
 export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder[] }) {
   const searchParams = useSearchParams()
-  const initialTab = searchParams.get('tab') === 'folders' ? 'folders' : 'decks'
+  const initialTab = searchParams?.get('tab') === 'folders' ? 'folders' : 'decks'
   const [tab, setTab] = useState<'decks' | 'folders'>(initialTab)
   const [search, setSearch] = useState('')
-  const [showCreateFolder, setShowCreateFolder] = useState(searchParams.get('create') === 'true' && initialTab === 'folders')
+  const [showCreateFolder, setShowCreateFolder] = useState(searchParams?.get('create') === 'true' && initialTab === 'folders')
   const [folderName, setFolderName] = useState('')
   const [creating, setCreating] = useState(false)
   const router = useRouter()

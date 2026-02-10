@@ -6,7 +6,7 @@ import { BookOpen, Folder, Home, LibraryBig, Menu, X } from 'lucide-react'
 import { useState } from 'react'
 
 export function Sidebar({ folders }: { folders: { id: string; name: string }[] }) {
-  const pathname = usePathname()
+  const pathname = usePathname() ?? ''
   const [open, setOpen] = useState(false)
 
   const item = (href: string) => pathname === href || pathname.startsWith(`${href}/`)

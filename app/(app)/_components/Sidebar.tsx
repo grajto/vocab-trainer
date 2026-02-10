@@ -16,7 +16,7 @@ interface DeckItem {
 }
 
 export function Sidebar({ folders, decks }: { folders: FolderItem[]; decks: DeckItem[] }) {
-  const pathname = usePathname()
+  const pathname = usePathname() ?? ''
   const [open, setOpen] = useState(false)
 
   // Close mobile sidebar on route change

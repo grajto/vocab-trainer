@@ -55,7 +55,7 @@ function saveAnswerInBackground(data: {
 
 export default function SessionPage() {
   const params = useParams()
-  const sessionId = params.id as string
+  const sessionId = String(params?.id ?? '')
   const router = useRouter()
   const { playCorrect, playWrong, enabled: soundEnabled, toggle: toggleSound } = useSound()
 
