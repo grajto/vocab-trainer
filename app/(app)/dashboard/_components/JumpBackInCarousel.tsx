@@ -26,11 +26,12 @@ export function JumpBackInCarousel({ items }: { items: ContinueItem[] }) {
   }
 
   return (
-    <div className="relative">
+    <div className="relative px-12">
       <button
         type="button"
         onClick={() => slide('left')}
-        className="absolute left-1 top-1/2 z-20 -translate-y-1/2 inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+        className="absolute left-0 top-1/2 z-20 -translate-y-1/2 inline-flex h-9 w-9 items-center justify-center rounded-full"
+        style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--muted)' }}
         aria-label="Przesuń w lewo"
       >
         <ChevronLeft size={16} />
@@ -39,29 +40,40 @@ export function JumpBackInCarousel({ items }: { items: ContinueItem[] }) {
       <button
         type="button"
         onClick={() => slide('right')}
-        className="absolute right-1 top-1/2 z-20 -translate-y-1/2 inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+        className="absolute right-0 top-1/2 z-20 -translate-y-1/2 inline-flex h-9 w-9 items-center justify-center rounded-full"
+        style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--muted)' }}
         aria-label="Przesuń w prawo"
       >
         <ChevronRight size={16} />
       </button>
 
-      <div
-        ref={railRef}
-        onScroll={onScroll}
-        className="flex snap-x snap-mandatory gap-4 overflow-x-auto px-12 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      >
-        {shownItems.map((item) => (
-          <div key={item.resumeHref} className="min-w-[80%] snap-start lg:min-w-[60%]">
-            <ContinueCard item={item} />
-          </div>
-        ))}
+      <div className="relative overflow-hidden">
+        <div
+          ref={railRef}
+          onScroll={onScroll}
+          className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {shownItems.map((item) => (
+            <div key={item.resumeHref} className="min-w-[80%] snap-start lg:min-w-[60%]">
+              <ContinueCard item={item} />
+            </div>
+          ))}
+        </div>
+
+        {/* Fade gradient on right */}
+        <div
+          className="pointer-events-none absolute inset-y-0 right-0 w-20"
+          style={{ background: 'linear-gradient(to left, var(--bg), rgba(255,255,255,0))' }}
+        />
       </div>
 
-      <div className="pointer-events-none absolute inset-y-0 right-12 w-24 bg-gradient-to-l from-white via-white/70 to-transparent" />
-
-      <div className="mt-1 flex items-center justify-center gap-1.5">
+      <div className="mt-2 flex items-center justify-center gap-1.5">
         {shownItems.map((item, idx) => (
-          <span key={item.resumeHref} className={`h-1.5 w-1.5 rounded-full ${idx === active ? 'bg-[#4255ff]' : 'bg-slate-300'}`} />
+          <span
+            key={item.resumeHref}
+            className="h-1.5 w-1.5 rounded-full"
+            style={{ background: idx === active ? 'var(--primary)' : 'var(--border)' }}
+          />
         ))}
       </div>
     </div>

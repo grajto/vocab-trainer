@@ -9,8 +9,8 @@ export default async function StatsPage() {
   if (!user) redirect('/login')
 
   return (
-    <div className="p-6 lg:p-8 max-w-4xl mx-auto space-y-6">
-      <h2 className="text-xl font-semibold text-slate-900">Statystyki</h2>
+    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--containerMax)' }}>
+      <h2 className="text-[.875rem] font-semibold" style={{ color: 'var(--gray600)' }}>Statystyki</h2>
       <StatsView />
     </div>
   )

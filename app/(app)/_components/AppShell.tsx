@@ -15,8 +15,8 @@ export function AppShell({
   const [open, setOpen] = useState(false)
 
   return (
-    <div className="min-h-screen bg-white text-slate-800">
-      <div className="grid min-h-screen lg:grid-cols-[272px_minmax(0,1fr)]">
+    <div className="min-h-screen" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
+      <div className="grid min-h-screen lg:grid-cols-[260px_minmax(0,1fr)]">
         <div className="hidden lg:block">
           <LeftSidebar folders={folders} />
         </div>
