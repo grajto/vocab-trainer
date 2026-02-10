@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { Bell, Clock, AlertTriangle, BookOpen, Flame } from 'lucide-react'
+import { Bell, Clock, AlertTriangle, BookOpen, Flame, MoreHorizontal } from 'lucide-react'
 
 interface Notification {
   type: 'stale' | 'due' | 'goal' | 'hard'
@@ -29,43 +29,46 @@ export default function NotificationsPage() {
   }
 
   const colorMap = {
-    stale: 'text-amber-500 bg-amber-50',
-    due: 'text-red-500 bg-red-50',
-    goal: 'text-[#4255ff] bg-[#eef1ff]',
-    hard: 'text-emerald-500 bg-emerald-50',
+    stale: { bg: '#fff7ed', color: '#f59e0b' },
+    due: { bg: '#fef2f2', color: '#ef4444' },
+    goal: { bg: 'var(--primaryBg)', color: 'var(--primary)' },
+    hard: { bg: '#ecfdf5', color: '#10b981' },
   }
 
   return (
-    <div className="mx-auto w-full max-w-[1120px] space-y-6">
+    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--containerMax)' }}>
       <div className="flex items-center gap-2">
-        <Bell className="h-5 w-5 text-slate-500" />
-        <h2 className="text-2xl font-semibold text-slate-900">Powiadomienia</h2>
+        <Bell className="h-5 w-5" style={{ color: 'var(--muted)' }} />
+        <h2 className="text-lg font-semibold" style={{ color: 'var(--text)' }}>Powiadomienia</h2>
       </div>
 
       {loading ? (
-        <p className="text-sm text-slate-400">Ładowanie powiadomień…</p>
+        <p className="text-sm" style={{ color: 'var(--gray400)' }}>Ładowanie powiadomień…</p>
       ) : notifications.length === 0 ? (
-        <div className="rounded-xl border border-slate-200 bg-white py-12 text-center">
-          <Bell className="mx-auto mb-3 h-10 w-10 text-slate-300" />
-          <p className="text-sm text-slate-400">Brak nowych powiadomień.</p>
+        <div className="rounded-[var(--radius)] py-12 text-center" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
+          <Bell className="mx-auto mb-3 h-10 w-10" style={{ color: 'var(--border)' }} />
+          <p className="text-sm" style={{ color: 'var(--gray400)' }}>Brak nowych powiadomień.</p>
         </div>
       ) : (
         <div className="space-y-2">
           {notifications.map((n, i) => {
             const Icon = iconMap[n.type]
-            const color = colorMap[n.type]
+            const colors = colorMap[n.type]
             const ctaHref = n.deckId ? `/study?deck=${n.deckId}` : '/study'
             return (
-              <div key={i} className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white px-5 py-4">
-                <div className={`rounded-lg p-2 ${color}`}>
-                  <Icon className="h-4 w-4" />
+              <div key={i} className="flex items-center gap-4 rounded-[var(--radiusSm)] px-4 py-3" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
+                <div className="inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-[8px]" style={{ background: colors.bg, color: colors.color }}>
+                  <Icon className="h-3 w-3" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm text-slate-700">{n.message}</p>
+                  <p className="text-sm" style={{ color: 'var(--text)' }}>{n.message}</p>
                 </div>
-                <Link href={ctaHref} prefetch className="whitespace-nowrap rounded-lg bg-[#eef1ff] px-3 py-1.5 text-xs font-semibold text-[#4255ff] hover:bg-[#e4e9ff]">
+                <Link href={ctaHref} prefetch className="whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold" style={{ background: 'var(--primaryBg)', color: 'var(--primary)' }}>
                   Start
                 </Link>
+                <button type="button" className="rounded-md p-1 hover:bg-[#f8fafc]" style={{ color: 'var(--gray400)' }} aria-label="Więcej">
+                  <MoreHorizontal size={16} />
+                </button>
               </div>
             )
           })}

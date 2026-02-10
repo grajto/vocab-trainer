@@ -67,42 +67,45 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-100 px-4">
-      <form onSubmit={handleSubmit} className="w-full max-w-md rounded-2xl border border-slate-300 bg-white p-6 space-y-4">
-        <p className="text-slate-600">Wprowadź dane, aby kontynuować.</p>
+    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'var(--surface2)' }}>
+      <form onSubmit={handleSubmit} className="w-full max-w-md rounded-[var(--radius)] p-6 space-y-4" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
+        <p style={{ color: 'var(--muted)' }}>Wprowadź dane, aby kontynuować.</p>
 
         {error && (
-          <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-800">
+          <div className="rounded-[var(--radiusSm)] px-4 py-3 text-sm" style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b' }}>
             {error}
           </div>
         )}
 
         <div className="space-y-1.5">
-          <label className="block text-sm text-slate-700">Login</label>
+          <label className="block text-sm" style={{ color: 'var(--text)' }}>Login</label>
           <input
             type="text"
             value={login}
             onChange={e => setLogin(e.target.value)}
             required
-            className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:outline-none focus:border-indigo-500"
+            className="w-full rounded-[var(--radiusSm)] px-3 py-2.5 text-sm focus:outline-none"
+            style={{ border: '1px solid var(--border)', color: 'var(--text)' }}
           />
         </div>
 
         <div className="space-y-1.5">
-          <label className="block text-sm text-slate-700">Hasło</label>
+          <label className="block text-sm" style={{ color: 'var(--text)' }}>Hasło</label>
           <input
             type="password"
             value={password}
             onChange={e => setPassword(e.target.value)}
             required
-            className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:outline-none focus:border-indigo-500"
+            className="w-full rounded-[var(--radiusSm)] px-3 py-2.5 text-sm focus:outline-none"
+            style={{ border: '1px solid var(--border)', color: 'var(--text)' }}
           />
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-xl bg-indigo-600 py-2.5 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-70"
+          className="w-full rounded-full py-2.5 text-sm font-semibold disabled:opacity-70"
+          style={{ background: 'var(--primary)', color: '#fff' }}
         >
           Zaloguj się
         </button>

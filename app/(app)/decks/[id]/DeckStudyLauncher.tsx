@@ -57,8 +57,9 @@ export function DeckStudyLauncher({ deckId, cardCount }: Props) {
   }
 
   return (
-    <section className="deck-train-shell">
-      <div className="deck-mode-grid">
+    <section className="space-y-4">
+      {/* Mode tiles */}
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
         {modeTiles.map(tile => {
           const Icon = tile.icon
           const selected = mode === tile.id
@@ -67,45 +68,47 @@ export function DeckStudyLauncher({ deckId, cardCount }: Props) {
               key={tile.id}
               type="button"
               onClick={() => setMode(tile.id)}
-              className={`deck-mode-tile ${selected ? 'is-active' : ''}`}
+              className="flex flex-col items-center gap-1.5 rounded-lg px-2 py-3 text-xs font-medium transition-colors"
+              style={{
+                background: selected ? 'var(--primaryBg)' : 'var(--surface)',
+                border: `1px solid ${selected ? 'var(--primary)' : 'var(--border)'}`,
+                color: selected ? 'var(--primary)' : 'var(--muted)',
+              }}
             >
-              <Icon size={18} className="deck-mode-icon" />
+              <Icon size={18} />
               <span>{tile.label}</span>
             </button>
           )
         })}
       </div>
 
-      <div className="deck-train-controls">
-        <label>
-          Liczba słówek
+      {/* Controls row */}
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="min-w-0 flex-1">
+          <label htmlFor="deck-word-count" className="mb-1.5 block text-xs font-medium" style={{ color: 'var(--muted)' }}>Liczba słówek</label>
           <input
+            id="deck-word-count"
             type="number"
             min={5}
             max={Math.min(35, cardCount)}
             value={targetCount}
             onChange={e => setTargetCount(Math.max(5, Math.min(Number(e.target.value || 20), Math.min(35, cardCount))))}
+            className="h-10 w-full rounded-lg px-3 text-sm focus:outline-none"
+            style={{ border: '1px solid var(--border)', color: 'var(--text)' }}
           />
-        </label>
-
-        <label>
-          Tryb
-          <select value={mode} onChange={e => setMode(e.target.value as StudyMode)}>
-            <option value="translate">Wpisywanie</option>
-            <option value="abcd">ABCD</option>
-            <option value="sentence">Sentence</option>
-            <option value="describe">Opisz słowo (AI)</option>
-            <option value="mixed">Mixed</option>
-            <option value="test">Test</option>
-          </select>
-        </label>
-
-        <button type="button" onClick={handleStart} disabled={loading || cardCount === 0}>
+        </div>
+        <button
+          type="button"
+          onClick={handleStart}
+          disabled={loading || cardCount === 0}
+          className="h-10 rounded-lg px-5 text-sm font-semibold text-white transition-colors disabled:opacity-50"
+          style={{ background: 'var(--primary)' }}
+        >
           {loading ? 'Uruchamianie…' : `Szybki trening (${targetCount})`}
         </button>
       </div>
 
-      {error ? <p className="deck-train-error">{error}</p> : null}
+      {error ? <p className="rounded-lg px-3 py-2 text-sm text-red-600" style={{ background: '#fef2f2' }}>{error}</p> : null}
     </section>
   )
 }

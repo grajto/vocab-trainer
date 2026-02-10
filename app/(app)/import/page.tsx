@@ -25,14 +25,19 @@ export default async function ImportPage() {
   }
 
   return (
-    <div className="p-6 lg:p-8 max-w-lg mx-auto space-y-6">
-      <h2 className="text-xl font-semibold text-slate-900">Import Cards (CSV)</h2>
+    <div className="mx-auto w-full space-y-6" style={{ maxWidth: '640px' }}>
+      <div>
+        <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Import fiszek (CSV)</h1>
+        <p className="mt-1 text-sm" style={{ color: 'var(--muted)' }}>Wklej dane w formacie CSV, aby masowo dodać karty.</p>
+      </div>
+
       {decks.docs.length === 0 ? (
-        <div className="text-center py-8">
-          <p className="text-sm text-slate-400 mb-2">No decks available.</p>
-          <Link href="/decks" prefetch={true} className="text-sm text-indigo-600 underline underline-offset-2">Create a deck first</Link>
+        <div className="rounded-lg py-12 text-center" style={{ border: '1px solid var(--border)' }}>
+          <p className="mb-2 text-sm" style={{ color: 'var(--muted)' }}>Brak dostępnych zestawów.</p>
+          <Link href="/create" className="text-sm font-medium" style={{ color: 'var(--primary)' }}>Utwórz zestaw</Link>
         </div>
       ) : (
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         <ImportForm decks={decks.docs.map((d: any) => ({ id: String(d.id), name: d.name }))} />
       )}
     </div>

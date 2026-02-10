@@ -49,24 +49,24 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="p-6 lg:p-8 max-w-6xl mx-auto space-y-6">
+    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--containerMax)' }}>
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-slate-900">Kalendarz nauki</h2>
-          <p className="text-sm text-slate-400">Śledź aktywność i streak</p>
+          <h2 className="text-[.875rem] font-semibold" style={{ color: 'var(--gray600)' }}>Kalendarz nauki</h2>
+          <p className="text-xs" style={{ color: 'var(--gray400)' }}>Śledź aktywność i streak</p>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => changeMonth(-1)} className="p-2 rounded-lg border border-slate-200 hover:border-indigo-300">
+          <button onClick={() => changeMonth(-1)} className="rounded-[var(--radiusSm)] p-2 hover:bg-[#f8fafc]" style={{ border: '1px solid var(--border)' }}>
             <ChevronLeft className="w-4 h-4" />
           </button>
-          <span className="text-sm font-medium text-slate-700 capitalize">{monthName}</span>
-          <button onClick={() => changeMonth(1)} className="p-2 rounded-lg border border-slate-200 hover:border-indigo-300">
+          <span className="text-sm font-medium capitalize" style={{ color: 'var(--text)' }}>{monthName}</span>
+          <button onClick={() => changeMonth(1)} className="rounded-[var(--radiusSm)] p-2 hover:bg-[#f8fafc]" style={{ border: '1px solid var(--border)' }}>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-2 text-xs text-slate-400">
+      <div className="grid grid-cols-7 gap-2 text-xs" style={{ color: 'var(--gray400)' }}>
         {['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'Sb', 'Nd'].map(day => (
           <div key={day} className="text-center">{day}</div>
         ))}
@@ -78,21 +78,19 @@ export default function CalendarPage() {
         ))}
         {loading ? (
           Array.from({ length: 28 }).map((_, idx) => (
-            <div key={`skeleton-${idx}`} className="h-16 bg-slate-100 rounded-xl animate-pulse" />
+            <div key={`skeleton-${idx}`} className="h-16 rounded-[var(--radiusSm)] animate-pulse" style={{ background: 'var(--surface2)' }} />
           ))
         ) : (
           days.map(day => {
             const dateNum = Number(day.date.split('-')[2])
-            const statusColor = day.status === 'met'
-              ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
-              : day.status === 'partial'
-                ? 'bg-amber-100 text-amber-700 border-amber-200'
-                : 'bg-slate-100 text-slate-400 border-slate-200'
+            const bgColor = day.status === 'met' ? '#ecfdf5' : day.status === 'partial' ? '#fffbeb' : 'var(--surface2)'
+            const textColor = day.status === 'met' ? '#059669' : day.status === 'partial' ? '#d97706' : 'var(--gray400)'
             return (
               <button
                 key={day.date}
                 onClick={() => setSelected(day)}
-                className={`h-16 rounded-xl border ${statusColor} text-left px-2 py-1.5 hover:shadow-sm`}
+                className="h-16 rounded-[var(--radiusSm)] text-left px-2 py-1.5 hover:opacity-80"
+                style={{ background: bgColor, border: '1px solid var(--border)', color: textColor }}
               >
                 <div className="text-xs font-semibold">{dateNum}</div>
                 <div className="text-[10px] mt-1">{day.sessions} sesji</div>
@@ -102,31 +100,31 @@ export default function CalendarPage() {
         )}
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-2xl p-5">
+      <div className="rounded-[var(--radius)] p-5" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
         {selected ? (
           <div className="space-y-4">
             <div>
-              <p className="text-sm font-semibold text-slate-900">{selected.date}</p>
-              <p className="text-xs text-slate-400">{selected.sessions} sesji · {selected.minutes} min</p>
+              <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{selected.date}</p>
+              <p className="text-xs" style={{ color: 'var(--gray400)' }}>{selected.sessions} sesji · {selected.minutes} min</p>
             </div>
             {selected.items.length === 0 ? (
-              <p className="text-sm text-slate-400">Brak sesji.</p>
+              <p className="text-sm" style={{ color: 'var(--gray400)' }}>Brak sesji.</p>
             ) : (
               <div className="space-y-2">
                 {selected.items.map(item => (
                   <div key={item.id} className="flex items-center justify-between text-sm">
                     <div>
-                      <p className="font-medium text-slate-900">{item.deckName}</p>
-                      <p className="text-xs text-slate-400 capitalize">{item.mode} · {item.minutes} min</p>
+                      <p className="font-medium" style={{ color: 'var(--text)' }}>{item.deckName}</p>
+                      <p className="text-xs capitalize" style={{ color: 'var(--gray400)' }}>{item.mode} · {item.minutes} min</p>
                     </div>
-                    <span className="text-xs text-indigo-600 font-semibold">{item.accuracy ?? 0}%</span>
+                    <span className="text-xs font-semibold" style={{ color: 'var(--primary)' }}>{item.accuracy ?? 0}%</span>
                   </div>
                 ))}
               </div>
             )}
           </div>
         ) : (
-          <p className="text-sm text-slate-400">Kliknij dzień, aby zobaczyć szczegóły.</p>
+          <p className="text-sm" style={{ color: 'var(--gray400)' }}>Kliknij dzień, aby zobaczyć szczegóły.</p>
         )}
       </div>
     </div>

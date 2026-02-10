@@ -1,6 +1,6 @@
 export function SimpleCard({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`rounded-2xl border border-slate-200 bg-white ${className}`}>
+    <div className={`rounded-[var(--radius)] bg-[var(--surface)] ${className}`} style={{ border: '1px solid var(--border)' }}>
       {children}
     </div>
   )

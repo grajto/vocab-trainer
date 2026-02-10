@@ -51,19 +51,19 @@ export function AddCardForm({ deckId }: { deckId: string }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-xl p-5 space-y-3 shadow-sm">
+    <form onSubmit={handleSubmit} className="rounded-[var(--radius)] p-5 space-y-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
       <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-slate-900">Add Card</p>
+        <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>Add Card</p>
         <div className="flex gap-1">
           {(['word', 'phrase', 'sentence'] as const).map(t => (
             <button
               key={t}
               type="button"
               onClick={() => setCardType(t)}
-              className={`text-xs px-2.5 py-1 rounded-lg transition-colors capitalize ${
+              className={`text-xs px-2.5 py-1 rounded-[var(--radiusSm)] transition-colors capitalize ${
                 cardType === t
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                  ? 'bg-[var(--primary)] text-white'
+                  : 'bg-[var(--surface2)] text-[var(--muted)]'
               }`}
             >
               {t}
@@ -72,7 +72,7 @@ export function AddCardForm({ deckId }: { deckId: string }) {
         </div>
       </div>
 
-      {error && <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{error}</p>}
+      {error && <p className="text-sm rounded-[var(--radiusSm)] px-3 py-2" style={{ color: '#dc2626', background: '#fef2f2', border: '1px solid #fecaca' }}>{error}</p>}
 
       <div className="flex gap-2">
         <input
@@ -81,7 +81,7 @@ export function AddCardForm({ deckId }: { deckId: string }) {
           onChange={e => setFront(e.target.value)}
           placeholder={cardType === 'sentence' ? 'Target word (e.g. however)' : 'Front (e.g. English)'}
           required
-          className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none transition-colors"
+          className="flex-1 border border-[var(--border)] rounded-[var(--radiusSm)] px-3 py-2 text-sm focus:border-[var(--primary)] focus:outline-none transition-colors"
         />
         <input
           type="text"
@@ -89,7 +89,7 @@ export function AddCardForm({ deckId }: { deckId: string }) {
           onChange={e => setBack(e.target.value)}
           placeholder={cardType === 'sentence' ? 'Translation (e.g. jednakże)' : 'Back (e.g. Polish)'}
           required
-          className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none transition-colors"
+          className="flex-1 border border-[var(--border)] rounded-[var(--radiusSm)] px-3 py-2 text-sm focus:border-[var(--primary)] focus:outline-none transition-colors"
         />
       </div>
 
@@ -100,11 +100,11 @@ export function AddCardForm({ deckId }: { deckId: string }) {
           placeholder="Example sentence using the target word…"
           required
           rows={2}
-          className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none resize-none transition-colors"
+          className="w-full border border-[var(--border)] rounded-[var(--radiusSm)] px-3 py-2 text-sm focus:border-[var(--primary)] focus:outline-none resize-none transition-colors"
         />
       )}
 
-      <button type="submit" disabled={loading} className="bg-indigo-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors">
+      <button type="submit" disabled={loading} className="bg-[var(--primary)] text-white text-sm px-4 py-2 rounded-[var(--radiusSm)] hover:brightness-90 disabled:opacity-50 transition-colors">
         {loading ? 'Adding…' : 'Add Card'}
       </button>
     </form>

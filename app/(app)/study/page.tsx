@@ -4,9 +4,6 @@ import { redirect } from 'next/navigation'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { StartSessionForm } from '@/app/(app)/learn/StartSessionForm'
-import { Card } from '@/app/(app)/_components/ui/Card'
-import { SectionHeader } from '@/app/(app)/_components/ui/SectionHeader'
-import { Button } from '@/app/(app)/_components/ui/Button'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,18 +26,17 @@ export default async function StudyPage() {
   }
 
   return (
-    <div className="study-shell">
-      <div className="study-header">
-        <Card compact>
-          <SectionHeader title="Study mode" description="Pick your set, mode and session length." />
-        </Card>
+    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--containerMax)' }}>
+      <div>
+        <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Ucz się</h1>
+        <p className="mt-1 text-sm" style={{ color: 'var(--muted)' }}>Wybierz zestaw, tryb i długość sesji.</p>
       </div>
 
       {decks.docs.length === 0 ? (
-        <Card>
-          <p className="p-muted" style={{ marginBottom: '12px' }}>No sets available yet.</p>
-          <Link href="/create"><Button>Create your first set</Button></Link>
-        </Card>
+        <div className="rounded-lg py-12 text-center" style={{ border: '1px solid var(--border)' }}>
+          <p className="mb-2 text-sm" style={{ color: 'var(--muted)' }}>Brak dostępnych zestawów.</p>
+          <Link href="/create" className="text-sm font-medium" style={{ color: 'var(--primary)' }}>Utwórz pierwszy zestaw</Link>
+        </div>
       ) : (
         <StartSessionForm
           decks={decks.docs.map((d: any) => ({ id: String(d.id), name: d.name }))}
