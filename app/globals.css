@@ -1,55 +1,82 @@
 @import "tailwindcss";
 
-/* ====== Design Tokens ====== */
+/* ====== Design Tokens (Quizlet-like System) ====== */
 :root {
+  /* Core Colors */
   --bg: #ffffff;
   --surface: #ffffff;
-  --surface2: #f6f7fb;
+  --surface-muted: #f6f7fb;
   --border: #e6e8f0;
   --text: #0f172a;
-  --muted: #64748b;
-  --gray600: #475569;
-  --gray400: #94a3b8;
+  --text-muted: #64748b;
+  --text-soft: #94a3b8;
   --primary: #4255ff;
-  --primaryBg: #eef0ff;
-  --primaryHover: #3647d6;
-  --radius: 12px;
-  --radiusSm: 10px;
-  --containerMax: 980px;
+  --primary-soft: #eef0ff;
+  --primary-hover: #3647d6;
+  --primary-dark: #2a3ac0;
+  --success: #16a34a;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+
+  /* Spacing Scale */
+  --xs: 6px;
+  --sm: 10px;
+  --md: 14px;
+  --lg: 18px;
+  --xl: 24px;
+  --2xl: 32px;
+
+  /* Radii */
+  --card-radius: 16px;
+  --input-radius: 14px;
+  --button-radius: 999px;
+  --icon-radius: 12px;
+
+  /* Layout */
+  --container-max: 1040px;
+  --sidebar-w: 260px;
+  --nav-h: 64px;
+  --btn-h: 40px;
   --gap: 16px;
 
-  /* legacy aliases used by existing classes */
-  --primary-500: #4255ff;
-  --primary-600: #3647d6;
-  --primary-700: #2a3ac0;
-  --accent: #4255ff;
+  /* Legacy aliases for compatibility */
+  --surface2: var(--surface-muted);
+  --muted: var(--text-muted);
+  --gray600: #475569;
+  --gray400: var(--text-soft);
+  --primaryBg: var(--primary-soft);
+  --primaryHover: var(--primary-hover);
+  --radius: 12px;
+  --radiusSm: 10px;
+  --containerMax: var(--container-max);
+  --primary-500: var(--primary);
+  --primary-600: var(--primary-hover);
+  --primary-700: var(--primary-dark);
+  --accent: var(--primary);
   --focus-300: rgba(66, 85, 255, 0.35);
   --primary-500-alpha-08: rgba(66, 85, 255, 0.08);
   --primary-500-alpha-15: rgba(66, 85, 255, 0.15);
   --primary-500-alpha-20: rgba(66, 85, 255, 0.2);
   --primary-500-alpha-35: rgba(66, 85, 255, 0.35);
   --card: #ffffff;
-  --card-hover: var(--hover-bg);
-  --surface-2: #f6f7fb;
-  --text-heading: #0f172a;
-  --muted-2: #94a3b8;
+  --card-hover: #f8fafc;
+  --surface-2: var(--surface-muted);
+  --text-heading: var(--text);
+  --muted-2: var(--text-soft);
   --border-hover: var(--border);
   --ring: rgba(66, 85, 255, 0.35);
   --r-lg: 24px;
-  --r-md: 16px;
-  --r-sm: 10px;
-  --r-pill: 9999px;
+  --r-md: var(--card-radius);
+  --r-sm: var(--sm);
+  --r-pill: var(--button-radius);
   --s-1: 8px;
   --s-2: 12px;
   --s-3: 16px;
   --s-4: 20px;
-  --s-5: 24px;
-  --s-6: 32px;
+  --s-5: var(--xl);
+  --s-6: var(--2xl);
   --hover-bg: #f8fafc;
-  --container: var(--containerMax);
-  --nav-h: 64px;
-  --btn-h: 40px;
-  --sidebar-w: 260px;
+  --container: var(--container-max);
 }
 
 /* ====== Dark Theme ====== */
@@ -88,8 +115,9 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  font-family: "Hurme Geometric Sans", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", sans-serif;
   font-size: 0.875rem;
+  line-height: 1.5;
 }
 
 a { color: inherit; text-decoration: none; }
@@ -310,6 +338,15 @@ button, input { font: inherit; }
   margin-bottom: var(--s-3);
 }
 
+.section-heading {
+  font-size: 0.875rem;
+  line-height: 1.4285714286;
+  font-weight: 600;
+  letter-spacing: normal;
+  color: var(--text);
+  margin: 0 0 var(--md) 0;
+}
+
 .h1 {
   font-size: 28px;
   line-height: 1.2;
@@ -501,11 +538,11 @@ button, input { font: inherit; }
 
 /* ====== Dashboard ====== */
 .dashboard-wrap {
-  max-width: var(--containerMax);
-  margin: 0;
-  padding: 6px 0 26px;
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: var(--lg) 0 var(--2xl);
   display: grid;
-  gap: 22px;
+  gap: var(--xl);
 }
 
 .dash-title {
@@ -672,14 +709,20 @@ button, input { font: inherit; }
 }
 
 .dash-recent-icon {
-  width: 38px;
-  height: 38px;
-  border-radius: var(--radiusSm);
+  width: 28px;
+  height: 28px;
+  border-radius: var(--icon-radius);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   background: var(--primaryBg);
   color: var(--primary);
+  flex-shrink: 0;
+}
+
+.dash-recent-icon svg {
+  width: 16px;
+  height: 16px;
 }
 
 .dash-recent-main {
