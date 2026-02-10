@@ -66,7 +66,7 @@ export function FilterableCardsList({ cards }: Props) {
             >
               <IconSquare variant="muted" size={32}>
                 <span className="text-xs font-semibold">
-                  {card.front.charAt(0).toUpperCase()}
+                  {card.front ? card.front.charAt(0).toUpperCase() : '?'}
                 </span>
               </IconSquare>
               <div className="grid flex-1 grid-cols-2 gap-4">
