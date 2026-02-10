@@ -45,6 +45,33 @@ function norm(s: string): string {
   return s.trim().replace(/\s+/g, ' ').toLowerCase()
 }
 
+
+function hasRequiredWord(sentence: string, required: string): boolean {
+  return norm(sentence).includes(norm(required))
+}
+
+function isClearlyBadForAutoPass(parsed: { errors: Array<{ type: string; explain: string }> }, sentence: string, required: string): boolean {
+  if (!hasRequiredWord(sentence, required)) return true
+
+  const words = sentence
+    .toLowerCase()
+    .match(/[a-z]+/g) ?? []
+
+  if (words.length < 3) return true
+
+  const severeTypes = new Set(['usage', 'meaning', 'spam'])
+  for (const err of parsed.errors) {
+    const t = (err.type || '').toLowerCase()
+    const ex = (err.explain || '').toLowerCase()
+    if (severeTypes.has(t)) return true
+    if (ex.includes('does not contain') || ex.includes('missing required')) return true
+    if (ex.includes('incomplete input')) return true
+  }
+
+  return false
+}
+
+
 const SYSTEM_PROMPT = `Return ONLY minified JSON:
 {"ok":boolean,"corrected":string,"errors":[{"type":string,"from":string,"to":string,"explain":string}],"comment":string}
 Rules:
@@ -53,12 +80,15 @@ Rules:
 - errors: max 5 items.
 - For ok=true: corrected must equal input sentence.
 - For ok=false: corrected must be an empty string.
+- Ignore missing final dot and capitalization at sentence start.
+- Accept understandable grammar (do not fail for small style issues).
 - No markdown, no extra keys.
 Error types: grammar | usage | meaning | spelling | punctuation | style | other.`
 
 const RETRY_PROMPT = `JSON ONLY. English B2 feedback.
 {"ok":boolean,"corrected":string,"errors":[{"type":string,"from":string,"to":string,"explain":string}],"comment":string}
 If ok=false then corrected="". If ok=true then corrected=input.
+Ignore capitalization and final punctuation.
 comment<=200, errors<=5, no extra keys.`
 
 function extractResponseMeta(response: unknown) {
@@ -156,10 +186,12 @@ export async function POST(req: NextRequest) {
       const { client: openai, apiKey, baseURL } = createOpenAIClient()
       logOpenAIEnv({ client: openai, apiKey, baseURL })
 
-      const meaningContext = promptPl ? `PL znaczenie: "${promptPl}".` : ''
-
       console.info('[AI] calling OpenAI', { model: MODEL })
-      const userContent = `requiredEn: ${targetPhrase}\n${meaningContext}\nsentence: ${trimmed}`
+      const userContent = JSON.stringify({
+        requiredEn: targetPhrase,
+        promptPl: promptPl || '',
+        sentence: trimmed,
+      })
 
       const runRequest = async (prompt: string, maxTokens: number) => {
         console.info('[AI] request config', {
@@ -238,6 +270,12 @@ export async function POST(req: NextRequest) {
           const parsed = parseCheckSentenceResponse(text, trimmed)
           if (!parsed.ok) {
             parsed.corrected = ''
+            if (!isClearlyBadForAutoPass(parsed, trimmed, targetPhrase)) {
+              parsed.ok = true
+              parsed.errors = []
+              parsed.comment = 'Good sentence. Minor style mistakes were ignored.'
+              parsed.corrected = trimmed
+            }
           }
           return NextResponse.json(parsed)
         } catch (parseError) {
