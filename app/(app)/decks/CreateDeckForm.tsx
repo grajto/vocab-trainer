@@ -55,16 +55,16 @@ export function CreateDeckForm() {
         onChange={e => setName(e.target.value)}
         placeholder="Deck name"
         required
-        className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none transition-colors"
+        className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-colors"
       />
       <input
         type="text"
         value={description}
         onChange={e => setDescription(e.target.value)}
         placeholder="Description (optional)"
-        className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none transition-colors"
+        className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-colors"
       />
-      <button type="submit" disabled={loading} className="bg-indigo-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors">
+      <button type="submit" disabled={loading} className="bg-blue-600 text-white text-sm px-4 py-2 rounded-2xl hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 transition-all">
         {loading ? 'Creating…' : 'Create Deck'}
       </button>
     </form>

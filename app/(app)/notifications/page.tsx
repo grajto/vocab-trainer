@@ -34,7 +34,7 @@ export default function NotificationsPage() {
   const colorMap = {
     stale: 'text-amber-500 bg-amber-50',
     due: 'text-red-500 bg-red-50',
-    goal: 'text-indigo-500 bg-indigo-50',
+    goal: 'text-blue-500 bg-blue-50',
     hard: 'text-emerald-500 bg-emerald-50',
   }
 
@@ -69,7 +69,7 @@ export default function NotificationsPage() {
                 <Link
                   href={ctaHref}
                   prefetch={true}
-                  className="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-indigo-700 transition-colors whitespace-nowrap"
+                  className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-blue-700 transition-colors whitespace-nowrap"
                 >
                   Start
                 </Link>

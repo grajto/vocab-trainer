@@ -37,7 +37,7 @@ export function ImportForm({ decks }: { decks: Deck[] }) {
     <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-xl p-6 space-y-4 shadow-sm">
       <div>
         <label className="block text-xs font-medium text-slate-500 mb-1.5">Deck</label>
-        <select value={deckId} onChange={e => setDeckId(e.target.value)} className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none bg-white">
+        <select value={deckId} onChange={e => setDeckId(e.target.value)} className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none bg-white">
           {decks.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
         </select>
       </div>
@@ -48,11 +48,11 @@ export function ImportForm({ decks }: { decks: Deck[] }) {
           onChange={e => setCsvText(e.target.value)}
           placeholder={"front,back,notes\nhello,cześć,greeting\ndog,pies,animal"}
           rows={8}
-          className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm font-mono focus:border-indigo-500 focus:outline-none"
+          className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm font-mono focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none"
         />
         <p className="text-[10px] text-slate-400 mt-1.5">Columns: front, back, notes (optional), examples (optional)</p>
       </div>
-      <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-2.5 rounded-lg text-sm font-medium hover:from-indigo-700 hover:to-violet-700 disabled:opacity-50 transition-all">
+      <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-blue-600 to-violet-600 text-white py-2.5 rounded-2xl text-sm font-medium hover:from-blue-700 hover:to-violet-700 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 transition-all">
         {loading ? 'Importing…' : 'Import'}
       </button>
 

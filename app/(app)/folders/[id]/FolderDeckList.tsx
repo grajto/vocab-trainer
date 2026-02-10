@@ -57,7 +57,7 @@ export function FolderDeckList({ decks }: { decks: DeckItem[] }) {
               key={deck.id}
               href={`/decks/${deck.id}`}
               prefetch={true}
-              className="block bg-white border border-slate-200 rounded-xl px-5 py-4 hover:border-indigo-300 hover:shadow-sm transition-all"
+              className="block bg-white border border-slate-200 rounded-xl px-5 py-4 hover:border-blue-300 hover:shadow-sm transition-all"
             >
               <p className="font-medium text-slate-900">{deck.name}</p>
               {deck.description && <p className="text-sm text-slate-400 mt-0.5">{deck.description}</p>}

@@ -86,7 +86,7 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-xs font-medium text-slate-500 mb-1.5">Wybór zasobu</label>
-          <select value={resourceType} onChange={e => setResourceType(e.target.value as 'deck' | 'folder')} className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none bg-white">
+          <select value={resourceType} onChange={e => setResourceType(e.target.value as 'deck' | 'folder')} className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none bg-white">
             <option value="deck">Deck</option>
             <option value="folder">Folder</option>
           </select>
@@ -96,7 +96,7 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
           <select
             value={resourceType === 'deck' ? deckId : folderId}
             onChange={e => resourceType === 'deck' ? setDeckId(e.target.value) : setFolderId(e.target.value)}
-            className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none bg-white"
+            className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none bg-white"
           >
             {(resourceType === 'deck' ? decks : folders).map(item => (
               <option key={item.id} value={item.id}>{item.name}</option>
@@ -107,7 +107,7 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
 
       <div>
         <label className="block text-xs font-medium text-slate-500 mb-1.5">Mode</label>
-        <select value={mode} onChange={e => setMode(e.target.value)} className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none bg-white">
+        <select value={mode} onChange={e => setMode(e.target.value)} className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none bg-white">
           <option value="translate">Wpisywanie</option>
           <option value="abcd">ABCD</option>
           <option value="sentence">Sentence</option>
@@ -119,7 +119,7 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
 
       <div>
         <label className="block text-xs font-medium text-slate-500 mb-1.5">Kierunek</label>
-        <select value={direction} onChange={e => setDirection(e.target.value as typeof direction)} className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none bg-white">
+        <select value={direction} onChange={e => setDirection(e.target.value as typeof direction)} className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none bg-white">
           <option value="pl-en">PL → EN</option>
           <option value="en-pl">EN → PL</option>
           <option value="both">Oba</option>
@@ -135,7 +135,7 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
                 type="checkbox"
                 checked={levels.includes(level)}
                 onChange={() => toggleLevel(level)}
-                className="accent-indigo-600"
+                className="accent-blue-600"
               />
               Level {level}
             </label>
@@ -145,7 +145,7 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
 
       <div>
         <label className="block text-xs font-medium text-slate-500 mb-1.5">
-          Cards: <span className="text-indigo-600 font-semibold">{targetCount}</span>
+          Cards: <span className="text-blue-600 font-semibold">{targetCount}</span>
         </label>
         <input
           type="range"
@@ -153,7 +153,7 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
           max={35}
           value={targetCount}
           onChange={e => setTargetCount(Number(e.target.value))}
-          className="w-full accent-indigo-600"
+          className="w-full accent-blue-600"
         />
         <div className="flex justify-between text-[10px] text-slate-400 mt-1">
           <span>5</span>
@@ -163,16 +163,16 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-slate-600">
         <label className="flex items-center gap-2">
-          <input type="checkbox" checked={shuffle} onChange={e => setShuffle(e.target.checked)} className="accent-indigo-600" />
+          <input type="checkbox" checked={shuffle} onChange={e => setShuffle(e.target.checked)} className="accent-blue-600" />
           Mieszaj kolejność
         </label>
         <label className="flex items-center gap-2">
-          <input type="checkbox" checked={requireCorrect} onChange={e => setRequireCorrect(e.target.checked)} className="accent-indigo-600" />
+          <input type="checkbox" checked={requireCorrect} onChange={e => setRequireCorrect(e.target.checked)} className="accent-blue-600" />
           Wymagaj poprawnej odpowiedzi
         </label>
       </div>
 
-      <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3 rounded-xl text-sm font-medium hover:from-indigo-700 hover:to-violet-700 disabled:opacity-50 transition-all">
+      <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-blue-600 to-violet-600 text-white py-3 rounded-2xl text-sm font-medium hover:from-blue-700 hover:to-violet-700 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 transition-all">
         {loading ? 'Starting…' : 'Start Session'}
       </button>
     </form>
