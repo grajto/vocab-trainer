@@ -15,6 +15,16 @@ export type CheckSentenceResponse = {
 const MAX_ERRORS = 5
 const MAX_COMMENT_LENGTH = 200
 
+function looksLikePromptLeak(value: string): boolean {
+  const lowered = value.toLowerCase()
+  return (
+    lowered.includes('requireden:') ||
+    lowered.includes('pl znaczenie:') ||
+    lowered.includes('sentence:') ||
+    lowered.includes('json only')
+  )
+}
+
 const ensureString = (value: unknown, field: string) => {
   if (typeof value !== 'string') {
     throw new Error(`AI_INVALID_SCHEMA: ${field} is not string`)
@@ -29,6 +39,9 @@ export function normalizeCheckSentenceResponse(
   const corrected = response.ok ? originalSentence : response.corrected.trim()
   if (!corrected) {
     throw new Error('AI_INVALID_SCHEMA: corrected is empty')
+  }
+  if (looksLikePromptLeak(corrected)) {
+    throw new Error('AI_INVALID_SCHEMA: corrected leaked prompt fields')
   }
   const comment = response.comment.slice(0, MAX_COMMENT_LENGTH)
   return {

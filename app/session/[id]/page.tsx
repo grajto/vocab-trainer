@@ -64,6 +64,8 @@ export default function SessionPage() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [userAnswer, setUserAnswer] = useState('')
   const [feedback, setFeedback] = useState<{ correct: boolean; message: string } | null>(null)
+  const [sentenceNeedsAcknowledge, setSentenceNeedsAcknowledge] = useState(false)
+  const [sentenceSuggestedFix, setSentenceSuggestedFix] = useState('')
   const [loading, setLoading] = useState(false)
   const [sessionDone, setSessionDone] = useState(false)
   const [aiInfo, setAiInfo] = useState<{ used: boolean; latencyMs: number } | null>(null)
@@ -160,6 +162,8 @@ export default function SessionPage() {
         setTypoState(null)
         setAiInfo(null)
         setSelectedOption(null)
+        setSentenceNeedsAcknowledge(false)
+        setSentenceSuggestedFix('')
         setCurrentIndex(prev => prev + 1)
       }, delay)
     }
@@ -292,6 +296,65 @@ export default function SessionPage() {
     advanceToNext(FEEDBACK_DELAY_WRONG)
   }
 
+
+  function buildSentenceFeedbackMessage(data: Record<string, unknown>, fallbackWord: string) {
+    const comment = typeof data.comment === 'string' ? data.comment.trim() : ''
+    const corrected = typeof data.corrected === 'string' ? data.corrected.trim() : ''
+    const errors = Array.isArray(data.errors) ? data.errors : []
+
+    const details = errors
+      .map(err => {
+        if (!err || typeof err !== 'object') return ''
+        const typed = err as Record<string, unknown>
+        const explain = typeof typed.explain === 'string' ? typed.explain : ''
+        const from = typeof typed.from === 'string' ? typed.from : ''
+        const to = typeof typed.to === 'string' ? typed.to : ''
+        if (!explain) return ''
+        if (from && to && from !== to) return `• ${explain} (${from} → ${to})`
+        return `• ${explain}`
+      })
+      .filter(Boolean)
+      .slice(0, 3)
+
+    const lines: string[] = []
+    lines.push(comment || 'To zdanie jest niepoprawne lub bez sensu.')
+    if (details.length > 0) lines.push(...details)
+    if (corrected) lines.push(`Sugestia: ${corrected}`)
+    if (!comment && details.length === 0 && !corrected) lines.push(`Użyj poprawnie słowa: ${fallbackWord}`)
+
+    return {
+      message: lines.join('\n'),
+      suggestedFix: corrected,
+    }
+  }
+
+  function acknowledgeSentenceFeedback() {
+    setFeedback(null)
+    setSentenceNeedsAcknowledge(false)
+    if (sentenceSuggestedFix) {
+      setUserAnswer(sentenceSuggestedFix)
+    }
+  }
+
+  useEffect(() => {
+    if (!sentenceNeedsAcknowledge) return
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Enter') {
+        event.preventDefault()
+        setFeedback(null)
+        setSentenceNeedsAcknowledge(false)
+        if (sentenceSuggestedFix) {
+          setUserAnswer(sentenceSuggestedFix)
+        }
+      }
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [sentenceNeedsAcknowledge, sentenceSuggestedFix])
+
+
   useEffect(() => {
     if (!currentTask || currentTask.taskType !== 'abcd' || feedback || typoState) return
 
@@ -312,7 +375,14 @@ export default function SessionPage() {
 
   async function handleSentenceSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!userAnswer.trim() || !currentTask) return
+    if (!currentTask) return
+
+    if (feedback && sentenceNeedsAcknowledge) {
+      acknowledgeSentenceFeedback()
+      return
+    }
+
+    if (!userAnswer.trim()) return
 
     const state = getTaskState(currentTask.cardId)
     state.attempts++
@@ -331,11 +401,11 @@ export default function SessionPage() {
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
-        const message = data?.message_pl || data?.error || 'AI validation failed. Try again.'
+        const message = data?.comment || data?.message_pl || data?.error || 'AI validation failed. Try again.'
         setFeedback({ correct: false, message })
+        setSentenceNeedsAcknowledge(true)
+        setSentenceSuggestedFix('')
         playWrong()
-        requeueCard(currentTask)
-        advanceToNext(FEEDBACK_DELAY_WRONG_SLOW)
         return
       }
       const correct = !!data.ok
@@ -348,19 +418,19 @@ export default function SessionPage() {
         state.wasWrongBefore = state.wasWrongBefore || state.attempts > 1
         setAnsweredCount(prev => prev + 1)
         setCorrectCount(prev => prev + 1)
-        setFeedback({ correct: true, message: data.message_pl || 'Correct' })
+        setFeedback({ correct: true, message: data.comment || data.message_pl || 'Poprawnie.' })
+        setSentenceNeedsAcknowledge(false)
+        setSentenceSuggestedFix('')
         playCorrect()
       } else {
         state.wasWrongBefore = true
-        const msg = data.suggested_fix
-          ? `${data.message_pl || 'Incorrect'}\nSuggested: ${data.suggested_fix}`
-          : (data.message_pl || `Use: ${currentTask.answer}`)
-        setFeedback({ correct: false, message: msg })
+        const { message, suggestedFix } = buildSentenceFeedbackMessage(data as Record<string, unknown>, currentTask.answer)
+        setFeedback({ correct: false, message })
+        setSentenceNeedsAcknowledge(true)
+        setSentenceSuggestedFix(suggestedFix)
         playWrong()
-        requeueCard(currentTask)
       }
 
-      // Fire-and-forget save to backend
       saveAnswerInBackground({
         sessionId,
         cardId: currentTask.cardId,
@@ -373,18 +443,20 @@ export default function SessionPage() {
         aiUsed: data.ai_used ?? false,
       })
 
-      advanceToNext(correct ? FEEDBACK_DELAY_CORRECT_SLOW : FEEDBACK_DELAY_WRONG_SLOW)
+      if (correct) {
+        advanceToNext(FEEDBACK_DELAY_CORRECT_SLOW)
+      }
     } catch {
-      // On network error, count as wrong
       state.wasWrongBefore = true
       setFeedback({ correct: false, message: 'Network error – try again' })
+      setSentenceNeedsAcknowledge(true)
+      setSentenceSuggestedFix('')
       playWrong()
-      requeueCard(currentTask)
-      advanceToNext(FEEDBACK_DELAY_WRONG_SLOW)
     } finally {
       setLoading(false)
     }
   }
+
 
   async function handleDescribeSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -725,6 +797,17 @@ export default function SessionPage() {
                   <span key={i}>{i > 0 && <br />}{line}</span>
                 ))}
               </div>
+              {currentTask.taskType === 'sentence' && sentenceNeedsAcknowledge && (
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    onClick={acknowledgeSentenceFeedback}
+                    className="inline-flex items-center px-4 py-2 rounded-full text-xs font-semibold border border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+                  >
+                    Rozumiem — poprawiam zdanie (Enter)
+                  </button>
+                </div>
+              )}
               {currentTask.taskType === 'sentence' && aiInfo && (
                 <div className="flex justify-center">
                   <span className={`inline-flex items-center px-3 py-1 rounded-full text-[11px] font-semibold border ${
@@ -824,7 +907,7 @@ export default function SessionPage() {
                     onKeyDown={e => {
                       if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
                         e.preventDefault()
-                        if (userAnswer.trim() && !loading) {
+                        if ((!feedback && userAnswer.trim() && !loading) || (feedback && sentenceNeedsAcknowledge && !loading)) {
                           handleSentenceSubmit(e as unknown as React.FormEvent)
                         }
                       }
@@ -850,17 +933,17 @@ export default function SessionPage() {
                     <button
                       type="button"
                       onClick={e => {
-                        if (userAnswer.trim() && !loading) {
+                        if ((!feedback && userAnswer.trim() && !loading) || (feedback && sentenceNeedsAcknowledge && !loading)) {
                           handleSentenceSubmit(e as unknown as React.FormEvent)
                         }
                       }}
-                      disabled={loading || !userAnswer.trim()}
+                      disabled={loading || (!sentenceNeedsAcknowledge && !userAnswer.trim())}
                       className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3 rounded-2xl text-sm font-medium hover:from-indigo-700 hover:to-violet-700 disabled:opacity-40 transition-all"
                     >
-                      {loading ? 'Checking…' : 'Check'}
+                      {loading ? 'Checking…' : sentenceNeedsAcknowledge ? 'Przeczytałem, poprawiam' : 'Check'}
                     </button>
                   </div>
-                  <p className="text-xs text-slate-500 text-center">Ctrl+Enter to submit</p>
+                  <p className="text-xs text-slate-500 text-center">{sentenceNeedsAcknowledge ? 'Ctrl+Enter, aby zamknąć feedback i poprawić zdanie' : 'Ctrl+Enter to submit'}</p>
                 </div>
               )}
 
