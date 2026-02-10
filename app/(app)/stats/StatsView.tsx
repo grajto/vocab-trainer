@@ -120,7 +120,7 @@ export function StatsView() {
                 <div className="flex items-end gap-2 h-24">
                   {stats.sessionsByDay.map(day => (
                     <div key={day.date} className="flex-1 text-center">
-                      <div className="bg-indigo-400 rounded-t-lg" style={{ height: `${Math.max(10, day.count * 10)}px` }} />
+                      <div className="bg-indigo-400 rounded-t-lg" style={{ height: `${Math.max(10, day.count * 10)}px`, background: 'var(--primary)' }} />
                       <p className="text-[10px] mt-1" style={{ color: 'var(--muted)' }}>{day.date}</p>
                     </div>
                   ))}
@@ -131,7 +131,7 @@ export function StatsView() {
                 <div className="flex items-end gap-2 h-24">
                   {stats.sessionsByDay.map(day => (
                     <div key={day.date} className="flex-1 text-center">
-                      <div className="bg-amber-400 rounded-t-lg" style={{ height: `${Math.max(10, day.minutes / 2)}px` }} />
+                      <div className="rounded-t-lg" style={{ height: `${Math.max(10, day.minutes / 2)}px`, background: '#f59e0b' }} />
                       <p className="text-[10px] mt-1" style={{ color: 'var(--muted)' }}>{day.date}</p>
                     </div>
                   ))}
@@ -171,7 +171,7 @@ export function StatsView() {
                 {topMastered.map(deck => (
                   <Link key={deck.deckId} href={`/decks/${deck.deckId}`} className="flex items-center justify-between text-sm">
                     <span style={{ color: 'var(--text)' }}>{deck.deckName}</span>
-                    <span className="text-emerald-600 font-semibold">{deck.percentLevel4}%</span>
+                    <span className="text-emerald-600 font-semibold" style={{ color: '#059669' }}>{deck.percentLevel4}%</span>
                   </Link>
                 ))}
                 {topMastered.length === 0 && <p className="text-xs" style={{ color: 'var(--muted)' }}>Brak danych.</p>}
@@ -184,7 +184,7 @@ export function StatsView() {
                 {(stats.problematicDecks || []).map(deck => (
                   <Link key={deck.deckId} href={`/decks/${deck.deckId}`} className="flex items-center justify-between text-sm">
                     <span style={{ color: 'var(--text)' }}>{deck.deckName}</span>
-                    <span className="text-rose-600 font-semibold">{deck.totalWrong} błędów</span>
+                    <span className="text-rose-600 font-semibold" style={{ color: '#dc2626' }}>{deck.totalWrong} błędów</span>
                   </Link>
                 ))}
                 {(!stats.problematicDecks || stats.problematicDecks.length === 0) && (
@@ -257,7 +257,7 @@ export function StatsView() {
             <div key={card.cardId} className="rounded-lg px-4 py-3 flex justify-between items-center" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
               <div className="text-sm">
                 <span className="font-medium" style={{ color: 'var(--text)' }}>{card.front}</span>
-                <span className="text-indigo-300 mx-2">→</span>
+                <span style={{ color: 'var(--gray400)' }} className="mx-2">→</span>
                 <span style={{ color: 'var(--text)' }}>{card.back}</span>
                 <span className="mx-2" style={{ color: 'var(--muted)' }}>·</span>
                 <span className="text-xs" style={{ color: 'var(--muted)' }}>{card.deckName}</span>
@@ -290,7 +290,7 @@ export function StatsView() {
                 <span className="capitalize" style={{ color: 'var(--muted)' }}>{session.mode}</span>
               </div>
               <div className="text-right tabular-nums">
-                <span className="font-medium text-indigo-600">{session.accuracy}%</span>
+                <span className="font-medium" style={{ color: 'var(--primary)' }}>{session.accuracy}%</span>
                 <span className="ml-2" style={{ color: 'var(--muted)' }}>{session.completedCount}/{session.targetCount}</span>
               </div>
             </div>

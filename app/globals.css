@@ -623,7 +623,7 @@ button, input { font: inherit; }
 .jump-card__title { margin: 0; font-size: 28px; line-height: 1.15; letter-spacing: -0.01em; color: var(--text-heading); font-weight: 600; }
 .jump-card__remove { border: 0; background: transparent; color: var(--muted); cursor: pointer; min-height: 44px; min-width: 44px; }
 .jump-card__bar { height: 9px; background: var(--surface2); border-radius: 999px; overflow: hidden; }
-.jump-card__bar-fill { height: 100%; background: linear-gradient(90deg, #4255ff 0%, #6f80ff 100%); transition: width 0.3s ease; }
+.jump-card__bar-fill { height: 100%; background: #22c55e; transition: width 0.3s ease; }
 .jump-card__meta { margin: 0; font-size: 13px; color: var(--muted); }
 .jump-card__actions { display: flex; align-items: center; justify-content: space-between; }
 

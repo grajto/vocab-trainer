@@ -544,10 +544,10 @@ export default function SessionPage() {
 
   if (tasks.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-700">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
         <div className="text-center">
-          <p className="text-sm text-slate-500 mb-3">No session data found.</p>
-          <button onClick={() => router.push('/study')} className="text-sm text-indigo-600 underline underline-offset-2">
+          <p className="text-sm mb-3" style={{ color: 'var(--muted)' }}>No session data found.</p>
+          <button onClick={() => router.push('/study')} className="text-sm underline underline-offset-2" style={{ color: 'var(--primary)' }}>
             Przejdź do Ucz się
           </button>
         </div>
@@ -563,13 +563,14 @@ export default function SessionPage() {
     })
 
     return (
-      <div className="min-h-screen bg-slate-50 text-slate-900">
-        <div className="border-b border-slate-200 bg-white/90 backdrop-blur-sm px-6 py-3">
+      <div className="min-h-screen" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
+        <div className="px-6 py-3" style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
           <div className="max-w-4xl mx-auto flex items-center justify-between">
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-[0.3em]">Test</div>
+            <div className="text-xs font-semibold uppercase tracking-[0.3em]" style={{ color: 'var(--muted)' }}>Test</div>
             <button
               onClick={handleStopSession}
-              className="text-xs font-medium text-slate-600 hover:text-rose-600"
+              className="text-xs font-medium hover:opacity-70 transition-colors"
+              style={{ color: 'var(--muted)' }}
             >
               Przerwij sesję
             </button>
@@ -577,45 +578,46 @@ export default function SessionPage() {
         </div>
         <main className="max-w-4xl mx-auto px-6 py-10 space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-semibold text-slate-900">Test</h2>
-            <span className="text-sm text-slate-500">{tasks.length} pytań</span>
+            <h2 className="text-2xl font-semibold" style={{ color: 'var(--text)' }}>Test</h2>
+            <span className="text-sm" style={{ color: 'var(--muted)' }}>{tasks.length} pytań</span>
           </div>
           {testSubmitted && testScore ? (
-            <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm space-y-4">
-              <p className="text-lg font-semibold text-slate-900">Wynik: {Math.round((testScore.correct / testScore.total) * 100)}%</p>
-              <p className="text-sm text-slate-500">Błędy: {testScore.total - testScore.correct}</p>
+            <div className="rounded-[var(--radius)] p-8 space-y-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+              <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>Wynik: {Math.round((testScore.correct / testScore.total) * 100)}%</p>
+              <p className="text-sm" style={{ color: 'var(--muted)' }}>Błędy: {testScore.total - testScore.correct}</p>
               {incorrect.length > 0 && (
-                <div className="space-y-2 border-t border-slate-100 pt-4">
+                <div className="space-y-2 pt-4" style={{ borderTop: '1px solid var(--border)' }}>
                   {incorrect.map(task => (
-                    <div key={task.cardId} className="text-sm text-slate-600">
-                      <span className="font-medium">{task.prompt}</span> → poprawne: {task.answer}
+                    <div key={task.cardId} className="text-sm" style={{ color: 'var(--muted)' }}>
+                      <span className="font-medium" style={{ color: 'var(--text)' }}>{task.prompt}</span> → poprawne: {task.answer}
                     </div>
                   ))}
                 </div>
               )}
-              <button onClick={() => router.push('/')} className="text-sm font-medium text-indigo-600 hover:text-indigo-700">
+              <button onClick={() => router.push('/')} className="text-sm font-medium hover:opacity-80" style={{ color: 'var(--primary)' }}>
                 Wróć do dashboardu
               </button>
             </div>
           ) : (
             <div className="space-y-4">
               {tasks.map((task, idx) => (
-                <div key={task.cardId} className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-3">
+                <div key={task.cardId} className="rounded-[var(--radius)] p-6 space-y-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
                   <div className="flex items-center justify-between">
-                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-[0.2em]">Pytanie {idx + 1}</p>
-                    <span className="text-xs text-slate-400">{idx + 1} / {tasks.length}</span>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: 'var(--gray400)' }}>Pytanie {idx + 1}</p>
+                    <span className="text-xs" style={{ color: 'var(--gray400)' }}>{idx + 1} / {tasks.length}</span>
                   </div>
-                  <p className="text-lg font-medium text-slate-900">{task.prompt}</p>
+                  <p className="text-lg font-medium" style={{ color: 'var(--text)' }}>{task.prompt}</p>
                   {task.taskType === 'abcd' && task.options ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {task.options.map(option => (
-                        <label key={option} className="flex items-center gap-2 text-sm text-slate-700 border border-slate-200 rounded-2xl px-4 py-3 hover:border-indigo-200 hover:bg-indigo-50 transition-colors">
+                        <label key={option} className="flex items-center gap-2 text-sm rounded-[var(--radiusSm)] px-4 py-3 transition-colors cursor-pointer hover:bg-[var(--hover-bg)]" style={{ border: '1px solid var(--border)', color: 'var(--text)' }}>
                           <input
                             type="radio"
                             name={`q-${task.cardId}`}
                             value={option}
                             checked={testAnswers[task.cardId] === option}
                             onChange={e => setTestAnswers(prev => ({ ...prev, [task.cardId]: e.target.value }))}
+                            className="accent-[var(--primary)]"
                           />
                           {option}
                         </label>
@@ -626,7 +628,8 @@ export default function SessionPage() {
                       type="text"
                       value={testAnswers[task.cardId] || ''}
                       onChange={e => setTestAnswers(prev => ({ ...prev, [task.cardId]: e.target.value }))}
-                      className="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:border-indigo-400 focus:outline-none"
+                      className="w-full rounded-[var(--radiusSm)] px-4 py-3 text-sm focus:outline-none"
+                      style={{ border: '1px solid var(--border)', color: 'var(--text)', background: 'var(--surface)' }}
                       placeholder="Wpisz odpowiedź"
                     />
                   )}
@@ -659,7 +662,8 @@ export default function SessionPage() {
                     })
                   })
                 }}
-                className="w-full bg-indigo-600 text-white py-3 rounded-2xl font-medium shadow-sm hover:bg-indigo-700 transition-colors"
+                className="w-full py-3 rounded-[var(--radiusSm)] font-medium text-white transition-colors"
+                style={{ background: 'var(--primary)' }}
               >
                 Sprawdź
               </button>
@@ -672,16 +676,16 @@ export default function SessionPage() {
 
   if (sessionDone) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-900">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
         <div className="text-center max-w-xs mx-4">
-          <p className="text-xs text-slate-500 uppercase tracking-widest mb-2">Session Complete</p>
-          <p className="text-5xl font-bold tabular-nums mb-1 text-indigo-600">{accuracy}%</p>
-          <p className="text-sm text-slate-500 mb-8">accuracy</p>
+          <p className="text-xs uppercase tracking-widest mb-2" style={{ color: 'var(--muted)' }}>Session Complete</p>
+          <p className="text-5xl font-bold tabular-nums mb-1" style={{ color: 'var(--primary)' }}>{accuracy}%</p>
+          <p className="text-sm mb-8" style={{ color: 'var(--muted)' }}>accuracy</p>
           <div className="space-y-2">
-            <button onClick={() => router.push('/study')} className="block w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-2.5 rounded-xl text-sm font-medium hover:from-indigo-700 hover:to-violet-700 transition-all">
+            <button onClick={() => router.push('/study')} className="block w-full text-white py-2.5 rounded-[var(--radiusSm)] text-sm font-medium transition-colors" style={{ background: 'var(--primary)' }}>
               Nowa sesja
             </button>
-            <button onClick={() => router.push('/')} className="block w-full border border-slate-300 py-2.5 rounded-xl text-sm text-slate-700 hover:border-indigo-400 transition-colors">
+            <button onClick={() => router.push('/')} className="block w-full py-2.5 rounded-[var(--radiusSm)] text-sm transition-colors" style={{ border: '1px solid var(--border)', color: 'var(--text)' }}>
               Dashboard
             </button>
           </div>
@@ -694,38 +698,41 @@ export default function SessionPage() {
   const hintText = showHint && currentTask ? generateHint(currentTask.expectedAnswer || currentTask.answer) : ''
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
+    <div className="min-h-screen" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
       {/* Progress bar */}
-      <div className="border-b border-slate-200 bg-white/90 backdrop-blur-sm px-6 py-3">
+      <div className="px-6 py-3" style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
         <div className="max-w-4xl mx-auto flex flex-col gap-2">
           <div className="flex items-center gap-4">
-            <span className="text-xs text-slate-500 tabular-nums whitespace-nowrap">
+            <span className="text-xs tabular-nums whitespace-nowrap" style={{ color: 'var(--muted)' }}>
               {currentIndex + 1} / {tasks.length}
             </span>
-            <div className="flex-1 bg-slate-200 rounded-full h-1.5">
+            <div className="flex-1 h-1.5 rounded-full" style={{ background: 'var(--surface2)' }}>
               <div
-                className="bg-gradient-to-r from-emerald-400 to-indigo-400 h-1.5 rounded-full transition-all duration-300"
-                style={{ width: `${progress}%` }}
+                className="h-1.5 rounded-full transition-all duration-300"
+                style={{ width: `${progress}%`, background: '#22c55e' }}
               />
             </div>
-            <span className="text-xs text-slate-500 tabular-nums">{accuracy}%</span>
+            <span className="text-xs tabular-nums" style={{ color: 'var(--muted)' }}>{accuracy}%</span>
             <button
               onClick={toggleShuffle}
-              className={`text-xs transition-colors ${shuffleEnabled ? 'text-indigo-600' : 'text-slate-400 hover:text-slate-600'}`}
+              className="text-xs transition-colors"
+              style={{ color: shuffleEnabled ? 'var(--primary)' : 'var(--gray400)' }}
               title={shuffleEnabled ? 'Shuffle ON' : 'Shuffle OFF'}
             >
               🔀
             </button>
             <button
               onClick={toggleSound}
-              className="text-xs text-slate-500 hover:text-indigo-600 transition-colors"
+              className="text-xs transition-colors"
+              style={{ color: 'var(--muted)' }}
               title={soundEnabled ? 'Sound ON' : 'Sound OFF'}
             >
               {soundEnabled ? '🔊' : '🔇'}
             </button>
             <button
               onClick={handleStopSession}
-              className="text-xs text-slate-500 hover:text-rose-600 transition-colors"
+              className="text-xs transition-colors hover:opacity-70"
+              style={{ color: 'var(--muted)' }}
               title="Przerwij sesję"
             >
               Przerwij sesję
@@ -735,51 +742,53 @@ export default function SessionPage() {
       </div>
 
       <main className="max-w-4xl mx-auto px-6 py-10">
-        <div className="bg-white border border-slate-200 rounded-[32px] shadow-sm px-8 py-10 text-center">
-          <div className="flex items-center justify-between mb-6 text-xs text-slate-400">
+        <div className="rounded-[var(--radius)] px-8 py-10 text-center" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+          <div className="flex items-center justify-between mb-6 text-xs" style={{ color: 'var(--gray400)' }}>
             <span className="uppercase tracking-[0.3em]">
               {currentTask.taskType === 'sentence' ? 'sentence' : currentTask.taskType}
             </span>
             <span className="tabular-nums">{currentIndex + 1} / {tasks.length}</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900">
+          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight" style={{ color: 'var(--text)' }}>
             {currentTask.prompt}
           </h2>
           {currentTask.taskType === 'sentence' && (
-            <p className="text-sm text-slate-500 mt-3 mb-8">Create a sentence with this word.</p>
+            <p className="text-sm mt-3 mb-8" style={{ color: 'var(--muted)' }}>Create a sentence with this word.</p>
           )}
           {currentTask.taskType === 'describe' && (
-            <p className="text-sm text-slate-500 mt-3 mb-8">Opisz to słowo własnymi słowami.</p>
+            <p className="text-sm mt-3 mb-8" style={{ color: 'var(--muted)' }}>Opisz to słowo własnymi słowami.</p>
           )}
           {currentTask.taskType !== 'sentence' && <div className="mb-8" />}
 
           {showHint && !feedback && !typoState && (
-            <div className="mb-6 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-5 py-2 inline-block font-mono tracking-widest">
+            <div className="mb-6 text-sm font-mono tracking-widest rounded-full px-5 py-2 inline-block" style={{ color: '#d97706', background: '#fffbeb', border: '1px solid #fde68a' }}>
               {hintText}
             </div>
           )}
 
           {typoState && !feedback && (
             <div className="space-y-4">
-              <div className="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4 text-sm">
-                <p className="text-amber-700 font-medium mb-2">One typo detected!</p>
-                <p className="text-slate-700">
+              <div className="rounded-[var(--radiusSm)] px-5 py-4 text-sm" style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
+                <p className="font-medium mb-2" style={{ color: '#d97706' }}>One typo detected!</p>
+                <p style={{ color: 'var(--text)' }}>
                   Your answer: <span className="font-medium">{typoState.userAnswer}</span>
                 </p>
-                <p className="text-slate-700">
+                <p style={{ color: 'var(--text)' }}>
                   Expected: <span className="font-medium">{typoState.expected}</span>
                 </p>
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={() => handleTypoDecision(true)}
-                  className="flex-1 bg-emerald-500 text-white py-2.5 rounded-2xl text-sm font-medium hover:bg-emerald-600 transition-colors"
+                  className="flex-1 text-white py-2.5 rounded-[var(--radiusSm)] text-sm font-medium transition-colors"
+                  style={{ background: '#22c55e' }}
                 >
                   ✓ Accept
                 </button>
                 <button
                   onClick={() => handleTypoDecision(false)}
-                  className="flex-1 bg-rose-500 text-white py-2.5 rounded-2xl text-sm font-medium hover:bg-rose-600 transition-colors"
+                  className="flex-1 text-white py-2.5 rounded-[var(--radiusSm)] text-sm font-medium transition-colors"
+                  style={{ background: '#ef4444' }}
                 >
                   ✗ Reject
                 </button>
@@ -789,11 +798,11 @@ export default function SessionPage() {
 
           {feedback ? (
             <div className="space-y-3">
-              <div className={`inline-block px-5 py-3 rounded-2xl text-sm font-medium ${
-                feedback.correct
-                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                  : 'bg-rose-50 text-rose-700 border border-rose-200'
-              }`}>
+              <div className={`inline-block px-5 py-3 rounded-[var(--radiusSm)] text-sm font-medium`} style={{
+                background: feedback.correct ? '#ecfdf5' : '#fef2f2',
+                color: feedback.correct ? '#059669' : '#dc2626',
+                border: `1px solid ${feedback.correct ? '#a7f3d0' : '#fecaca'}`,
+              }}>
                 {feedback.correct ? '✓ ' : '✗ '}
                 {feedback.message.split('\n').map((line, i) => (
                   <span key={i}>{i > 0 && <br />}{line}</span>
@@ -804,7 +813,8 @@ export default function SessionPage() {
                   <button
                     type="button"
                     onClick={acknowledgeSentenceFeedback}
-                    className="inline-flex items-center px-4 py-2 rounded-full text-xs font-semibold border border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+                    className="inline-flex items-center px-4 py-2 rounded-full text-xs font-semibold transition-colors hover:bg-[var(--primaryBg)]"
+                    style={{ border: '1px solid var(--border)', color: 'var(--primary)' }}
                   >
                     I understand — next card (Enter)
                   </button>
@@ -812,11 +822,11 @@ export default function SessionPage() {
               )}
               {currentTask.taskType === 'sentence' && aiInfo && (
                 <div className="flex justify-center">
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-[11px] font-semibold border ${
-                    aiInfo.used
-                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                      : 'bg-slate-100 text-slate-600 border-slate-200'
-                  }`}>
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-semibold" style={{
+                    background: aiInfo.used ? '#ecfdf5' : 'var(--surface2)',
+                    color: aiInfo.used ? '#059669' : 'var(--muted)',
+                    border: `1px solid ${aiInfo.used ? '#a7f3d0' : 'var(--border)'}`,
+                  }}>
                     AI: {aiInfo.used ? 'ON' : 'OFF'} ({aiInfo.latencyMs} ms)
                   </span>
                 </div>
@@ -833,14 +843,16 @@ export default function SessionPage() {
                     onChange={e => setUserAnswer(e.target.value)}
                     placeholder="Type your answer…"
                     autoFocus
-                    className="w-full border border-slate-200 rounded-2xl px-4 py-3 text-center text-lg bg-white text-slate-900 focus:border-indigo-500 focus:outline-none transition-colors"
+                    className="w-full rounded-[var(--radiusSm)] px-4 py-3 text-center text-lg focus:outline-none transition-colors"
+                    style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
                   />
                   <div className="flex gap-2">
                     {!showHint && (
                       <button
                         type="button"
                         onClick={handleHintClick}
-                        className="px-4 py-3 border border-amber-200 text-amber-700 rounded-2xl text-sm hover:bg-amber-50 transition-colors"
+                        className="px-4 py-3 rounded-[var(--radiusSm)] text-sm transition-colors"
+                        style={{ border: '1px solid #fde68a', color: '#d97706', background: '#fffbeb' }}
                       >
                         💡 Hint
                       </button>
@@ -848,7 +860,8 @@ export default function SessionPage() {
                     <button
                       type="submit"
                       disabled={!userAnswer.trim()}
-                      className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3 rounded-2xl text-sm font-medium hover:from-indigo-700 hover:to-violet-700 disabled:opacity-40 transition-all"
+                      className="flex-1 text-white py-3 rounded-[var(--radiusSm)] text-sm font-medium disabled:opacity-40 transition-colors"
+                      style={{ background: 'var(--primary)' }}
                     >
                       Check
                     </button>
@@ -863,30 +876,48 @@ export default function SessionPage() {
                       key={idx}
                       onClick={() => handleAbcdSelect(opt)}
                       disabled={!!feedback}
-                      className={`w-full text-left px-5 py-4 border rounded-2xl text-sm transition-all ${
-                        feedback
+                      className="w-full text-left px-5 py-4 rounded-[var(--radiusSm)] text-sm transition-all"
+                      style={{
+                        border: `1px solid ${
+                          feedback
+                            ? opt === currentTask.answer
+                              ? '#a7f3d0'
+                              : opt === selectedOption
+                                ? '#fecaca'
+                                : 'var(--border)'
+                            : 'var(--border)'
+                        }`,
+                        background: feedback
                           ? opt === currentTask.answer
-                            ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
+                            ? '#ecfdf5'
                             : opt === selectedOption
-                              ? 'border-rose-300 bg-rose-50 text-rose-800'
-                              : 'border-slate-200 text-slate-600'
-                          : 'border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 text-slate-900 shadow-sm'
-                      }`}
+                              ? '#fef2f2'
+                              : 'var(--surface)'
+                          : 'var(--surface)',
+                        color: feedback
+                          ? opt === currentTask.answer
+                            ? '#059669'
+                            : opt === selectedOption
+                              ? '#dc2626'
+                              : 'var(--muted)'
+                          : 'var(--text)',
+                      }}
                     >
-                      <span className="inline-flex items-center justify-center w-7 h-7 mr-3 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">
+                      <span className="inline-flex items-center justify-center w-7 h-7 mr-3 rounded-full text-xs font-semibold" style={{ background: 'var(--surface2)', color: 'var(--muted)' }}>
                         {idx + 1}
                       </span>
                       {opt}
                     </button>
                   ))}
-                  <div className="flex items-center justify-center gap-4 text-[11px] text-slate-500">
+                  <div className="flex items-center justify-center gap-4 text-[11px]" style={{ color: 'var(--muted)' }}>
                     <span>Tip: press 1–4</span>
                     <button
                       type="button"
                       onClick={handleAbcdSkip}
-                      className="text-indigo-600 hover:text-indigo-500 transition-colors"
+                      className="transition-colors hover:opacity-80"
+                      style={{ color: 'var(--primary)' }}
                     >
-                      I don’t know
+                      Nie wiem
                     </button>
                   </div>
                 </div>
@@ -896,7 +927,7 @@ export default function SessionPage() {
                 <div className="space-y-5">
                   {/* Required EN word as pill/chip */}
                   <div className="flex justify-center">
-                    <span className="inline-block bg-indigo-100 text-indigo-700 font-semibold px-5 py-2 rounded-full text-base tracking-wide shadow-sm">
+                    <span className="inline-block font-semibold px-5 py-2 rounded-full text-base tracking-wide" style={{ background: 'var(--primaryBg)', color: 'var(--primary)' }}>
                       {currentTask.requiredEn || currentTask.answer}
                     </span>
                   </div>
@@ -917,7 +948,8 @@ export default function SessionPage() {
                     placeholder="Write one sentence…"
                     autoFocus
                     rows={3}
-                    className="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm bg-white text-slate-900 focus:border-indigo-500 focus:outline-none resize-none transition-colors"
+                    className="w-full rounded-[var(--radiusSm)] px-4 py-3 text-sm focus:outline-none resize-none transition-colors"
+                    style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
                     disabled={loading}
                   />
 
@@ -927,7 +959,8 @@ export default function SessionPage() {
                       <button
                         type="button"
                         onClick={handleHintClick}
-                        className="px-4 py-3 border border-amber-200 text-amber-700 rounded-2xl text-sm hover:bg-amber-50 transition-colors"
+                        className="px-4 py-3 rounded-[var(--radiusSm)] text-sm transition-colors"
+                        style={{ border: '1px solid #fde68a', color: '#d97706', background: '#fffbeb' }}
                       >
                         💡 Hint
                       </button>
@@ -940,12 +973,13 @@ export default function SessionPage() {
                         }
                       }}
                       disabled={loading || (!sentenceNeedsAcknowledge && !userAnswer.trim())}
-                      className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3 rounded-2xl text-sm font-medium hover:from-indigo-700 hover:to-violet-700 disabled:opacity-40 transition-all"
+                      className="flex-1 text-white py-3 rounded-[var(--radiusSm)] text-sm font-medium disabled:opacity-40 transition-colors"
+                      style={{ background: 'var(--primary)' }}
                     >
                       {loading ? 'Checking…' : sentenceNeedsAcknowledge ? 'Go to next card' : 'Check'}
                     </button>
                   </div>
-                  <p className="text-xs text-slate-500 text-center">{sentenceNeedsAcknowledge ? 'Press Enter to continue to the next card' : 'Ctrl+Enter to submit'}</p>
+                  <p className="text-xs text-center" style={{ color: 'var(--muted)' }}>{sentenceNeedsAcknowledge ? 'Press Enter to continue to the next card' : 'Ctrl+Enter to submit'}</p>
                 </div>
               )}
 
@@ -966,7 +1000,8 @@ export default function SessionPage() {
                     placeholder="Napisz opis..."
                     autoFocus
                     rows={3}
-                    className="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm bg-white text-slate-900 focus:border-indigo-500 focus:outline-none resize-none transition-colors"
+                    className="w-full rounded-[var(--radiusSm)] px-4 py-3 text-sm focus:outline-none resize-none transition-colors"
+                    style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
                     disabled={loading}
                   />
                   <div className="flex gap-2">
@@ -974,7 +1009,8 @@ export default function SessionPage() {
                       <button
                         type="button"
                         onClick={handleHintClick}
-                        className="px-4 py-3 border border-amber-200 text-amber-700 rounded-2xl text-sm hover:bg-amber-50 transition-colors"
+                        className="px-4 py-3 rounded-[var(--radiusSm)] text-sm transition-colors"
+                        style={{ border: '1px solid #fde68a', color: '#d97706', background: '#fffbeb' }}
                       >
                         💡 Hint
                       </button>
@@ -987,12 +1023,13 @@ export default function SessionPage() {
                         }
                       }}
                       disabled={loading || !userAnswer.trim()}
-                      className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3 rounded-2xl text-sm font-medium hover:from-indigo-700 hover:to-violet-700 disabled:opacity-40 transition-all"
+                      className="flex-1 text-white py-3 rounded-[var(--radiusSm)] text-sm font-medium disabled:opacity-40 transition-colors"
+                      style={{ background: 'var(--primary)' }}
                     >
                       {loading ? 'Checking…' : 'Check'}
                     </button>
                   </div>
-                  <p className="text-xs text-slate-500 text-center">Ctrl+Enter to submit</p>
+                  <p className="text-xs text-center" style={{ color: 'var(--muted)' }}>Ctrl+Enter to submit</p>
                 </div>
               )}
             </>

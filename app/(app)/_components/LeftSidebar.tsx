@@ -83,7 +83,7 @@ export function LeftSidebar({
 
   return (
     <>
-      {open ? <div className="fixed inset-0 z-40 bg-slate-900/30 lg:hidden" onClick={onClose} /> : null}
+      {open ? <div className="fixed inset-0 z-40 lg:hidden" style={{ background: 'rgba(15,23,42,0.3)' }} onClick={onClose} /> : null}
       <div className={`fixed inset-y-0 left-0 z-50 w-[260px] max-w-[88vw] transform transition-transform duration-200 lg:hidden ${open ? 'translate-x-0' : '-translate-x-full'}`} style={{ background: 'var(--surface)' }}>
         {nav}
       </div>
