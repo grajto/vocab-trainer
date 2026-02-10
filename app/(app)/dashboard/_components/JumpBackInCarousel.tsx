@@ -7,13 +7,12 @@ import { ContinueCard, type ContinueItem } from './ContinueCard'
 export function JumpBackInCarousel({ items }: { items: ContinueItem[] }) {
   const railRef = useRef<HTMLDivElement | null>(null)
   const [active, setActive] = useState(0)
-
   const shownItems = useMemo(() => items.slice(0, 6), [items])
 
   function slide(direction: 'left' | 'right') {
     const el = railRef.current
     if (!el) return
-    const delta = Math.round(el.clientWidth * 0.72)
+    const delta = Math.round(el.clientWidth * 0.68)
     el.scrollBy({ left: direction === 'right' ? delta : -delta, behavior: 'smooth' })
   }
 
@@ -21,10 +20,7 @@ export function JumpBackInCarousel({ items }: { items: ContinueItem[] }) {
     const el = railRef.current
     if (!el) return
     const max = shownItems.length - 1
-    if (max <= 0) {
-      setActive(0)
-      return
-    }
+    if (max <= 0) return setActive(0)
     const ratio = el.scrollLeft / Math.max(1, el.scrollWidth - el.clientWidth)
     setActive(Math.min(max, Math.max(0, Math.round(ratio * max))))
   }
@@ -34,7 +30,7 @@ export function JumpBackInCarousel({ items }: { items: ContinueItem[] }) {
       <button
         type="button"
         onClick={() => slide('left')}
-        className="absolute left-0 top-1/2 z-20 -translate-y-1/2 inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-500 hover:bg-white"
+        className="absolute left-1 top-1/2 z-20 -translate-y-1/2 inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
         aria-label="Przesuń w lewo"
       >
         <ChevronLeft size={16} />
@@ -43,7 +39,7 @@ export function JumpBackInCarousel({ items }: { items: ContinueItem[] }) {
       <button
         type="button"
         onClick={() => slide('right')}
-        className="absolute right-0 top-1/2 z-20 -translate-y-1/2 inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-500 hover:bg-white"
+        className="absolute right-1 top-1/2 z-20 -translate-y-1/2 inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
         aria-label="Przesuń w prawo"
       >
         <ChevronRight size={16} />
@@ -55,13 +51,13 @@ export function JumpBackInCarousel({ items }: { items: ContinueItem[] }) {
         className="flex snap-x snap-mandatory gap-4 overflow-x-auto px-12 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {shownItems.map((item) => (
-          <div key={item.resumeHref} className="min-w-[78%] snap-start lg:min-w-[58%]">
+          <div key={item.resumeHref} className="min-w-[80%] snap-start lg:min-w-[60%]">
             <ContinueCard item={item} />
           </div>
         ))}
       </div>
 
-      <div className="pointer-events-none absolute inset-y-0 right-10 w-24 bg-gradient-to-l from-white via-white/70 to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 right-12 w-24 bg-gradient-to-l from-white via-white/70 to-transparent" />
 
       <div className="mt-1 flex items-center justify-center gap-1.5">
         {shownItems.map((item, idx) => (

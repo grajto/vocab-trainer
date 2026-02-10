@@ -171,13 +171,13 @@ export default async function DashboardPage() {
     }
   })
 
-  const sectionLabelClass = 'text-base leading-[1.4285714286] font-semibold tracking-normal text-slate-900'
+  const sectionLabelClass = 'text-[.875rem] leading-[1.4285714286] font-semibold tracking-normal text-slate-900'
 
   return (
-    <div className="mx-auto w-full max-w-[1120px] space-y-8">
+    <div className="mx-auto w-full max-w-[980px] space-y-8 px-4 lg:px-6">
       <section className="space-y-4">
         <div>
-          <h2 className={`mb-3 ${sectionLabelClass}`}>Informacje</h2>
+          <h2 className={`mb-3 text-base ${sectionLabelClass}`}>Informacje</h2>
           <div className="grid gap-4 md:grid-cols-3">
             <StatCard label="Liczba sesji dzisiaj" value={`${sessionsToday.totalDocs}`} />
             <StatCard label="Czas trenowania słówek" value={`${timeTodayMinutes} min`} />
