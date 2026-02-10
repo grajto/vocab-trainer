@@ -208,14 +208,14 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
           <button
             onClick={() => saveDeck(true)}
             disabled={saving}
-            className="bg-white border border-indigo-200 text-indigo-600 px-4 py-2 rounded-xl text-sm font-medium hover:bg-indigo-50 disabled:opacity-50 transition-all"
+            className="bg-white border border-blue-200 text-blue-600 px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-50 disabled:opacity-50 transition-all"
           >
             {saving ? 'Saving…' : 'Create & Practice'}
           </button>
           <button
             onClick={() => saveDeck(false)}
             disabled={saving}
-            className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-5 py-2 rounded-xl text-sm font-medium hover:from-indigo-700 hover:to-violet-700 disabled:opacity-50 transition-all"
+            className="bg-gradient-to-r from-blue-600 to-violet-600 text-white px-5 py-2 rounded-xl text-sm font-medium hover:from-blue-700 hover:to-violet-700 disabled:opacity-50 transition-all"
           >
             {saving ? 'Saving…' : 'Create'}
           </button>
@@ -233,7 +233,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
             value={name}
             onChange={e => setName(e.target.value)}
             placeholder="e.g. English B2 Vocabulary"
-            className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none"
+            className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none"
           />
         </div>
 
@@ -243,7 +243,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
             <select
               value={folderId}
               onChange={e => setFolderId(e.target.value)}
-              className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none bg-white"
+              className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none bg-white"
             >
               <option value="">No folder</option>
               {folders.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
@@ -255,7 +255,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
             <select
               value={direction}
               onChange={e => setDirection(e.target.value as typeof direction)}
-              className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none bg-white"
+              className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none bg-white"
             >
               <option value="front-to-back">Front → Back</option>
               <option value="back-to-front">Back → Front</option>
@@ -270,7 +270,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
               value={description}
               onChange={e => setDescription(e.target.value)}
               placeholder="Optional description"
-              className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none"
+              className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none"
             />
           </div>
         </div>
@@ -283,10 +283,10 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
             Cards <span className="text-slate-400">({cards.filter(c => c.front && c.back).length} valid)</span>
           </p>
           <div className="flex gap-2">
-            <button onClick={() => setShowImport(true)} className="text-xs text-slate-500 hover:text-indigo-600 font-medium border border-slate-200 px-3 py-1.5 rounded-lg hover:border-indigo-300 transition-colors">
+            <button onClick={() => setShowImport(true)} className="text-xs text-slate-500 hover:text-blue-600 font-medium border border-slate-200 px-3 py-1.5 rounded-lg hover:border-blue-300 transition-colors">
               Import
             </button>
-            <button onClick={addRow} className="text-xs text-indigo-600 hover:text-indigo-700 font-medium">
+            <button onClick={addRow} className="text-xs text-blue-600 hover:text-blue-700 font-medium">
               + Add Row
             </button>
           </div>
@@ -313,7 +313,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
                 onChange={e => updateCard(card.id, 'front', e.target.value)}
                 onKeyDown={e => handleKeyDown(e, card.id, 'front')}
                 placeholder="Term"
-                className="text-sm border-0 bg-transparent px-2 py-1.5 focus:outline-none focus:bg-indigo-50 rounded"
+                className="text-sm border-0 bg-transparent px-2 py-1.5 focus:outline-none focus:bg-blue-50 rounded"
               />
               <input
                 type="text"
@@ -321,14 +321,14 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
                 onChange={e => updateCard(card.id, 'back', e.target.value)}
                 onKeyDown={e => handleKeyDown(e, card.id, 'back')}
                 placeholder="Definition"
-                className="text-sm border-0 bg-transparent px-2 py-1.5 focus:outline-none focus:bg-indigo-50 rounded"
+                className="text-sm border-0 bg-transparent px-2 py-1.5 focus:outline-none focus:bg-blue-50 rounded"
               />
               <input
                 type="text"
                 value={card.examples}
                 onChange={e => updateCard(card.id, 'examples', e.target.value)}
                 placeholder="Example sentence"
-                className="hidden sm:block text-sm border-0 bg-transparent px-2 py-1.5 focus:outline-none focus:bg-indigo-50 rounded"
+                className="hidden sm:block text-sm border-0 bg-transparent px-2 py-1.5 focus:outline-none focus:bg-blue-50 rounded"
               />
               <button
                 onClick={() => removeRow(card.id)}
@@ -342,7 +342,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
         </div>
 
         <div className="px-5 py-3 border-t border-slate-100">
-          <button onClick={addRow} className="w-full py-2 border border-dashed border-slate-200 rounded-lg text-sm text-slate-400 hover:border-indigo-300 hover:text-indigo-600 transition-colors">
+          <button onClick={addRow} className="w-full py-2 border border-dashed border-slate-200 rounded-lg text-sm text-slate-400 hover:border-blue-300 hover:text-blue-600 transition-colors">
             + Add another card
           </button>
         </div>
@@ -357,14 +357,14 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
           <button
             onClick={() => saveDeck(true)}
             disabled={saving}
-            className="bg-white border border-indigo-200 text-indigo-600 px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-indigo-50 disabled:opacity-50 transition-all"
+            className="bg-white border border-blue-200 text-blue-600 px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-50 disabled:opacity-50 transition-all"
           >
             {saving ? 'Saving…' : 'Create & Practice'}
           </button>
           <button
             onClick={() => saveDeck(false)}
             disabled={saving}
-            className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:from-indigo-700 hover:to-violet-700 disabled:opacity-50 transition-all"
+            className="bg-gradient-to-r from-blue-600 to-violet-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:from-blue-700 hover:to-violet-700 disabled:opacity-50 transition-all"
           >
             {saving ? 'Saving…' : `Create (${cards.filter(c => c.front && c.back).length} cards)`}
           </button>
@@ -385,12 +385,12 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
                 onChange={e => setImportText(e.target.value)}
                 placeholder={`Paste your data here...\n\nExample (tab-separated):\nhello\tcześć\ndog\tpies\ncat\tkot`}
                 rows={8}
-                className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-indigo-500 focus:outline-none resize-none font-mono"
+                className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-blue-500 focus:outline-none resize-none font-mono"
               />
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-slate-500 mb-1.5">Between term and definition</label>
-                  <select value={termDel} onChange={e => setTermDel(e.target.value)} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none">
+                  <select value={termDel} onChange={e => setTermDel(e.target.value)} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:border-blue-500 focus:outline-none">
                     <option value="tab">Tab</option>
                     <option value="comma">Comma</option>
                     <option value="semicolon">Semicolon</option>
@@ -398,7 +398,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-slate-500 mb-1.5">Between cards</label>
-                  <select value={cardDel} onChange={e => setCardDel(e.target.value)} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:border-indigo-500 focus:outline-none">
+                  <select value={cardDel} onChange={e => setCardDel(e.target.value)} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:border-blue-500 focus:outline-none">
                     <option value="newline">New line</option>
                     <option value="semicolon">Semicolon</option>
                   </select>
@@ -429,7 +429,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
               <button
                 onClick={handleImport}
                 disabled={importPreview.length === 0}
-                className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-5 py-2 rounded-xl text-sm font-medium hover:from-indigo-700 hover:to-violet-700 disabled:opacity-50 transition-all"
+                className="bg-gradient-to-r from-blue-600 to-violet-600 text-white px-5 py-2 rounded-xl text-sm font-medium hover:from-blue-700 hover:to-violet-700 disabled:opacity-50 transition-all"
               >
                 Import {importPreview.length} cards
               </button>

@@ -30,7 +30,7 @@ export default async function ImportPage() {
       {decks.docs.length === 0 ? (
         <div className="text-center py-8">
           <p className="text-sm text-slate-400 mb-2">No decks available.</p>
-          <Link href="/decks" prefetch={true} className="text-sm text-indigo-600 underline underline-offset-2">Create a deck first</Link>
+          <Link href="/decks" prefetch={true} className="text-sm text-blue-600 underline underline-offset-2">Create a deck first</Link>
         </div>
       ) : (
         <ImportForm decks={decks.docs.map((d: any) => ({ id: String(d.id), name: d.name }))} />

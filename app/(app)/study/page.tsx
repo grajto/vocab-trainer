@@ -42,7 +42,7 @@ export default async function StudyPage() {
       {decks.docs.length === 0 ? (
         <div className="text-center py-8">
           <p className="text-sm text-slate-400 mb-2">Brak zestawów do nauki.</p>
-          <Link href="/create" prefetch={true} className="text-sm text-indigo-600 underline underline-offset-2">Utwórz pierwszy zestaw</Link>
+          <Link href="/create" prefetch={true} className="text-sm text-blue-600 underline underline-offset-2">Utwórz pierwszy zestaw</Link>
         </div>
       ) : (
         <StartSessionForm

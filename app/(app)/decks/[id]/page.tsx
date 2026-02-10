@@ -45,7 +45,7 @@ export default async function DeckDetailPage({ params }: { params: Promise<{ id:
           {deck.description && <p className="text-sm text-slate-400 mt-1">{deck.description}</p>}
           <p className="text-xs text-slate-400 mt-1">{cards.totalDocs} card{cards.totalDocs !== 1 ? 's' : ''}</p>
         </div>
-        <Link href="/decks" prefetch={true} className="text-sm text-slate-400 hover:text-indigo-600 transition-colors">← Decks</Link>
+        <Link href="/decks" prefetch={true} className="text-sm text-slate-400 hover:text-blue-600 transition-colors">← Decks</Link>
       </div>
 
       {/* Study launcher with mode tiles + settings */}
@@ -67,7 +67,7 @@ export default async function DeckDetailPage({ params }: { params: Promise<{ id:
             <div key={card.id} className="bg-white border border-slate-200 rounded-lg px-4 py-3 flex justify-between items-center">
               <div className="text-sm">
                 <span className="font-medium text-slate-900">{card.front}</span>
-                <span className="text-indigo-300 mx-2">→</span>
+                <span className="text-blue-300 mx-2">→</span>
                 <span className="text-slate-600">{card.back}</span>
               </div>
               <span className={`text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full ${

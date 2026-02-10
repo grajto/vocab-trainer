@@ -473,7 +473,7 @@ export default function SessionPage() {
       <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-700">
         <div className="text-center">
           <p className="text-sm text-slate-500 mb-3">No session data found.</p>
-          <button onClick={() => router.push('/study')} className="text-sm text-indigo-600 underline underline-offset-2">
+          <button onClick={() => router.push('/study')} className="text-sm text-blue-600 underline underline-offset-2">
             Przejdź do Ucz się
           </button>
         </div>
@@ -519,7 +519,7 @@ export default function SessionPage() {
                   ))}
                 </div>
               )}
-              <button onClick={() => router.push('/')} className="text-sm font-medium text-indigo-600 hover:text-indigo-700">
+              <button onClick={() => router.push('/')} className="text-sm font-medium text-blue-600 hover:text-blue-700">
                 Wróć do dashboardu
               </button>
             </div>
@@ -535,7 +535,7 @@ export default function SessionPage() {
                   {task.taskType === 'abcd' && task.options ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {task.options.map(option => (
-                        <label key={option} className="flex items-center gap-2 text-sm text-slate-700 border border-slate-200 rounded-2xl px-4 py-3 hover:border-indigo-200 hover:bg-indigo-50 transition-colors">
+                        <label key={option} className="flex items-center gap-2 text-sm text-slate-700 border border-slate-200 rounded-2xl px-4 py-3 hover:border-blue-200 hover:bg-blue-50 transition-colors">
                           <input
                             type="radio"
                             name={`q-${task.cardId}`}
@@ -552,7 +552,7 @@ export default function SessionPage() {
                       type="text"
                       value={testAnswers[task.cardId] || ''}
                       onChange={e => setTestAnswers(prev => ({ ...prev, [task.cardId]: e.target.value }))}
-                      className="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:border-indigo-400 focus:outline-none"
+                      className="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:border-blue-400 focus:outline-none"
                       placeholder="Wpisz odpowiedź"
                     />
                   )}
@@ -585,7 +585,7 @@ export default function SessionPage() {
                     })
                   })
                 }}
-                className="w-full bg-indigo-600 text-white py-3 rounded-2xl font-medium shadow-sm hover:bg-indigo-700 transition-colors"
+                className="w-full bg-blue-600 text-white py-3 rounded-2xl font-medium shadow-sm hover:bg-blue-700 transition-colors"
               >
                 Sprawdź
               </button>
@@ -601,13 +601,13 @@ export default function SessionPage() {
       <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-900">
         <div className="text-center max-w-xs mx-4">
           <p className="text-xs text-slate-500 uppercase tracking-widest mb-2">Session Complete</p>
-          <p className="text-5xl font-bold tabular-nums mb-1 text-indigo-600">{accuracy}%</p>
+          <p className="text-5xl font-bold tabular-nums mb-1 text-blue-600">{accuracy}%</p>
           <p className="text-sm text-slate-500 mb-8">accuracy</p>
           <div className="space-y-2">
-            <button onClick={() => router.push('/study')} className="block w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-2.5 rounded-xl text-sm font-medium hover:from-indigo-700 hover:to-violet-700 transition-all">
+            <button onClick={() => router.push('/study')} className="block w-full bg-gradient-to-r from-blue-600 to-violet-600 text-white py-2.5 rounded-xl text-sm font-medium hover:from-blue-700 hover:to-violet-700 transition-all">
               Nowa sesja
             </button>
-            <button onClick={() => router.push('/')} className="block w-full border border-slate-300 py-2.5 rounded-xl text-sm text-slate-700 hover:border-indigo-400 transition-colors">
+            <button onClick={() => router.push('/')} className="block w-full border border-slate-300 py-2.5 rounded-xl text-sm text-slate-700 hover:border-blue-400 transition-colors">
               Dashboard
             </button>
           </div>
@@ -630,21 +630,21 @@ export default function SessionPage() {
             </span>
             <div className="flex-1 bg-slate-200 rounded-full h-1.5">
               <div
-                className="bg-gradient-to-r from-emerald-400 to-indigo-400 h-1.5 rounded-full transition-all duration-300"
+                className="bg-gradient-to-r from-emerald-400 to-blue-400 h-1.5 rounded-full transition-all duration-300"
                 style={{ width: `${progress}%` }}
               />
             </div>
             <span className="text-xs text-slate-500 tabular-nums">{accuracy}%</span>
             <button
               onClick={toggleShuffle}
-              className={`text-xs transition-colors ${shuffleEnabled ? 'text-indigo-600' : 'text-slate-400 hover:text-slate-600'}`}
+              className={`text-xs transition-colors ${shuffleEnabled ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}
               title={shuffleEnabled ? 'Shuffle ON' : 'Shuffle OFF'}
             >
               🔀
             </button>
             <button
               onClick={toggleSound}
-              className="text-xs text-slate-500 hover:text-indigo-600 transition-colors"
+              className="text-xs text-slate-500 hover:text-blue-600 transition-colors"
               title={soundEnabled ? 'Sound ON' : 'Sound OFF'}
             >
               {soundEnabled ? '🔊' : '🔇'}
@@ -748,7 +748,7 @@ export default function SessionPage() {
                     onChange={e => setUserAnswer(e.target.value)}
                     placeholder="Type your answer…"
                     autoFocus
-                    className="w-full border border-slate-200 rounded-2xl px-4 py-3 text-center text-lg bg-white text-slate-900 focus:border-indigo-500 focus:outline-none transition-colors"
+                    className="w-full border border-slate-200 rounded-2xl px-4 py-3 text-center text-lg bg-white text-slate-900 focus:border-blue-500 focus:outline-none transition-colors"
                   />
                   <div className="flex gap-2">
                     {!showHint && (
@@ -763,7 +763,7 @@ export default function SessionPage() {
                     <button
                       type="submit"
                       disabled={!userAnswer.trim()}
-                      className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3 rounded-2xl text-sm font-medium hover:from-indigo-700 hover:to-violet-700 disabled:opacity-40 transition-all"
+                      className="flex-1 bg-gradient-to-r from-blue-600 to-violet-600 text-white py-3 rounded-2xl text-sm font-medium hover:from-blue-700 hover:to-violet-700 disabled:opacity-40 transition-all"
                     >
                       Check
                     </button>
@@ -785,7 +785,7 @@ export default function SessionPage() {
                             : opt === selectedOption
                               ? 'border-rose-300 bg-rose-50 text-rose-800'
                               : 'border-slate-200 text-slate-600'
-                          : 'border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 text-slate-900 shadow-sm'
+                          : 'border-slate-200 hover:border-blue-300 hover:bg-blue-50 text-slate-900 shadow-sm'
                       }`}
                     >
                       <span className="inline-flex items-center justify-center w-7 h-7 mr-3 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">
@@ -799,7 +799,7 @@ export default function SessionPage() {
                     <button
                       type="button"
                       onClick={handleAbcdSkip}
-                      className="text-indigo-600 hover:text-indigo-500 transition-colors"
+                      className="text-blue-600 hover:text-blue-500 transition-colors"
                     >
                       I don’t know
                     </button>
@@ -811,7 +811,7 @@ export default function SessionPage() {
                 <div className="space-y-5">
                   {/* Required EN word as pill/chip */}
                   <div className="flex justify-center">
-                    <span className="inline-block bg-indigo-100 text-indigo-700 font-semibold px-5 py-2 rounded-full text-base tracking-wide shadow-sm">
+                    <span className="inline-block bg-blue-100 text-blue-700 font-semibold px-5 py-2 rounded-full text-base tracking-wide shadow-sm">
                       {currentTask.requiredEn || currentTask.answer}
                     </span>
                   </div>
@@ -832,7 +832,7 @@ export default function SessionPage() {
                     placeholder="Write one sentence…"
                     autoFocus
                     rows={3}
-                    className="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm bg-white text-slate-900 focus:border-indigo-500 focus:outline-none resize-none transition-colors"
+                    className="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm bg-white text-slate-900 focus:border-blue-500 focus:outline-none resize-none transition-colors"
                     disabled={loading}
                   />
 
@@ -855,7 +855,7 @@ export default function SessionPage() {
                         }
                       }}
                       disabled={loading || !userAnswer.trim()}
-                      className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3 rounded-2xl text-sm font-medium hover:from-indigo-700 hover:to-violet-700 disabled:opacity-40 transition-all"
+                      className="flex-1 bg-gradient-to-r from-blue-600 to-violet-600 text-white py-3 rounded-2xl text-sm font-medium hover:from-blue-700 hover:to-violet-700 disabled:opacity-40 transition-all"
                     >
                       {loading ? 'Checking…' : 'Check'}
                     </button>
@@ -881,7 +881,7 @@ export default function SessionPage() {
                     placeholder="Napisz opis..."
                     autoFocus
                     rows={3}
-                    className="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm bg-white text-slate-900 focus:border-indigo-500 focus:outline-none resize-none transition-colors"
+                    className="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm bg-white text-slate-900 focus:border-blue-500 focus:outline-none resize-none transition-colors"
                     disabled={loading}
                   />
                   <div className="flex gap-2">
@@ -902,7 +902,7 @@ export default function SessionPage() {
                         }
                       }}
                       disabled={loading || !userAnswer.trim()}
-                      className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3 rounded-2xl text-sm font-medium hover:from-indigo-700 hover:to-violet-700 disabled:opacity-40 transition-all"
+                      className="flex-1 bg-gradient-to-r from-blue-600 to-violet-600 text-white py-3 rounded-2xl text-sm font-medium hover:from-blue-700 hover:to-violet-700 disabled:opacity-40 transition-all"
                     >
                       {loading ? 'Checking…' : 'Check'}
                     </button>

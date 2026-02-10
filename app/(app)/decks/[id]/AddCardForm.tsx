@@ -62,7 +62,7 @@ export function AddCardForm({ deckId }: { deckId: string }) {
               onClick={() => setCardType(t)}
               className={`text-xs px-2.5 py-1 rounded-lg transition-colors capitalize ${
                 cardType === t
-                  ? 'bg-indigo-600 text-white'
+                  ? 'bg-blue-600 text-white'
                   : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
               }`}
             >
@@ -81,7 +81,7 @@ export function AddCardForm({ deckId }: { deckId: string }) {
           onChange={e => setFront(e.target.value)}
           placeholder={cardType === 'sentence' ? 'Target word (e.g. however)' : 'Front (e.g. English)'}
           required
-          className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none transition-colors"
+          className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:outline-none transition-colors"
         />
         <input
           type="text"
@@ -89,7 +89,7 @@ export function AddCardForm({ deckId }: { deckId: string }) {
           onChange={e => setBack(e.target.value)}
           placeholder={cardType === 'sentence' ? 'Translation (e.g. jednakże)' : 'Back (e.g. Polish)'}
           required
-          className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none transition-colors"
+          className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:outline-none transition-colors"
         />
       </div>
 
@@ -100,11 +100,11 @@ export function AddCardForm({ deckId }: { deckId: string }) {
           placeholder="Example sentence using the target word…"
           required
           rows={2}
-          className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none resize-none transition-colors"
+          className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:outline-none resize-none transition-colors"
         />
       )}
 
-      <button type="submit" disabled={loading} className="bg-indigo-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors">
+      <button type="submit" disabled={loading} className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors">
         {loading ? 'Adding…' : 'Add Card'}
       </button>
     </form>

@@ -82,8 +82,8 @@ export default async function FolderPage({ params }: { params: Promise<{ id: str
   return (
     <div className="p-6 lg:p-8 max-w-4xl mx-auto space-y-6">
       <div className="flex items-start gap-4">
-        <div className="p-3 bg-indigo-50 rounded-xl">
-          <FolderOpen className="w-6 h-6 text-indigo-600" />
+        <div className="p-3 bg-blue-50 rounded-xl">
+          <FolderOpen className="w-6 h-6 text-blue-600" />
         </div>
         <div>
           <h2 className="text-xl font-semibold text-slate-900">{folder.name}</h2>
@@ -102,14 +102,14 @@ export default async function FolderPage({ params }: { params: Promise<{ id: str
           <Link
             href={`/study?folder=${id}`}
             prefetch={true}
-            className="flex-1 min-w-[200px] flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3.5 rounded-xl font-medium hover:from-indigo-700 hover:to-violet-700 transition-all shadow-sm"
+            className="flex-1 min-w-[200px] flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-violet-600 text-white py-3.5 rounded-xl font-medium hover:from-blue-700 hover:to-violet-700 transition-all shadow-sm"
           >
             Ucz się
           </Link>
           <Link
             href="/decks?create=true"
             prefetch={true}
-            className="flex-1 min-w-[200px] flex items-center justify-center gap-2 border border-slate-200 bg-white text-slate-700 py-3.5 rounded-xl font-medium hover:border-indigo-300 transition-all shadow-sm"
+            className="flex-1 min-w-[200px] flex items-center justify-center gap-2 border border-slate-200 bg-white text-slate-700 py-3.5 rounded-xl font-medium hover:border-blue-300 transition-all shadow-sm"
           >
             Dodaj zestaw
           </Link>

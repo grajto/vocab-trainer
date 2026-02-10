@@ -43,7 +43,7 @@ export default async function DecksPage() {
     <div className="p-6 lg:p-8 max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-slate-900">Decki</h2>
-        <Link href="/create" className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">Utwórz zestaw</Link>
+        <Link href="/create" className="text-sm text-blue-600 hover:text-blue-700 font-medium">Utwórz zestaw</Link>
       </div>
 
       <div className="space-y-2">
@@ -51,7 +51,7 @@ export default async function DecksPage() {
           <p className="text-sm text-slate-400 py-8 text-center">Brak zestawów. Utwórz pierwszy.</p>
         ) : (
           decks.docs.map((deck: any) => (
-            <Link key={deck.id} href={`/decks/${deck.id}`} prefetch={true} className="block bg-white border border-slate-200 rounded-xl px-5 py-4 hover:border-indigo-300 hover:shadow-sm transition-all">
+            <Link key={deck.id} href={`/decks/${deck.id}`} prefetch={true} className="block bg-white border border-slate-200 rounded-xl px-5 py-4 hover:border-blue-300 hover:shadow-sm transition-all">
               <p className="font-medium text-slate-900">{deck.name}</p>
               <p className="text-xs text-slate-400 mt-1">
                 {cardCountByDeck.get(String(deck.id)) || 0} kart · {new Date(deck.createdAt || new Date()).toLocaleString('pl-PL', { month: 'long', year: 'numeric' })}

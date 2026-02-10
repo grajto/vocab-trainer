@@ -57,7 +57,7 @@ export default async function FoldersPage() {
     <div className="p-6 lg:p-8 max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-slate-900">Foldery</h2>
-        <Link href="/library?tab=folders&create=true" className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">Utwórz folder</Link>
+        <Link href="/library?tab=folders&create=true" className="text-sm text-blue-600 hover:text-blue-700 font-medium">Utwórz folder</Link>
       </div>
       <div className="space-y-2">
         {folders.docs.length === 0 ? (
@@ -67,7 +67,7 @@ export default async function FoldersPage() {
             const folderDecks = decks.docs.filter((d: any) => String(d.folder) === String(folder.id))
             const cardCount = folderDecks.reduce((sum: number, d: any) => sum + (cardsByDeck.get(String(d.id)) || 0), 0)
             return (
-              <Link key={folder.id} href={`/folders/${folder.id}`} prefetch={true} className="block bg-white border border-slate-200 rounded-xl px-5 py-4 hover:border-indigo-300 hover:shadow-sm transition-all">
+              <Link key={folder.id} href={`/folders/${folder.id}`} prefetch={true} className="block bg-white border border-slate-200 rounded-xl px-5 py-4 hover:border-blue-300 hover:shadow-sm transition-all">
                 <p className="font-medium text-slate-900">{folder.name}</p>
                 <p className="text-xs text-slate-400 mt-1">
                   {cardCount} kart · {new Date(folder.createdAt || new Date()).toLocaleString('pl-PL', { month: 'long', year: 'numeric' })}
