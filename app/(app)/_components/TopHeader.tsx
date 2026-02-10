@@ -32,9 +32,12 @@ export function TopHeader({ onMenuClick }: { onMenuClick: () => void }) {
 
   useEffect(() => {
     if (!q.trim()) {
-      setResults([])
-      setShowResults(false)
-      return
+      // Use setTimeout to avoid synchronous setState in effect
+      const timer = setTimeout(() => {
+        setResults([])
+        setShowResults(false)
+      }, 0)
+      return () => clearTimeout(timer)
     }
     const timer = setTimeout(async () => {
       try {

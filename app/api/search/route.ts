@@ -38,13 +38,21 @@ export async function GET(req: NextRequest) {
   const results = [
     ...decks.docs.map((d) => ({ type: 'deck' as const, id: String(d.id), name: d.name, meta: '' })),
     ...folders.docs.map((f) => ({ type: 'folder' as const, id: String(f.id), name: f.name, meta: '' })),
-    ...cards.docs.map((c: any) => ({
-      type: 'card' as const,
-      id: String(c.id),
-      name: c.front,
-      meta: c.back,
-      deckId: typeof c.deck === 'object' ? String(c.deck.id) : String(c.deck),
-    })),
+    ...cards.docs.map((c) => {
+      const cardData = c as {
+        id: string | number
+        front: string
+        back: string
+        deck: string | number | { id: string | number }
+      }
+      return {
+        type: 'card' as const,
+        id: String(cardData.id),
+        name: cardData.front,
+        meta: cardData.back,
+        deckId: typeof cardData.deck === 'object' ? String(cardData.deck.id) : String(cardData.deck),
+      }
+    }),
   ]
 
   return NextResponse.json({ results })
