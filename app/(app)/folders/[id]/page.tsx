@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
-import { FolderOpen, MoreHorizontal, Plus, Search } from 'lucide-react'
+import { BookOpen, FolderOpen, MoreHorizontal, Plus, Search } from 'lucide-react'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 
@@ -40,54 +40,83 @@ export default async function FolderPage({ params }: { params: Promise<{ id: str
 
   return (
     <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--containerMax)' }}>
-      <section className="space-y-5 rounded-[var(--radius)] p-6" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <span className="inline-flex h-12 w-12 items-center justify-center rounded-[var(--radiusSm)]" style={{ background: 'var(--primaryBg)', color: 'var(--primary)' }}>
-              <FolderOpen size={24} />
-            </span>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text)' }}>{folder.name}</h1>
-              <p className="mt-1 text-xs" style={{ color: 'var(--muted)' }}>Zestaw fiszek • {cardResult.totalDocs} pojęcia • przez Ciebie</p>
-            </div>
+      {/* Folder header */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3 min-w-0">
+          <span
+            className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg"
+            style={{ background: 'var(--primaryBg)', color: 'var(--primary)' }}
+          >
+            <FolderOpen size={20} />
+          </span>
+          <div className="min-w-0">
+            <h1 className="truncate text-xl font-bold" style={{ color: 'var(--text)' }}>{folder.name}</h1>
+            <p className="text-xs" style={{ color: 'var(--muted)' }}>{cardResult.totalDocs} pojęć • przez Ciebie</p>
           </div>
-          <button type="button" className="inline-flex h-9 w-9 items-center justify-center rounded-full hover:bg-[#f8fafc]" style={{ color: 'var(--gray400)' }}>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/create"
+            className="inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium"
+            style={{ background: 'var(--primaryBg)', color: 'var(--primary)' }}
+          >
+            <Plus size={14} /> Dodaj zestaw
+          </Link>
+          <button
+            type="button"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-[var(--hover-bg)]"
+            style={{ color: 'var(--gray400)' }}
+          >
             <MoreHorizontal size={18} />
           </button>
         </div>
+      </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <button type="button" className="rounded-full px-4 py-2 text-sm font-semibold" style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}>Wszystkie</button>
-          <Link href="/create" className="inline-flex h-9 w-9 items-center justify-center rounded-full hover:bg-[#f8fafc]" style={{ background: 'var(--surface2)', color: 'var(--muted)' }}>
-            <Plus size={18} />
-          </Link>
-        </div>
+      {/* Search */}
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: 'var(--gray400)' }} />
+        <input
+          readOnly
+          value=""
+          placeholder="Przeszukaj ten folder"
+          className="h-10 w-full rounded-lg pl-9 pr-4 text-sm focus:outline-none"
+          style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
+        />
+      </div>
 
-        <div className="grid items-center gap-3 lg:grid-cols-[1fr_360px]">
-          <p className="text-sm" style={{ color: 'var(--muted)' }}>Wg daty</p>
-          <div className="relative">
-            <Search className="absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: 'var(--gray400)' }} />
-            <input readOnly value="" placeholder="Przeszukaj ten folder" className="h-10 w-full rounded-full px-4 pr-12 text-sm focus:outline-none" style={{ border: '1px solid var(--border)', background: 'var(--surface2)', color: 'var(--text)' }} />
-          </div>
-        </div>
-      </section>
-
-      <section className="space-y-2">
+      {/* Deck list */}
+      <div className="space-y-0.5">
         {decks.docs.length === 0 ? (
-          <div className="rounded-[var(--radius)] p-6 text-sm" style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--muted)' }}>Brak zestawów w folderze.</div>
+          <p className="py-8 text-center text-sm" style={{ color: 'var(--muted)' }}>Brak zestawów w folderze.</p>
         ) : (
           decks.docs.map((deck: any) => (
-            <Link key={deck.id} href={`/decks/${deck.id}`} className="flex items-center gap-3 rounded-[var(--radiusSm)] px-4 py-3 hover:bg-[#f8fafc]" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
-              <span className="inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-[8px]" style={{ background: 'var(--primaryBg)', color: 'var(--primary)' }}>📘</span>
+            <Link
+              key={deck.id}
+              href={`/decks/${deck.id}`}
+              className="flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-[var(--hover-bg)]"
+            >
+              <span
+                className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md"
+                style={{ background: 'var(--primaryBg)', color: 'var(--primary)' }}
+              >
+                <BookOpen size={16} />
+              </span>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{deck.name}</p>
-                <p className="text-xs" style={{ color: 'var(--muted)' }}>Zestaw fiszek • {cardsByDeck.get(String(deck.id)) || 0} pojęć • przez Ciebie</p>
+                <p className="truncate text-sm font-semibold" style={{ color: 'var(--text)' }}>{deck.name}</p>
+                <p className="text-xs" style={{ color: 'var(--muted)' }}>{cardsByDeck.get(String(deck.id)) || 0} pojęć • przez Ciebie</p>
               </div>
-              <span style={{ color: 'var(--gray400)' }}>•••</span>
+              <button
+                type="button"
+                onClick={(e) => e.preventDefault()}
+                className="inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md transition-colors hover:bg-[var(--surface2)]"
+                style={{ color: 'var(--gray400)' }}
+              >
+                <MoreHorizontal size={16} />
+              </button>
             </Link>
           ))
         )}
-      </section>
+      </div>
     </div>
   )
 }

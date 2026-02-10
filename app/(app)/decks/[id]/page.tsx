@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
-import { Pencil, Star, Volume2 } from 'lucide-react'
+import { Bookmark, ChevronRight, MoreHorizontal, Pencil, Share2, Star, Volume2 } from 'lucide-react'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { AddCardForm } from './AddCardForm'
@@ -51,60 +51,88 @@ export default async function DeckDetailPage({ params }: { params: Promise<{ id:
   const firstCard = cards.docs[0]
 
   return (
-    <div className="deck-page">
-      <div className="deck-header-path">
-        <Link href={deck.folder ? `/folders/${deck.folder}` : '/folders'}>📁 {folderName}</Link>
+    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--containerMax)' }}>
+      {/* Breadcrumb */}
+      <nav className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--muted)' }}>
+        <Link href={deck.folder ? `/folders/${deck.folder}` : '/library'} className="hover:underline">
+          {folderName}
+        </Link>
+        <ChevronRight size={12} />
+        <span style={{ color: 'var(--text)' }}>{deck.name}</span>
+      </nav>
+
+      {/* Title + actions */}
+      <div className="flex items-start justify-between gap-4">
+        <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{deck.name}</h1>
+        <div className="flex items-center gap-1.5">
+          <button type="button" className="inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition-colors hover:bg-[var(--hover-bg)]" style={{ border: '1px solid var(--border)', color: 'var(--muted)' }}>
+            <Bookmark size={14} /> Zapisz
+          </button>
+          <button type="button" className="inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition-colors hover:bg-[var(--hover-bg)]" style={{ border: '1px solid var(--border)', color: 'var(--muted)' }}>
+            <Share2 size={14} /> Udostępnij
+          </button>
+          <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-[var(--hover-bg)]" style={{ color: 'var(--gray400)' }}>
+            <MoreHorizontal size={18} />
+          </button>
+        </div>
       </div>
 
-      <h1 className="deck-title">{deck.name}</h1>
-
+      {/* Mode tiles + controls */}
       <DeckStudyLauncher deckId={id} cardCount={cards.totalDocs} />
 
-      <section className="deck-preview">
-        <div className="deck-preview__top">
-          <p>Podgląd fiszki</p>
-          <div className="deck-preview__icons">
-            <Pencil size={15} />
-            <Volume2 size={15} />
-            <Star size={15} />
+      {/* Flashcard preview */}
+      <section className="rounded-lg p-5" style={{ border: '1px solid var(--border)' }}>
+        <div className="mb-3 flex items-center justify-between">
+          <p className="text-xs font-medium" style={{ color: 'var(--muted)' }}>Podgląd fiszki</p>
+          <div className="flex items-center gap-3" style={{ color: 'var(--gray400)' }}>
+            <button type="button" className="hover:opacity-70"><Pencil size={14} /></button>
+            <button type="button" className="hover:opacity-70"><Volume2 size={14} /></button>
+            <button type="button" className="hover:opacity-70"><Star size={14} /></button>
           </div>
         </div>
-
-        <div className="deck-preview__card">
+        <div
+          className="flex min-h-[200px] items-center justify-center rounded-lg p-8 text-center text-3xl font-semibold"
+          style={{ border: '1px solid var(--border)', color: 'var(--text)' }}
+        >
           {firstCard ? firstCard.front : 'Brak kart w zestawie'}
         </div>
-
-        <div className="deck-preview__bottom">
-          <span>{cards.totalDocs > 0 ? `1 / ${cards.totalDocs}` : '0 / 0'}</span>
-        </div>
+        <p className="mt-3 text-center text-xs font-medium" style={{ color: 'var(--muted)' }}>
+          {cards.totalDocs > 0 ? `1 / ${cards.totalDocs}` : '0 / 0'}
+        </p>
       </section>
 
-      <section className="deck-terms">
-        <div className="deck-terms__head">
-          <h2>Liczba pojęć w tym zestawie ({cards.totalDocs})</h2>
-        </div>
+      {/* Terms list */}
+      <section className="space-y-3">
+        <h2 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
+          Pojęcia w tym zestawie ({cards.totalDocs})
+        </h2>
 
         {cards.docs.length === 0 ? (
-          <div className="dash-empty">Brak kart. Dodaj pierwszą kartę poniżej.</div>
+          <p className="py-6 text-center text-sm" style={{ color: 'var(--muted)' }}>Brak kart. Dodaj pierwszą kartę poniżej.</p>
         ) : (
-          <div className="deck-terms__list">
+          <div className="space-y-1">
             {cards.docs.map((card: any) => (
-              <article key={card.id} className="deck-term-row">
-                <div className="deck-term-row__text">
-                  <p>{card.front}</p>
-                  <p>{card.back}</p>
+              <div
+                key={card.id}
+                className="flex items-center gap-4 rounded-lg px-4 py-3"
+                style={{ border: '1px solid var(--border)' }}
+              >
+                <div className="grid flex-1 grid-cols-2 gap-4">
+                  <p className="text-sm" style={{ color: 'var(--text)' }}>{card.front}</p>
+                  <p className="text-sm" style={{ color: 'var(--muted)' }}>{card.back}</p>
                 </div>
-                <div className="deck-term-row__actions">
-                  <button type="button" aria-label="Ulubione"><Star size={15} /></button>
-                  <button type="button" aria-label="Dźwięk"><Volume2 size={15} /></button>
-                  <button type="button" aria-label="Edytuj"><Pencil size={15} /></button>
+                <div className="flex items-center gap-2" style={{ color: 'var(--gray400)' }}>
+                  <button type="button" className="hover:opacity-70" aria-label="Ulubione"><Star size={14} /></button>
+                  <button type="button" className="hover:opacity-70" aria-label="Dźwięk"><Volume2 size={14} /></button>
+                  <button type="button" className="hover:opacity-70" aria-label="Edytuj"><Pencil size={14} /></button>
                 </div>
-              </article>
+              </div>
             ))}
           </div>
         )}
       </section>
 
+      {/* Add card form */}
       <section>
         <AddCardForm deckId={id} />
       </section>

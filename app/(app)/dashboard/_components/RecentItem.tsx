@@ -11,17 +11,19 @@ type RecentItemProps = {
 
 export function RecentItem({ href, title, meta, type }: RecentItemProps) {
   return (
-    <Link href={href} className="flex cursor-pointer items-center gap-[10px] rounded-[10px] px-[10px] py-2 transition-colors hover:bg-[#f8fafc]">
+    <Link
+      href={href}
+      className="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors hover:bg-[var(--hover-bg)]"
+    >
       <span
-        className="inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-[8px]"
+        className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md"
         style={{ background: 'var(--primaryBg)', color: 'var(--primary)' }}
       >
-        {type === 'deck' ? <BookOpen className="h-3 w-3" /> : <FolderOpen className="h-3 w-3" />}
+        {type === 'deck' ? <BookOpen size={16} /> : <FolderOpen size={16} />}
       </span>
-
       <div className="min-w-0 flex-1">
-        <div className="truncate text-[.875rem] font-semibold leading-5" style={{ color: 'var(--text)' }}>{title}</div>
-        <div className="text-[.75rem]" style={{ color: 'var(--muted)' }}>{meta}</div>
+        <p className="truncate text-sm font-semibold leading-5" style={{ color: 'var(--text)' }}>{title}</p>
+        <p className="text-xs leading-4" style={{ color: 'var(--muted)' }}>{meta}</p>
       </div>
     </Link>
   )

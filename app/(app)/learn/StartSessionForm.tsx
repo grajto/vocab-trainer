@@ -131,92 +131,138 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
     }
   }
 
+  const selectClass = "w-full h-10 rounded-lg px-3 text-sm focus:outline-none"
+  const selectStyle = { border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }
+  const labelClass = "block text-xs font-medium mb-1.5"
+
   return (
     <div className="space-y-4">
-      <form onSubmit={handleStart} className="rounded-[var(--radius)] p-6 space-y-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold" style={{ color: 'var(--text)' }}>Panel nauki</h3>
-          <button type="button" onClick={saveFavorite} className="inline-flex items-center gap-1.5 text-xs text-[var(--primary)] border border-[var(--primary)] rounded-full px-3 py-1.5 hover:bg-[var(--primaryBg)]">
-            <Star className="w-3.5 h-3.5" /> Dodaj do ulubionych
-          </button>
-        </div>
+      <form onSubmit={handleStart} className="space-y-6 rounded-lg p-6" style={{ border: '1px solid var(--border)' }}>
+        {/* Step 1: Source */}
+        <fieldset className="space-y-3">
+          <legend className="text-sm font-semibold" style={{ color: 'var(--text)' }}>1. Źródło</legend>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div>
+              <label className={labelClass} style={{ color: 'var(--muted)' }}>Typ zasobu</label>
+              <select value={resourceType} onChange={e => setResourceType(e.target.value as 'deck' | 'folder')} className={selectClass} style={selectStyle}>
+                <option value="deck">Deck</option>
+                <option value="folder">Folder</option>
+              </select>
+            </div>
+            <div>
+              <label className={labelClass} style={{ color: 'var(--muted)' }}>{resourceType === 'deck' ? 'Deck' : 'Folder'}</label>
+              <select value={resourceType === 'deck' ? deckId : folderId} onChange={e => resourceType === 'deck' ? setDeckId(e.target.value) : setFolderId(e.target.value)} className={selectClass} style={selectStyle}>
+                {(resourceType === 'deck' ? decks : folders).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
+              </select>
+            </div>
+          </div>
+        </fieldset>
 
-        {error && <p className="text-red-600 text-sm bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
+        {/* Step 2: Mode */}
+        <fieldset className="space-y-3">
+          <legend className="text-sm font-semibold" style={{ color: 'var(--text)' }}>2. Tryb ćwiczeń</legend>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div>
+              <label className={labelClass} style={{ color: 'var(--muted)' }}>Tryb</label>
+              <select value={mode} onChange={e => setMode(e.target.value)} className={selectClass} style={selectStyle}>
+                <option value="translate">Wpisywanie</option>
+                <option value="abcd">ABCD</option>
+                <option value="sentence">Sentence</option>
+                <option value="describe">Opisz słowo (AI)</option>
+                <option value="mixed">Mixed</option>
+                <option value="test">Test</option>
+              </select>
+            </div>
+            <div>
+              <label className={labelClass} style={{ color: 'var(--muted)' }}>Kierunek</label>
+              <select value={direction} onChange={e => setDirection(e.target.value as typeof direction)} className={selectClass} style={selectStyle}>
+                <option value="pl-en">PL → EN</option>
+                <option value="en-pl">EN → PL</option>
+                <option value="both">Oba</option>
+              </select>
+            </div>
+          </div>
+        </fieldset>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Step 3: Settings */}
+        <fieldset className="space-y-3">
+          <legend className="text-sm font-semibold" style={{ color: 'var(--text)' }}>3. Ustawienia</legend>
+
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>Wybór zasobu</label>
-            <select value={resourceType} onChange={e => setResourceType(e.target.value as 'deck' | 'folder')} className="w-full border border-[var(--border)] rounded-[var(--radiusSm)] px-3 py-2.5 text-sm focus:border-[var(--primary)] focus:outline-none bg-[var(--surface)]">
-              <option value="deck">Deck</option>
-              <option value="folder">Folder</option>
-            </select>
+            <label className={labelClass} style={{ color: 'var(--muted)' }}>Preferowany level słówek</label>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {[1, 2, 3, 4].map(level => (
+                <button
+                  key={level}
+                  type="button"
+                  onClick={() => toggleLevel(level)}
+                  className="h-9 rounded-lg text-sm font-medium transition-colors"
+                  style={{
+                    border: `1px solid ${levels.includes(level) ? 'var(--primary)' : 'var(--border)'}`,
+                    background: levels.includes(level) ? 'var(--primaryBg)' : 'var(--surface)',
+                    color: levels.includes(level) ? 'var(--primary)' : 'var(--muted)',
+                  }}
+                >
+                  Level {level}
+                </button>
+              ))}
+            </div>
           </div>
+
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>{resourceType === 'deck' ? 'Deck' : 'Folder'}</label>
-            <select value={resourceType === 'deck' ? deckId : folderId} onChange={e => resourceType === 'deck' ? setDeckId(e.target.value) : setFolderId(e.target.value)} className="w-full border border-[var(--border)] rounded-[var(--radiusSm)] px-3 py-2.5 text-sm focus:border-[var(--primary)] focus:outline-none bg-[var(--surface)]">
-              {(resourceType === 'deck' ? decks : folders).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
-            </select>
+            <label className={labelClass} style={{ color: 'var(--muted)' }}>
+              Długość sesji: <span className="font-semibold" style={{ color: 'var(--primary)' }}>{targetCount} kart</span>
+            </label>
+            <input type="range" min={5} max={35} value={targetCount} onChange={e => setTargetCount(Number(e.target.value))} className="w-full accent-[var(--primary)]" />
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>Tryb ćwiczeń</label>
-            <select value={mode} onChange={e => setMode(e.target.value)} className="w-full border border-[var(--border)] rounded-[var(--radiusSm)] px-3 py-2.5 text-sm focus:border-[var(--primary)] focus:outline-none bg-[var(--surface)]">
-              <option value="translate">Wpisywanie</option>
-              <option value="abcd">ABCD</option>
-              <option value="sentence">Sentence</option>
-              <option value="describe">Opisz słowo (AI)</option>
-              <option value="mixed">Mixed</option>
-              <option value="test">Test</option>
-            </select>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <label className="flex items-center gap-2 text-sm" style={{ color: 'var(--muted)' }}>
+              <input type="checkbox" checked={shuffle} onChange={e => setShuffle(e.target.checked)} className="accent-[var(--primary)]" />
+              Mieszaj kolejność
+            </label>
+            <label className="flex items-center gap-2 text-sm" style={{ color: 'var(--muted)' }}>
+              <input type="checkbox" checked={requireCorrect} onChange={e => setRequireCorrect(e.target.checked)} className="accent-[var(--primary)]" />
+              Wymagaj poprawnej odpowiedzi
+            </label>
           </div>
-          <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>Kierunek</label>
-            <select value={direction} onChange={e => setDirection(e.target.value as typeof direction)} className="w-full border border-[var(--border)] rounded-[var(--radiusSm)] px-3 py-2.5 text-sm focus:border-[var(--primary)] focus:outline-none bg-[var(--surface)]">
-              <option value="pl-en">PL → EN</option>
-              <option value="en-pl">EN → PL</option>
-              <option value="both">Oba</option>
-            </select>
-          </div>
-        </div>
+        </fieldset>
 
-        <div>
-          <label className="block text-xs font-medium mb-2" style={{ color: 'var(--muted)' }}>Preferowany level słówek</label>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {[1, 2, 3, 4].map(level => (
-              <button key={level} type="button" onClick={() => toggleLevel(level)} className={`text-sm border rounded-[var(--radiusSm)] px-3 py-2 ${levels.includes(level) ? 'bg-[var(--primaryBg)] border-[var(--primary)] text-[var(--primary)]' : 'border-[var(--border)] text-[var(--muted)]'}`}>
-                Level {level}
-              </button>
-            ))}
-          </div>
-        </div>
+        {error && <p className="rounded-lg px-3 py-2 text-sm text-red-600" style={{ background: '#fef2f2' }}>{error}</p>}
 
-        <div>
-          <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>Długość sesji: <span className="font-semibold" style={{ color: 'var(--primary)' }}>{targetCount} kart</span></label>
-          <input type="range" min={5} max={35} value={targetCount} onChange={e => setTargetCount(Number(e.target.value))} className="w-full accent-[var(--primary)]" />
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm" style={{ color: 'var(--muted)' }}>
-          <label className="flex items-center gap-2"><input type="checkbox" checked={shuffle} onChange={e => setShuffle(e.target.checked)} className="accent-[var(--primary)]" />Mieszaj kolejność</label>
-          <label className="flex items-center gap-2"><input type="checkbox" checked={requireCorrect} onChange={e => setRequireCorrect(e.target.checked)} className="accent-[var(--primary)]" />Wymagaj poprawnej odpowiedzi</label>
-        </div>
-
-        <button type="submit" disabled={loading} className="w-full bg-[var(--primary)] text-white py-3 rounded-[var(--radius)] text-sm font-medium hover:brightness-90 disabled:opacity-50 transition-all">
-          {loading ? 'Uruchamiam…' : 'Zacznij sesję'}
+        {/* Step 4: Start */}
+        <button
+          type="submit"
+          disabled={loading}
+          className="h-11 w-full rounded-lg text-sm font-semibold text-white transition-colors disabled:opacity-50"
+          style={{ background: 'var(--primary)' }}
+        >
+          {loading ? 'Uruchamiam…' : 'Rozpocznij naukę'}
         </button>
       </form>
 
-      <section className="rounded-[var(--radius)] p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-        <h4 className="text-sm font-semibold mb-3" style={{ color: 'var(--text)' }}>Ulubione ustawienia sesji</h4>
+      {/* Favorites */}
+      <section className="rounded-lg p-4" style={{ border: '1px solid var(--border)' }}>
+        <div className="mb-3 flex items-center justify-between">
+          <h4 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Ulubione ustawienia</h4>
+          <button type="button" onClick={saveFavorite} className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-colors hover:bg-[var(--primaryBg)]" style={{ color: 'var(--primary)' }}>
+            <Star className="h-3.5 w-3.5" /> Zapisz bieżące
+          </button>
+        </div>
         {favorites.length === 0 ? (
           <p className="text-sm" style={{ color: 'var(--muted)' }}>Nie masz jeszcze ulubionych presetów.</p>
         ) : (
-          <div className="grid sm:grid-cols-2 gap-2">
+          <div className="grid gap-2 sm:grid-cols-2">
             {favorites.map(fav => (
-              <button key={fav.id} type="button" onClick={() => loadFavorite(fav)} className="text-left border border-[var(--border)] rounded-[var(--radiusSm)] px-3 py-2 hover:border-[var(--primary)]">
-                <p className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>{fav.label}</p>
-                <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>{fav.resourceType === 'deck' ? 'Deck' : 'Folder'} · {fav.direction}</p>
+              <button
+                key={fav.id}
+                type="button"
+                onClick={() => loadFavorite(fav)}
+                className="rounded-lg px-3 py-2 text-left transition-colors hover:bg-[var(--hover-bg)]"
+                style={{ border: '1px solid var(--border)' }}
+              >
+                <p className="truncate text-sm font-medium" style={{ color: 'var(--text)' }}>{fav.label}</p>
+                <p className="mt-0.5 text-xs" style={{ color: 'var(--muted)' }}>{fav.resourceType === 'deck' ? 'Deck' : 'Folder'} · {fav.direction}</p>
               </button>
             ))}
           </div>

@@ -229,7 +229,7 @@ export default async function DashboardPage() {
             <p className="text-sm" style={{ color: 'var(--muted)' }}>Brak ostatnich materiałów.</p>
           </SimpleCard>
         ) : (
-          <div className="grid gap-1 lg:grid-cols-2">
+          <div className="space-y-0.5">
             {recents.map((item) => (
               <RecentItem
                 key={`${item.type}-${item.id}`}
