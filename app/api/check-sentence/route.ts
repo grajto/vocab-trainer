@@ -45,23 +45,21 @@ function norm(s: string): string {
   return s.trim().replace(/\s+/g, ' ').toLowerCase()
 }
 
-function getFallbackCorrected(sentence: string, targetPhrase?: string) {
-  return sentence.trim() || targetPhrase?.trim() || '[brak zdania]'
-}
-
-const SYSTEM_PROMPT = `Zwróć WYŁĄCZNIE minifikowany JSON o strukturze:
+const SYSTEM_PROMPT = `Return ONLY minified JSON:
 {"ok":boolean,"corrected":string,"errors":[{"type":string,"from":string,"to":string,"explain":string}],"comment":string}
-Zasady:
-- errors maks 5 elementów
-- comment maks 200 znaków
-- corrected zawsze niepuste
-- jeśli ok=true, corrected musi być identyczne jak input
-- brak dodatkowych kluczy, brak markdown
-Typy błędów: grammar | usage | meaning | spam | other.`
+Rules:
+- Use English only (B2 level), short teacher-style feedback.
+- comment: 1-2 short sentences, max 200 chars.
+- errors: max 5 items.
+- For ok=true: corrected must equal input sentence.
+- For ok=false: corrected must be an empty string.
+- No markdown, no extra keys.
+Error types: grammar | usage | meaning | spelling | punctuation | style | other.`
 
-const RETRY_PROMPT = `JSON only:
+const RETRY_PROMPT = `JSON ONLY. English B2 feedback.
 {"ok":boolean,"corrected":string,"errors":[{"type":string,"from":string,"to":string,"explain":string}],"comment":string}
-errors<=5, comment<=200, corrected!=empty, ok=true => corrected=input.`
+If ok=false then corrected="". If ok=true then corrected=input.
+comment<=200, errors<=5, no extra keys.`
 
 function extractResponseMeta(response: unknown) {
   const typed = response as {
@@ -88,7 +86,7 @@ export async function POST(req: NextRequest) {
     if (!user) {
       return NextResponse.json(buildCheckSentenceResponse({
         ok: false,
-        corrected: '[brak zdania]',
+        corrected: '',
         errors: [{ type: 'other', from: '', to: '', explain: 'Unauthorized' }],
         comment: 'Unauthorized',
       }), { status: 401 })
@@ -101,18 +99,18 @@ export async function POST(req: NextRequest) {
     if (!targetPhrase) {
       return NextResponse.json(buildCheckSentenceResponse({
         ok: false,
-        corrected: getFallbackCorrected(sentence || '', targetPhrase),
-        errors: [{ type: 'usage', from: '', to: '', explain: 'Brak wymaganej frazy do sprawdzenia.' }],
-        comment: 'Brak wymaganej frazy do sprawdzenia.',
+        corrected: '',
+        errors: [{ type: 'usage', from: '', to: '', explain: 'Missing required word to validate.' }],
+        comment: 'Missing required word to validate.',
       }))
     }
 
     if (!sentence || !sentence.trim()) {
       return NextResponse.json(buildCheckSentenceResponse({
         ok: false,
-        corrected: getFallbackCorrected(sentence || '', targetPhrase),
-        errors: [{ type: 'grammar', from: '', to: '', explain: 'Zdanie nie może być puste.' }],
-        comment: 'Zdanie nie może być puste.',
+        corrected: '',
+        errors: [{ type: 'grammar', from: '', to: '', explain: 'Sentence cannot be empty.' }],
+        comment: 'Sentence cannot be empty.',
       }))
     }
 
@@ -121,26 +119,26 @@ export async function POST(req: NextRequest) {
     if (trimmed.length < 8) {
       return NextResponse.json(buildCheckSentenceResponse({
         ok: false,
-        corrected: getFallbackCorrected(trimmed, targetPhrase),
-        errors: [{ type: 'grammar', from: trimmed, to: trimmed, explain: 'Zdanie jest za krótkie (min. 8 znaków).' }],
-        comment: 'Zdanie jest za krótkie (min. 8 znaków).',
+        corrected: '',
+        errors: [{ type: 'grammar', from: trimmed, to: trimmed, explain: 'Sentence is too short (minimum 8 characters).' }],
+        comment: 'Sentence is too short (minimum 8 characters).',
       }))
     }
     if (trimmed.length > 240) {
       return NextResponse.json(buildCheckSentenceResponse({
         ok: false,
-        corrected: getFallbackCorrected(trimmed, targetPhrase),
-        errors: [{ type: 'other', from: trimmed, to: trimmed, explain: 'Zdanie jest za długie (max 240 znaków).' }],
-        comment: 'Zdanie jest za długie (max 240 znaków).',
+        corrected: '',
+        errors: [{ type: 'other', from: trimmed, to: trimmed, explain: 'Sentence is too long (maximum 240 characters).' }],
+        comment: 'Sentence is too long (maximum 240 characters).',
       }))
     }
 
     if (!norm(trimmed).includes(norm(targetPhrase))) {
       return NextResponse.json(buildCheckSentenceResponse({
         ok: false,
-        corrected: getFallbackCorrected(trimmed, targetPhrase),
-        errors: [{ type: 'usage', from: trimmed, to: trimmed, explain: `Zdanie nie zawiera wymaganego zwrotu: "${targetPhrase}".` }],
-        comment: `Zdanie nie zawiera wymaganego zwrotu: "${targetPhrase}".`,
+        corrected: '',
+        errors: [{ type: 'usage', from: trimmed, to: trimmed, explain: `The sentence must include this required word: "${targetPhrase}".` }],
+        comment: `The sentence must include this required word: "${targetPhrase}".`,
       }))
     }
 
@@ -148,7 +146,7 @@ export async function POST(req: NextRequest) {
       console.error('[AI] Missing OPENAI_API_KEY')
       return NextResponse.json(buildCheckSentenceResponse({
         ok: false,
-        corrected: getFallbackCorrected(trimmed, targetPhrase),
+        corrected: '',
         errors: [{ type: 'other', from: '', to: '', explain: 'Missing OPENAI_API_KEY' }],
         comment: 'Missing OPENAI_API_KEY',
       }), { status: 500 })
@@ -238,6 +236,9 @@ export async function POST(req: NextRequest) {
 
         try {
           const parsed = parseCheckSentenceResponse(text, trimmed)
+          if (!parsed.ok) {
+            parsed.corrected = ''
+          }
           return NextResponse.json(parsed)
         } catch (parseError) {
           lastError = (parseError as Error).message
@@ -249,24 +250,24 @@ export async function POST(req: NextRequest) {
       console.error('[AI] final failure', { lastError })
       return NextResponse.json(buildCheckSentenceResponse({
         ok: false,
-        corrected: getFallbackCorrected(trimmed, targetPhrase),
-        errors: [{ type: 'other', from: '', to: '', explain: 'AI nie zwróciło poprawnej odpowiedzi. Spróbuj ponownie.' }],
-        comment: 'AI nie zwróciło poprawnej odpowiedzi. Spróbuj ponownie.',
+        corrected: '',
+        errors: [{ type: 'other', from: '', to: '', explain: 'AI could not validate this sentence now. Please try again.' }],
+        comment: 'AI could not validate this sentence now. Please try again.',
       }), { status: 502 })
     } catch (err: unknown) {
       console.error('OpenAI call failed:', err)
       return NextResponse.json(buildCheckSentenceResponse({
         ok: false,
-        corrected: getFallbackCorrected(trimmed, targetPhrase),
-        errors: [{ type: 'other', from: '', to: '', explain: 'AI nie zwróciło poprawnej odpowiedzi. Spróbuj ponownie.' }],
-        comment: 'AI nie zwróciło poprawnej odpowiedzi. Spróbuj ponownie.',
+        corrected: '',
+        errors: [{ type: 'other', from: '', to: '', explain: 'AI could not validate this sentence now. Please try again.' }],
+        comment: 'AI could not validate this sentence now. Please try again.',
       }), { status: 502 })
     }
   } catch (error: unknown) {
     console.error('Check sentence error:', error)
     return NextResponse.json(buildCheckSentenceResponse({
       ok: false,
-      corrected: '[brak zdania]',
+      corrected: '',
       errors: [{ type: 'other', from: '', to: '', explain: 'Internal server error' }],
       comment: 'Internal server error',
     }), { status: 500 })

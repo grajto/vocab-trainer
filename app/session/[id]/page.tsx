@@ -65,7 +65,6 @@ export default function SessionPage() {
   const [userAnswer, setUserAnswer] = useState('')
   const [feedback, setFeedback] = useState<{ correct: boolean; message: string } | null>(null)
   const [sentenceNeedsAcknowledge, setSentenceNeedsAcknowledge] = useState(false)
-  const [sentenceSuggestedFix, setSentenceSuggestedFix] = useState('')
   const [loading, setLoading] = useState(false)
   const [sessionDone, setSessionDone] = useState(false)
   const [aiInfo, setAiInfo] = useState<{ used: boolean; latencyMs: number } | null>(null)
@@ -163,7 +162,6 @@ export default function SessionPage() {
         setAiInfo(null)
         setSelectedOption(null)
         setSentenceNeedsAcknowledge(false)
-        setSentenceSuggestedFix('')
         setCurrentIndex(prev => prev + 1)
       }, delay)
     }
@@ -299,7 +297,6 @@ export default function SessionPage() {
 
   function buildSentenceFeedbackMessage(data: Record<string, unknown>, fallbackWord: string) {
     const comment = typeof data.comment === 'string' ? data.comment.trim() : ''
-    const corrected = typeof data.corrected === 'string' ? data.corrected.trim() : ''
     const errors = Array.isArray(data.errors) ? data.errors : []
 
     const details = errors
@@ -317,23 +314,22 @@ export default function SessionPage() {
       .slice(0, 3)
 
     const lines: string[] = []
-    lines.push(comment || 'To zdanie jest niepoprawne lub bez sensu.')
+    lines.push(comment || 'This sentence is not correct or does not sound natural.')
     if (details.length > 0) lines.push(...details)
-    if (corrected) lines.push(`Sugestia: ${corrected}`)
-    if (!comment && details.length === 0 && !corrected) lines.push(`Użyj poprawnie słowa: ${fallbackWord}`)
+    if (!comment && details.length === 0) lines.push(`• Please use the word "${fallbackWord}" in a clear sentence.`)
 
-    return {
-      message: lines.join('\n'),
-      suggestedFix: corrected,
-    }
+    return lines.join('\n')
   }
 
   function acknowledgeSentenceFeedback() {
     setFeedback(null)
     setSentenceNeedsAcknowledge(false)
-    if (sentenceSuggestedFix) {
-      setUserAnswer(sentenceSuggestedFix)
-    }
+    setUserAnswer('')
+    setShowHint(false)
+    setTypoState(null)
+    setAiInfo(null)
+    setSelectedOption(null)
+    advanceToNext(50)
   }
 
   useEffect(() => {
@@ -344,15 +340,23 @@ export default function SessionPage() {
         event.preventDefault()
         setFeedback(null)
         setSentenceNeedsAcknowledge(false)
-        if (sentenceSuggestedFix) {
-          setUserAnswer(sentenceSuggestedFix)
-        }
+        setUserAnswer('')
+        setShowHint(false)
+        setTypoState(null)
+        setAiInfo(null)
+        setSelectedOption(null)
+        setTimeout(() => {
+          setCurrentIndex(prev => (prev + 1 < tasks.length ? prev + 1 : prev))
+          if (currentIndex + 1 >= tasks.length) {
+            setSessionDone(true)
+          }
+        }, 50)
       }
     }
 
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [sentenceNeedsAcknowledge, sentenceSuggestedFix])
+  }, [sentenceNeedsAcknowledge, currentIndex, tasks.length])
 
 
   useEffect(() => {
@@ -404,8 +408,8 @@ export default function SessionPage() {
         const message = data?.comment || data?.message_pl || data?.error || 'AI validation failed. Try again.'
         setFeedback({ correct: false, message })
         setSentenceNeedsAcknowledge(true)
-        setSentenceSuggestedFix('')
         playWrong()
+        requeueCard(currentTask)
         return
       }
       const correct = !!data.ok
@@ -418,17 +422,16 @@ export default function SessionPage() {
         state.wasWrongBefore = state.wasWrongBefore || state.attempts > 1
         setAnsweredCount(prev => prev + 1)
         setCorrectCount(prev => prev + 1)
-        setFeedback({ correct: true, message: data.comment || data.message_pl || 'Poprawnie.' })
+        setFeedback({ correct: true, message: data.comment || data.message_pl || 'Correct.' })
         setSentenceNeedsAcknowledge(false)
-        setSentenceSuggestedFix('')
         playCorrect()
       } else {
         state.wasWrongBefore = true
-        const { message, suggestedFix } = buildSentenceFeedbackMessage(data as Record<string, unknown>, currentTask.answer)
+        const message = buildSentenceFeedbackMessage(data as Record<string, unknown>, currentTask.answer)
         setFeedback({ correct: false, message })
         setSentenceNeedsAcknowledge(true)
-        setSentenceSuggestedFix(suggestedFix)
         playWrong()
+        requeueCard(currentTask)
       }
 
       saveAnswerInBackground({
@@ -450,7 +453,6 @@ export default function SessionPage() {
       state.wasWrongBefore = true
       setFeedback({ correct: false, message: 'Network error – try again' })
       setSentenceNeedsAcknowledge(true)
-      setSentenceSuggestedFix('')
       playWrong()
     } finally {
       setLoading(false)
@@ -804,7 +806,7 @@ export default function SessionPage() {
                     onClick={acknowledgeSentenceFeedback}
                     className="inline-flex items-center px-4 py-2 rounded-full text-xs font-semibold border border-indigo-200 text-indigo-700 hover:bg-indigo-50"
                   >
-                    Rozumiem — poprawiam zdanie (Enter)
+                    I understand — next card (Enter)
                   </button>
                 </div>
               )}
@@ -940,10 +942,10 @@ export default function SessionPage() {
                       disabled={loading || (!sentenceNeedsAcknowledge && !userAnswer.trim())}
                       className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3 rounded-2xl text-sm font-medium hover:from-indigo-700 hover:to-violet-700 disabled:opacity-40 transition-all"
                     >
-                      {loading ? 'Checking…' : sentenceNeedsAcknowledge ? 'Przeczytałem, poprawiam' : 'Check'}
+                      {loading ? 'Checking…' : sentenceNeedsAcknowledge ? 'Go to next card' : 'Check'}
                     </button>
                   </div>
-                  <p className="text-xs text-slate-500 text-center">{sentenceNeedsAcknowledge ? 'Ctrl+Enter, aby zamknąć feedback i poprawić zdanie' : 'Ctrl+Enter to submit'}</p>
+                  <p className="text-xs text-slate-500 text-center">{sentenceNeedsAcknowledge ? 'Press Enter to continue to the next card' : 'Ctrl+Enter to submit'}</p>
                 </div>
               )}
 
