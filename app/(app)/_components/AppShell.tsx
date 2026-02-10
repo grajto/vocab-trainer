@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Sidebar } from './Sidebar'
-import { TopNav } from './TopNav'
+import { LeftSidebar } from './LeftSidebar'
+import { TopHeader } from './TopHeader'
 
 export function AppShell({
   folders,
@@ -15,14 +15,19 @@ export function AppShell({
   const [open, setOpen] = useState(false)
 
   return (
-    <div>
-      <TopNav />
-      <div className="app-layout">
-        <div className="hidden-mobile">
-          <Sidebar folders={folders} />
+    <div className="min-h-screen bg-slate-50 text-slate-800">
+      <TopHeader onMenuClick={() => setOpen(true)} />
+
+      <div className="grid min-h-[calc(100vh-64px)] lg:grid-cols-[272px_minmax(0,1fr)]">
+        <div className="hidden lg:block">
+          <LeftSidebar folders={folders} />
         </div>
-        <Sidebar folders={folders} mobile open={open} onClose={() => setOpen(false)} />
-        <main className="app-main">{children}</main>
+
+        <LeftSidebar folders={folders} mobile open={open} onClose={() => setOpen(false)} />
+
+        <main className="min-w-0 px-4 pb-8 pt-5 lg:px-8" aria-label="Główna zawartość">
+          {children}
+        </main>
       </div>
     </div>
   )
