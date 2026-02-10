@@ -13,10 +13,9 @@ export function TopNav({ username, onOpenSidebar }: { username: string; onOpenSi
     <header className="top-nav">
       <div className="top-nav__inner">
         <button
-          className="btn btn--ghost show-mobile"
+          className="btn btn--ghost show-mobile top-nav__menu-btn"
           onClick={onOpenSidebar}
           aria-label="Otwórz menu"
-          style={{ minHeight: '44px', minWidth: '44px' }}
         >
           <Menu size={18} />
         </button>
@@ -43,15 +42,13 @@ export function TopNav({ username, onOpenSidebar }: { username: string; onOpenSi
         <div className="top-nav__actions">
           <Link
             href="/library?action=import"
-            className="btn btn--secondary hidden-mobile"
-            style={{ height: '40px', minHeight: '40px' }}
+            className="btn btn--secondary hidden-mobile top-nav__btn"
           >
             Import
           </Link>
           <Link
             href="/create"
-            className="btn btn--primary"
-            style={{ height: '40px', minHeight: '40px' }}
+            className="btn btn--primary top-nav__btn"
           >
             <Plus size={16} className="show-mobile" />
             <span className="hidden-mobile">Nowy zestaw</span>

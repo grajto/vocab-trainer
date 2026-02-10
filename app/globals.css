@@ -8,6 +8,12 @@
   --primary-700: #1f1c8b;
   --accent: #7c3aed;
   --focus-300: #a8b1ff;
+  
+  /* primary with alpha for overlays */
+  --primary-500-alpha-08: rgba(66, 85, 255, 0.08);
+  --primary-500-alpha-15: rgba(66, 85, 255, 0.15);
+  --primary-500-alpha-20: rgba(66, 85, 255, 0.2);
+  --primary-500-alpha-35: rgba(66, 85, 255, 0.35);
 
   /* backgrounds */
   --bg: #f6f7fb;
@@ -496,8 +502,8 @@ button, input { font: inherit; }
 
 .sidebar__link.is-active {
   color: var(--primary-500);
-  background: rgba(66, 85, 255, 0.08);
-  border-color: rgba(66, 85, 255, 0.2);
+  background: var(--primary-500-alpha-08);
+  border-color: var(--primary-500-alpha-20);
   font-weight: 600;
 }
 
@@ -665,7 +671,7 @@ button, input { font: inherit; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(66, 85, 255, 0.08);
+  background: var(--primary-500-alpha-08);
   font-size: 18px;
 }
 
@@ -840,10 +846,10 @@ button, input { font: inherit; }
 }
 
 .deck-mode-tile.is-active {
-  background: rgba(66, 85, 255, 0.08);
-  border-color: rgba(66, 85, 255, 0.35);
+  background: var(--primary-500-alpha-08);
+  border-color: var(--primary-500-alpha-35);
   color: var(--primary-500);
-  box-shadow: 0 3px 0 0 rgba(66, 85, 255, 0.15);
+  box-shadow: 0 3px 0 0 var(--primary-500-alpha-15);
 }
 
 .deck-mode-tile:focus-visible {
@@ -1065,4 +1071,15 @@ button, input { font: inherit; }
 *:focus-visible {
   outline: 2px solid var(--primary-500);
   outline-offset: 2px;
+}
+
+/* TopNav specific button sizing */
+.top-nav__btn {
+  height: 40px;
+  min-height: 44px;
+}
+
+.top-nav__menu-btn {
+  min-height: 44px;
+  min-width: 44px;
 }
