@@ -74,9 +74,9 @@ export default async function LibraryPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-[1120px] space-y-6">
+    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--containerMax)' }}>
       <div>
-        <h1 className="text-[46px] font-bold tracking-tight text-slate-900">Twoje zasoby</h1>
+        <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text)' }}>Twoje zasoby</h1>
       </div>
 
       <LibraryTabs

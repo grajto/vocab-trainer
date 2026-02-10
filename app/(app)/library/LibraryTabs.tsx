@@ -56,25 +56,26 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
   }
 
   const tabClass = (active: boolean) =>
-    `border-b-2 pb-2 text-sm font-semibold ${active ? 'border-[#4255ff] text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-700'}`
+    `border-b-2 pb-2 text-sm font-semibold ${active ? 'border-[var(--primary)]' : 'border-transparent hover:opacity-80'}`
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center gap-6 border-b border-slate-200 pb-2">
-        <button onClick={() => setTab('decks')} className={tabClass(tab === 'decks')}>Zestawy fiszek</button>
-        <button onClick={() => setTab('folders')} className={tabClass(tab === 'folders')}>Foldery</button>
+      <div className="flex flex-wrap items-center gap-6 pb-2" style={{ borderBottom: '1px solid var(--border)' }}>
+        <button onClick={() => setTab('decks')} className={tabClass(tab === 'decks')} style={{ color: tab === 'decks' ? 'var(--text)' : 'var(--muted)' }}>Zestawy fiszek</button>
+        <button onClick={() => setTab('folders')} className={tabClass(tab === 'folders')} style={{ color: tab === 'folders' ? 'var(--text)' : 'var(--muted)' }}>Foldery</button>
       </div>
 
       <div className="grid items-center gap-3 lg:grid-cols-[220px_minmax(0,1fr)]">
-        <p className="text-lg text-slate-600">Ostatnie zestawy</p>
+        <p className="text-sm" style={{ color: 'var(--muted)' }}>Ostatnie zestawy</p>
         <div className="relative w-full lg:justify-self-end lg:max-w-[500px]">
-          <Search className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
+          <Search className="absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: 'var(--gray400)' }} />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={tab === 'decks' ? 'Wyszukaj fiszki' : 'Wyszukaj folder'}
-            className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 pr-12 text-base text-slate-700 placeholder:text-slate-400 focus:outline-none"
+            className="h-10 w-full rounded-full px-4 pr-12 text-sm focus:outline-none"
+            style={{ border: '1px solid var(--border)', background: 'var(--surface2)', color: 'var(--text)' }}
           />
         </div>
       </div>
@@ -83,17 +84,23 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
         <div className="space-y-6">
           <section className="space-y-3">
             <div className="flex items-center gap-3">
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-600">W tym tygodniu</h3>
-              <div className="h-px flex-1 bg-slate-200" />
+              <h3 className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--gray600)' }}>W tym tygodniu</h3>
+              <div className="h-px flex-1" style={{ background: 'var(--border)' }} />
             </div>
 
             {filteredDecks.length === 0 ? (
-              <p className="text-sm text-slate-500">Brak zestawów.</p>
+              <p className="text-sm" style={{ color: 'var(--muted)' }}>Brak zestawów.</p>
             ) : (
               filteredDecks.map((d) => (
-                <Link key={d.id} href={`/decks/${d.id}`} className="block rounded-md border border-slate-200 bg-white px-4 py-3 hover:bg-slate-50">
-                  <p className="text-sm text-slate-600">{d.cardCount} pojęć · {d.author}</p>
-                  <p className="text-3xl font-semibold leading-tight tracking-tight text-slate-800">{d.name}</p>
+                <Link key={d.id} href={`/decks/${d.id}`} className="flex items-center gap-3 rounded-[var(--radiusSm)] px-3 py-3 hover:bg-[#f8fafc]" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
+                  <span className="inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-[8px]" style={{ background: 'var(--primaryBg)', color: 'var(--primary)' }}>
+                    <FolderOpen className="h-3 w-3" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{d.name}</p>
+                    <p className="text-xs" style={{ color: 'var(--muted)' }}>Zestaw fiszek • {d.cardCount} pojęć • {d.author}</p>
+                  </div>
+                  <span style={{ color: 'var(--gray400)' }}>•••</span>
                 </Link>
               ))
             )}
@@ -104,34 +111,37 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
       {tab === 'folders' && (
         <div className="space-y-3">
           {showCreateFolder ? (
-            <form onSubmit={createFolder} className="flex gap-2 rounded-xl border border-slate-200 bg-white p-4">
+            <form onSubmit={createFolder} className="flex gap-2 rounded-[var(--radius)] p-4" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
               <input
                 type="text"
                 value={folderName}
                 onChange={(e) => setFolderName(e.target.value)}
                 placeholder="Nazwa folderu"
                 autoFocus
-                className="h-11 flex-1 rounded-lg border border-slate-200 px-3 text-sm focus:outline-none"
+                className="h-10 flex-1 rounded-full px-3 text-sm focus:outline-none"
+                style={{ border: '1px solid var(--border)' }}
               />
-              <button type="submit" disabled={creating} className="h-11 rounded-lg bg-[#eef1ff] px-4 text-sm font-semibold text-[#4255ff] hover:bg-[#e4e9ff]">
+              <button type="submit" disabled={creating} className="h-10 rounded-full px-4 text-sm font-semibold" style={{ background: 'var(--primaryBg)', color: 'var(--primary)' }}>
                 {creating ? 'Tworzenie…' : 'Utwórz'}
               </button>
-              <button type="button" onClick={() => setShowCreateFolder(false)} className="h-11 rounded-lg border border-slate-200 px-3 text-sm text-slate-600">
+              <button type="button" onClick={() => setShowCreateFolder(false)} className="h-10 rounded-full px-3 text-sm" style={{ border: '1px solid var(--border)', color: 'var(--muted)' }}>
                 Anuluj
               </button>
             </form>
           ) : (
-            <button onClick={() => setShowCreateFolder(true)} className="w-full rounded-xl border border-dashed border-slate-300 p-4 text-sm text-slate-500 hover:bg-slate-50">
+            <button onClick={() => setShowCreateFolder(true)} className="w-full rounded-[var(--radius)] p-4 text-sm hover:bg-[#f8fafc]" style={{ border: '1px dashed var(--border)', color: 'var(--muted)' }}>
               + Nowy folder
             </button>
           )}
 
           {filteredFolders.map((f) => (
-            <Link key={f.id} href={`/folders/${f.id}`} className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 hover:bg-slate-50">
-              <FolderOpen className="h-5 w-5 text-[#4255ff]" />
+            <Link key={f.id} href={`/folders/${f.id}`} className="flex items-center gap-3 rounded-[var(--radiusSm)] px-4 py-3 hover:bg-[#f8fafc]" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
+              <span className="inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-[8px]" style={{ background: 'var(--primaryBg)', color: 'var(--primary)' }}>
+                <FolderOpen className="h-3 w-3" />
+              </span>
               <div>
-                <p className="text-base font-semibold text-slate-900">{f.name}</p>
-                <p className="text-xs text-slate-500">{f.deckCount} zestawów · {f.cardCount} pojęć</p>
+                <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{f.name}</p>
+                <p className="text-xs" style={{ color: 'var(--muted)' }}>{f.deckCount} zestawów · {f.cardCount} pojęć</p>
               </div>
             </Link>
           ))}
