@@ -120,7 +120,7 @@ export function StatsView() {
                 <div className="flex items-end gap-2 h-24">
                   {stats.sessionsByDay.map(day => (
                     <div key={day.date} className="flex-1 text-center">
-                      <div className="bg-indigo-400 rounded-t-lg" style={{ height: `${Math.max(10, day.count * 10)}px`, background: 'var(--primary)' }} />
+                      <div className="rounded-t-lg" style={{ height: `${Math.max(10, day.count * 10)}px`, background: 'var(--primary)' }} />
                       <p className="text-[10px] mt-1" style={{ color: 'var(--muted)' }}>{day.date}</p>
                     </div>
                   ))}
