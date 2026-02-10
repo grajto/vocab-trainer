@@ -261,7 +261,9 @@ export default async function DashboardPage() {
           <div className="dash-recents-grid">
             {recents.map(item => (
               <Link key={`${item.type}-${item.id}`} href={item.type === 'deck' ? `/decks/${item.id}` : `/folders/${item.id}`} className="dash-recent-row">
-                <span className="dash-recent-emoji">{item.type === 'deck' ? '📘' : '📁'}</span>
+                <span className="dash-recent-icon">
+                  {item.type === 'deck' ? <BookOpen size={18} /> : <FolderOpen size={18} />}
+                </span>
                 <span className="dash-recent-main">
                   <strong>{item.name}</strong>
                   <small>{item.countLabel}</small>
@@ -274,7 +276,7 @@ export default async function DashboardPage() {
 
       <section className="dash-split-two">
         <div className="dash-card-box">
-          <h3 className="dash-card-title"><CalendarClock size={18} /> Mini kalendarz</h3>
+          <h3 className="dash-card-title"><CalendarClock size={18} /> Twoja aktywność</h3>
           <div className="dash-mini-calendar">
             {last3Days.map(day => (
               <div key={day.label} className={`dash-day ${day.sessions === 0 ? 'is-none' : day.met ? 'is-met' : 'is-partial'}`}>
@@ -284,7 +286,20 @@ export default async function DashboardPage() {
               </div>
             ))}
           </div>
-          <p className="dash-hint">Wczoraj zrobiłeś {yesterday.sessions} sesji i {yesterday.minutes} minut nauki.</p>
+          {yesterday.sessions > 0 ? (
+            <div className="dash-motivation">
+              <p className="dash-hint">
+                💪 Wczoraj: <strong>{yesterday.sessions} sesji</strong> i <strong>{yesterday.minutes} min</strong>
+              </p>
+              {sessionsToday.totalDocs >= yesterday.sessions ? (
+                <p className="dash-success">✨ Świetnie! Dzisiaj pobij swój rekord!</p>
+              ) : (
+                <p className="dash-challenge">🎯 Zrób dziś więcej niż wczoraj!</p>
+              )}
+            </div>
+          ) : (
+            <p className="dash-hint">Wczoraj nie było sesji. Zrób dzisiaj sesję i zacznij swoją serię!</p>
+          )}
           <Link href="/calendar" className="dash-link-inline">Przejdź do pełnego kalendarza</Link>
         </div>
 
