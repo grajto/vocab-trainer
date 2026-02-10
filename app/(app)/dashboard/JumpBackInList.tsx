@@ -3,15 +3,22 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { Button } from '@/app/(app)/_components/ui/Button'
-import { ListRow } from '@/app/(app)/_components/ui/ListRow'
+import { Trash2 } from 'lucide-react'
 
 type JumpBackInItem = {
+  deckId: string
   name: string
   mode: string
   sessionId: string
   progress: string
+  progressRatio: number
   startedAt: string
+}
+
+function modeLabel(mode: string) {
+  if (mode === 'abcd') return 'Test wyboru'
+  if (mode === 'translate') return 'Tłumaczenie'
+  return mode
 }
 
 export function JumpBackInList({ initialItems }: { initialItems: JumpBackInItem[] }) {
@@ -38,25 +45,37 @@ export function JumpBackInList({ initialItems }: { initialItems: JumpBackInItem[
   }
 
   if (items.length === 0) {
-    return <p className="p-muted">No interrupted sessions.</p>
+    return <div className="dash-empty">Brak przerwanych sesji.</div>
   }
 
   return (
-    <div className="list">
-      {items.slice(0, 8).map(item => (
-        <ListRow
-          key={item.sessionId}
-          title={item.name}
-          meta={`${item.mode} • progress ${item.progress} • ${new Date(item.startedAt).toLocaleString('pl-PL')}`}
-          actions={
-            <>
-              <Link href={`/session/${item.sessionId}`}><Button variant="primary">Resume</Button></Link>
-              <Button variant="ghost" disabled={deletingId === item.sessionId} onClick={() => removeSession(item.sessionId)}>
-                Remove
-              </Button>
-            </>
-          }
-        />
+    <div className="jump-grid">
+      {items.slice(0, 4).map(item => (
+        <article key={item.sessionId} className="jump-card">
+          <div className="jump-card__top">
+            <h4 className="jump-card__title">{item.name}</h4>
+            <button
+              type="button"
+              className="jump-card__remove"
+              onClick={() => removeSession(item.sessionId)}
+              disabled={deletingId === item.sessionId}
+              aria-label="Usuń sesję"
+            >
+              <Trash2 size={14} />
+            </button>
+          </div>
+
+          <div className="jump-card__bar">
+            <div className="jump-card__bar-fill" style={{ width: `${item.progressRatio}%` }} />
+          </div>
+
+          <p className="jump-card__meta">{item.progressRatio}% ukończone · {modeLabel(item.mode)} · {item.progress}</p>
+
+          <div className="jump-card__actions">
+            <Link href={`/session/${item.sessionId}`} className="jump-card__btn">Kontynuuj</Link>
+            <span className="jump-card__time">{new Date(item.startedAt).toLocaleDateString('pl-PL')}</span>
+          </div>
+        </article>
       ))}
     </div>
   )

@@ -1,11 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { Menu, Plus, Search, Settings } from 'lucide-react'
+import { Menu, Plus, Search } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { Input } from './ui/Input'
-import { Button } from './ui/Button'
 
 export function TopNav({ username, onOpenSidebar }: { username: string; onOpenSidebar: () => void }) {
   const [q, setQ] = useState('')
@@ -18,25 +16,29 @@ export function TopNav({ username, onOpenSidebar }: { username: string; onOpenSi
           <Menu size={16} />
         </button>
 
-        <Link href="/dashboard" className="row__title" style={{ whiteSpace: 'nowrap' }}>
-          Vocab Trainer
-        </Link>
+        <Link href="/dashboard" className="top-nav__logo">Vocab Trainer</Link>
 
         <form
-          className="hidden-mobile"
-          style={{ flex: 1, display: 'flex', maxWidth: 520 }}
+          className="top-nav__search"
           onSubmit={e => {
             e.preventDefault()
             if (q.trim()) router.push(`/library?q=${encodeURIComponent(q.trim())}`)
           }}
         >
-          <Input value={q} onChange={e => setQ(e.target.value)} placeholder="Search sets and folders" />
+          <Search size={14} className="top-nav__search-icon" />
+          <input
+            value={q}
+            onChange={e => setQ(e.target.value)}
+            placeholder="Szukaj zestawów, folderów, pytań"
+            className="top-nav__search-input"
+          />
         </form>
 
-        <div style={{ marginLeft: 'auto', display: 'inline-flex', gap: '8px', alignItems: 'center' }}>
-          <Link href="/create"><Button variant="primary"><Plus size={14} /> New set</Button></Link>
-          <Link href="/settings"><Button variant="ghost"><Settings size={14} /></Button></Link>
-          <span className="btn btn--secondary" style={{ pointerEvents: 'none' }}><Search size={14} /> {username}</span>
+        <div className="top-nav__actions">
+          <Link href="/create" className="top-nav__plus" aria-label="Nowy zestaw">
+            <Plus size={16} />
+          </Link>
+          <span className="top-nav__user">{username}</span>
         </div>
       </div>
     </header>
