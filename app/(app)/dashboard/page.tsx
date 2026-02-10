@@ -205,7 +205,7 @@ export default async function DashboardPage() {
               <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Pozostało: {remainingToGoal}</p>
             </div>
             <div className="h-2 w-full overflow-hidden rounded-full" style={{ background: '#e9edf7' }}>
-              <div className="h-full rounded-full" style={{ background: '#16a34a', width: `${todayProgress}%` }} />
+              <div className="h-full rounded-full" style={{ background: 'var(--success)', width: `${todayProgress}%` }} />
             </div>
             <p className="mt-2 text-xs" style={{ color: 'var(--text-muted)' }}>Do końca celu brakuje: {remainingToGoal} sesji</p>
           </div>
@@ -226,8 +226,8 @@ export default async function DashboardPage() {
                       <p className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>{item.title}</p>
                       <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{item.reason}</p>
                     </div>
-                    <a href={item.href}>
-                      <button className="btn btn--secondary px-4 h-8 text-xs">Start</button>
+                    <a href={item.href} className="btn btn--secondary px-4 h-8 text-xs flex items-center justify-center">
+                      Start
                     </a>
                   </div>
                 ))
