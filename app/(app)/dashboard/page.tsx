@@ -128,6 +128,8 @@ export default async function DashboardPage() {
     recentDeckIds.add(String(s.deck))
   }
 
+  const problematic = [...jumpBackIn].sort((a, b) => a.progressPercent - b.progressPercent).slice(0, 3)
+
   const recents = [
     ...decks.docs
       .filter((d: any) => recentDeckIds.has(String(d.id)))
@@ -136,7 +138,7 @@ export default async function DashboardPage() {
         type: 'deck' as const,
         id: String(d.id),
         name: d.name,
-        meta: `${Number(d.cardCount || 0)} cards • by you`,
+        meta: `${Number(d.cardCount || 0)} słówek`,
       })),
     ...folders.docs.slice(0, 4).map((f: any) => {
       const count = decks.docs.filter((d: any) => String(d.folder) === String(f.id)).length
@@ -169,13 +171,13 @@ export default async function DashboardPage() {
     }
   })
 
+  const sectionLabelClass = 'text-sm leading-[1.4285714286] font-semibold tracking-normal text-[var(--gray600-gray400)]'
+
   return (
     <div className="mx-auto w-full max-w-[1120px] space-y-8">
       <section className="space-y-4">
-        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">Strona główna</h1>
-
         <div>
-          <h2 className="mb-3 text-2xl font-bold tracking-tight text-slate-900">Statystyki</h2>
+          <h2 className={`mb-3 ${sectionLabelClass}`}>Informacje</h2>
           <div className="grid gap-4 md:grid-cols-3">
             <StatCard label="Liczba sesji dzisiaj" value={`${sessionsToday.totalDocs}`} />
             <StatCard label="Czas trenowania słówek" value={`${timeTodayMinutes} min`} />
@@ -208,10 +210,7 @@ export default async function DashboardPage() {
       </section>
 
       <section className="space-y-3">
-        <div className="flex items-end justify-between gap-3">
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900">Jump back in</h2>
-          <Link href="/study" className="text-sm font-semibold text-[#4255ff] hover:text-[#3245dc]">Nowa sesja →</Link>
-        </div>
+        <h2 className={sectionLabelClass}>Jump back in</h2>
 
         {jumpBackIn.length === 0 ? (
           <SimpleCard className="p-4">
@@ -223,7 +222,7 @@ export default async function DashboardPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-2xl font-bold tracking-tight text-slate-900">Recents</h2>
+        <h2 className={sectionLabelClass}>Recents</h2>
 
         {recents.length === 0 ? (
           <SimpleCard className="p-4">
@@ -267,13 +266,26 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-5 gap-2">
+          <div className="mb-4 grid grid-cols-5 gap-2">
             {last5Days.map((day) => (
               <div key={day.label} className={`rounded-lg p-2 text-center ${day.met ? 'bg-emerald-50' : 'bg-slate-50'}`}>
                 <p className="text-[11px] text-slate-500">{day.label}</p>
                 <p className="mt-1 text-xs font-semibold text-slate-800">{day.sessions}</p>
               </div>
             ))}
+          </div>
+
+          <div className="rounded-xl bg-slate-50 p-3">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Najbardziej problematyczne zestawy</p>
+            <div className="space-y-1">
+              {problematic.length === 0 ? (
+                <p className="text-sm text-slate-500">Brak danych o problematycznych zestawach.</p>
+              ) : (
+                problematic.map((item) => (
+                  <p key={item.resumeHref} className="text-sm text-slate-700">• {item.deckName} — {item.progressMeta}</p>
+                ))
+              )}
+            </div>
           </div>
         </SimpleCard>
 

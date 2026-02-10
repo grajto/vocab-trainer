@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Bell, BookOpen, CalendarDays, FolderOpen, Home, Plus, Settings, X } from 'lucide-react'
+import { BarChart3, Bell, BookOpen, CalendarDays, FolderOpen, Home, Plus, Settings, X } from 'lucide-react'
 
 interface FolderItem {
   id: string
@@ -47,6 +47,7 @@ export function LeftSidebar({
             <Link href="/dashboard" onClick={onClose} className={itemClass(active('/dashboard'))}><Home size={16} />Strona główna</Link>
             <Link href="/library" onClick={onClose} className={itemClass(active('/library'))}><FolderOpen size={16} />Twoje zasoby</Link>
             <Link href="/calendar" onClick={onClose} className={itemClass(active('/calendar'))}><CalendarDays size={16} />Kalendarz</Link>
+            <Link href="/stats" onClick={onClose} className={itemClass(active('/stats'))}><BarChart3 size={16} />Statystyki</Link>
             <Link href="/settings" onClick={onClose} className={itemClass(active('/settings'))}><Settings size={16} />Ustawienia</Link>
             <Link href="/notifications" onClick={onClose} className={itemClass(active('/notifications'))}><Bell size={16} />Powiadomienia</Link>
           </div>

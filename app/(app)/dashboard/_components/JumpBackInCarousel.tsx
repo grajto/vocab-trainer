@@ -31,24 +31,23 @@ export function JumpBackInCarousel({ items }: { items: ContinueItem[] }) {
 
   return (
     <div className="relative">
-      <div className="mb-2 flex justify-end gap-2">
-        <button
-          type="button"
-          onClick={() => slide('left')}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
-          aria-label="Przesuń w lewo"
-        >
-          <ChevronLeft size={16} />
-        </button>
-        <button
-          type="button"
-          onClick={() => slide('right')}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
-          aria-label="Przesuń w prawo"
-        >
-          <ChevronRight size={16} />
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={() => slide('left')}
+        className="absolute left-2 top-1/2 z-20 -translate-y-1/2 inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-500 hover:bg-white"
+        aria-label="Przesuń w lewo"
+      >
+        <ChevronLeft size={16} />
+      </button>
+
+      <button
+        type="button"
+        onClick={() => slide('right')}
+        className="absolute right-2 top-1/2 z-20 -translate-y-1/2 inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-500 hover:bg-white"
+        aria-label="Przesuń w prawo"
+      >
+        <ChevronRight size={16} />
+      </button>
 
       <div
         ref={railRef}
@@ -62,7 +61,7 @@ export function JumpBackInCarousel({ items }: { items: ContinueItem[] }) {
         ))}
       </div>
 
-      <div className="pointer-events-none absolute inset-y-8 right-0 w-16 bg-gradient-to-l from-white to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-white via-white/70 to-transparent" />
 
       <div className="mt-1 flex items-center justify-center gap-1.5">
         {shownItems.map((item, idx) => (
