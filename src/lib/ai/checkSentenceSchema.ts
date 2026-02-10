@@ -13,7 +13,17 @@ export type CheckSentenceResponse = {
 }
 
 const MAX_ERRORS = 5
-const MAX_COMMENT_LENGTH = 200
+const MAX_COMMENT_LENGTH = 300
+
+function looksLikePromptLeak(value: string): boolean {
+  const lowered = value.toLowerCase()
+  return (
+    lowered.includes('requireden:') ||
+    lowered.includes('pl znaczenie:') ||
+    lowered.includes('sentence:') ||
+    lowered.includes('json only')
+  )
+}
 
 const ensureString = (value: unknown, field: string) => {
   if (typeof value !== 'string') {
@@ -26,10 +36,16 @@ export function normalizeCheckSentenceResponse(
   response: CheckSentenceResponse,
   originalSentence: string,
 ): CheckSentenceResponse {
-  const corrected = response.ok ? originalSentence : response.corrected.trim()
-  if (!corrected) {
-    throw new Error('AI_INVALID_SCHEMA: corrected is empty')
+  let corrected = response.ok ? originalSentence : response.corrected.trim()
+
+  if (response.ok && !corrected) {
+    throw new Error('AI_INVALID_SCHEMA: corrected is empty for ok=true')
   }
+
+  if (!response.ok && looksLikePromptLeak(corrected)) {
+    corrected = ''
+  }
+
   const comment = response.comment.slice(0, MAX_COMMENT_LENGTH)
   return {
     ok: response.ok,
@@ -96,8 +112,8 @@ export function buildCheckSentenceResponse(data: {
     ? data.originalSentence
     : data.corrected.trim()
 
-  if (!corrected) {
-    throw new Error('Invalid response: corrected must be non-empty')
+  if (data.ok && !corrected) {
+    throw new Error('Invalid response: corrected must be non-empty for ok=true')
   }
 
   return {
