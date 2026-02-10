@@ -85,8 +85,9 @@ export function DeckStudyLauncher({ deckId, cardCount }: Props) {
       {/* Controls row */}
       <div className="flex flex-wrap items-end gap-3">
         <div className="min-w-0 flex-1">
-          <label className="mb-1.5 block text-xs font-medium" style={{ color: 'var(--muted)' }}>Liczba słówek</label>
+          <label htmlFor="deck-word-count" className="mb-1.5 block text-xs font-medium" style={{ color: 'var(--muted)' }}>Liczba słówek</label>
           <input
+            id="deck-word-count"
             type="number"
             min={5}
             max={Math.min(35, cardCount)}
