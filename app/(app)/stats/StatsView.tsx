@@ -88,8 +88,8 @@ export function StatsView() {
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`flex-1 py-2 text-xs font-medium rounded-lg transition-colors capitalize ${
-              tab === t ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            className={`flex-1 py-2.5 text-xs font-medium rounded-xl transition-colors capitalize ${
+              tab === t ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100'
             }`}
           >
             {t}
@@ -102,12 +102,12 @@ export function StatsView() {
         <div className="space-y-6">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { value: stats.global.sessionsThisWeek, label: 'Sesje (7 dni)', bg: 'bg-gradient-to-br from-violet-500 to-indigo-600 text-white' },
+              { value: stats.global.sessionsThisWeek, label: 'Sesje (7 dni)', bg: 'bg-gradient-to-br from-blue-500 to-violet-600 text-white' },
               { value: `${stats.global.minutesLast7Days} min`, label: 'Czas (7 dni)', bg: 'bg-gradient-to-br from-amber-400 to-orange-500 text-white' },
               { value: stats.global.streakDays, label: 'Streak', bg: 'bg-gradient-to-br from-emerald-400 to-teal-500 text-white' },
               { value: `${stats.global.avgAccuracy}%`, label: 'Śr. accuracy', bg: 'bg-gradient-to-br from-rose-400 to-pink-500 text-white' },
             ].map(item => (
-              <div key={item.label} className={`${item.bg} rounded-xl px-4 py-3 text-center shadow-sm`}>
+              <div key={item.label} className={`${item.bg} rounded-2xl px-4 py-4 text-center shadow-md`}>
                 <p className="text-xl font-bold tabular-nums">{item.value}</p>
                 <p className="text-[10px] opacity-80 mt-0.5">{item.label}</p>
               </div>
@@ -116,18 +116,18 @@ export function StatsView() {
 
           {stats.sessionsByDay && stats.sessionsByDay.length > 0 && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <div className="bg-white border border-slate-200 rounded-xl p-4">
+              <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-md">
                 <h3 className="text-xs font-semibold text-slate-500 mb-3">Sesje w czasie (7 dni)</h3>
                 <div className="flex items-end gap-2 h-24">
                   {stats.sessionsByDay.map(day => (
                     <div key={day.date} className="flex-1 text-center">
-                      <div className="bg-indigo-400 rounded-t-lg" style={{ height: `${Math.max(10, day.count * 10)}px` }} />
+                      <div className="bg-blue-400 rounded-t-lg" style={{ height: `${Math.max(10, day.count * 10)}px` }} />
                       <p className="text-[10px] text-slate-400 mt-1">{day.date}</p>
                     </div>
                   ))}
                 </div>
               </div>
-              <div className="bg-white border border-slate-200 rounded-xl p-4">
+              <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-md">
                 <h3 className="text-xs font-semibold text-slate-500 mb-3">Czas nauki (7 dni)</h3>
                 <div className="flex items-end gap-2 h-24">
                   {stats.sessionsByDay.map(day => (

@@ -173,19 +173,19 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="p-6 lg:p-8 max-w-6xl mx-auto space-y-10">
+    <div className="p-8 lg:p-10 max-w-6xl mx-auto space-y-10">
       <section className="space-y-4">
-        <h2 className="text-xl font-semibold text-slate-900">Informacje dzisiaj</h2>
+        <h2 className="text-2xl font-bold text-slate-900">Informacje dzisiaj</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Link href="/stats" prefetch={true} className="group bg-white border border-slate-200 rounded-2xl px-5 py-5 shadow-sm hover:border-indigo-300 transition-colors">
+          <Link href="/stats" prefetch={true} className="group bg-white border border-slate-100 rounded-3xl px-6 py-6 shadow-md hover:shadow-xl hover:scale-[1.02] transition-all duration-200">
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs text-slate-400">Sesje dzisiaj</span>
-              <CalendarCheck className="w-5 h-5 text-indigo-500" />
+              <CalendarCheck className="w-5 h-5 text-blue-500" />
             </div>
             <p className="text-3xl font-semibold text-slate-900 tabular-nums">{sessionsToday.totalDocs}</p>
             <p className="text-xs text-slate-400 mt-2">Kliknij, aby zobaczyć statystyki</p>
           </Link>
-          <Link href="/stats" prefetch={true} className="group bg-white border border-slate-200 rounded-2xl px-5 py-5 shadow-sm hover:border-indigo-300 transition-colors">
+          <Link href="/stats" prefetch={true} className="group bg-white border border-slate-100 rounded-3xl px-6 py-6 shadow-md hover:shadow-xl hover:scale-[1.02] transition-all duration-200">
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs text-slate-400">Czas dzisiaj</span>
               <Clock className="w-5 h-5 text-amber-500" />
@@ -193,7 +193,7 @@ export default async function DashboardPage() {
             <p className="text-3xl font-semibold text-slate-900 tabular-nums">{timeTodayMinutes} min</p>
             <p className="text-xs text-slate-400 mt-2">Zobacz historię sesji</p>
           </Link>
-          <Link href="/calendar" prefetch={true} className="group bg-white border border-slate-200 rounded-2xl px-5 py-5 shadow-sm hover:border-indigo-300 transition-colors">
+          <Link href="/calendar" prefetch={true} className="group bg-white border border-slate-100 rounded-3xl px-6 py-6 shadow-md hover:shadow-xl hover:scale-[1.02] transition-all duration-200">
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs text-slate-400">Seria</span>
               <Flame className="w-5 h-5 text-rose-500" />
@@ -206,8 +206,8 @@ export default async function DashboardPage() {
 
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-slate-900">Jump back in</h2>
-          <Link href="/study" prefetch={true} className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
+          <h2 className="text-2xl font-bold text-slate-900">Jump back in</h2>
+          <Link href="/study" prefetch={true} className="text-sm text-blue-600 hover:text-blue-700 font-medium">
             Nowa sesja →
           </Link>
         </div>
@@ -218,7 +218,7 @@ export default async function DashboardPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {jumpBackIn.slice(0, 6).map(item => (
-              <div key={item.sessionId} className="bg-white border border-slate-200 rounded-2xl px-5 py-5 shadow-sm">
+              <div key={item.sessionId} className="bg-white border border-slate-100 rounded-3xl px-6 py-6 shadow-md hover:shadow-xl hover:scale-[1.02] transition-all duration-200">
                 <div className="flex items-center justify-between">
                   <p className="font-medium text-slate-900">{item.name}</p>
                   <span className="text-xs text-slate-400 capitalize">{item.mode}</span>
@@ -228,7 +228,7 @@ export default async function DashboardPage() {
                 <Link
                   href={`/session/${item.sessionId}`}
                   prefetch={true}
-                  className="mt-4 inline-flex items-center gap-2 text-xs font-semibold text-white bg-indigo-600 px-4 py-2 rounded-full hover:bg-indigo-700"
+                  className="mt-4 inline-flex items-center gap-2 text-xs font-semibold text-white bg-gradient-to-r from-blue-600 to-violet-600 px-5 py-2.5 rounded-2xl hover:from-blue-700 hover:to-violet-700 transition-all hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <PlayCircle className="w-4 h-4" />
                   Kontynuuj
@@ -240,7 +240,7 @@ export default async function DashboardPage() {
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-xl font-semibold text-slate-900">Ostatnie</h2>
+        <h2 className="text-2xl font-bold text-slate-900">Ostatnie</h2>
         {recentDecks.length === 0 ? (
           <div className="bg-white border border-dashed border-slate-200 rounded-2xl px-6 py-8 text-center text-sm text-slate-400">
             Brak ostatnich sesji. Zacznij naukę, aby zobaczyć statystyki.
@@ -254,7 +254,7 @@ export default async function DashboardPage() {
                   key={deck.deckId}
                   href={`/decks/${deck.deckId}`}
                   prefetch={true}
-                  className="bg-white border border-slate-200 rounded-2xl px-5 py-5 shadow-sm hover:border-indigo-300 transition-colors"
+                  className="bg-white border border-slate-100 rounded-3xl px-6 py-6 shadow-md hover:shadow-xl hover:scale-[1.02] transition-all duration-200"
                 >
                   <p className="font-medium text-slate-900">{deck.name}</p>
                   <p className="text-xs text-slate-400 mt-1">{stats.cardCount} kart</p>
@@ -276,7 +276,7 @@ export default async function DashboardPage() {
         <Link
           href="/study"
           prefetch={true}
-          className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white text-center py-4 rounded-2xl font-semibold hover:from-indigo-700 hover:to-violet-700 transition-all shadow-sm"
+          className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-blue-600 to-violet-600 text-white text-center py-5 rounded-2xl font-semibold hover:from-blue-700 hover:to-violet-700 transition-all shadow-md hover:scale-[1.02] active:scale-[0.98]"
         >
           <BookOpen className="w-5 h-5" />
           Rozpocznij naukę
@@ -284,7 +284,7 @@ export default async function DashboardPage() {
       </section>
 
       <section className="flex justify-center">
-        <Link href="/decks" prefetch={true} className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-indigo-600">
+        <Link href="/decks" prefetch={true} className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-blue-600">
           <RotateCcw className="w-4 h-4" />
           Zobacz wszystkie zasoby
         </Link>

@@ -49,18 +49,18 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="p-6 lg:p-8 max-w-6xl mx-auto space-y-6">
+    <div className="p-8 lg:p-10 max-w-6xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-slate-900">Kalendarz nauki</h2>
+          <h2 className="text-2xl font-bold text-slate-900">Kalendarz nauki</h2>
           <p className="text-sm text-slate-400">Śledź aktywność i streak</p>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => changeMonth(-1)} className="p-2 rounded-lg border border-slate-200 hover:border-indigo-300">
+          <button onClick={() => changeMonth(-1)} className="p-2 rounded-lg border border-slate-200 hover:border-blue-300">
             <ChevronLeft className="w-4 h-4" />
           </button>
           <span className="text-sm font-medium text-slate-700 capitalize">{monthName}</span>
-          <button onClick={() => changeMonth(1)} className="p-2 rounded-lg border border-slate-200 hover:border-indigo-300">
+          <button onClick={() => changeMonth(1)} className="p-2 rounded-lg border border-slate-200 hover:border-blue-300">
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
@@ -84,15 +84,18 @@ export default function CalendarPage() {
           days.map(day => {
             const dateNum = Number(day.date.split('-')[2])
             const statusColor = day.status === 'met'
-              ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
+              ? 'bg-blue-500 text-white border-blue-500'
               : day.status === 'partial'
-                ? 'bg-amber-100 text-amber-700 border-amber-200'
+                ? 'bg-blue-200 text-blue-700 border-blue-200'
                 : 'bg-slate-100 text-slate-400 border-slate-200'
+            const isSelected = selected?.date === day.date
             return (
               <button
                 key={day.date}
                 onClick={() => setSelected(day)}
-                className={`h-16 rounded-xl border ${statusColor} text-left px-2 py-1.5 hover:shadow-sm`}
+                className={`h-16 rounded-xl border ${statusColor} text-left px-2 py-1.5 hover:shadow-md transition-all ${
+                  isSelected ? 'ring-2 ring-blue-500 ring-offset-2' : ''
+                }`}
               >
                 <div className="text-xs font-semibold">{dateNum}</div>
                 <div className="text-[10px] mt-1">{day.sessions} sesji</div>
@@ -102,7 +105,7 @@ export default function CalendarPage() {
         )}
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-2xl p-5">
+      <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-md">
         {selected ? (
           <div className="space-y-4">
             <div>
