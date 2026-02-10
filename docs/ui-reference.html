@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vocab Trainer — UI Reference</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg: #0b1220; --surface: #0f172a; --card: #111c32; --card-2: #0f1a2e;
+      --border: rgba(255,255,255,.08); --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.64); --muted-2: rgba(255,255,255,.46);
+      --accent: #7c3aed; --radius: 14px; --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --shadow-soft: 0 6px 18px rgba(0,0,0,.25); --sidebar-w: 280px; --topbar-h: 64px;
+      --font: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; --focus: 0 0 0 3px rgba(124,58,237,.35);
+    }
+    *{ box-sizing:border-box } html,body{ height:100% }
+    body{ margin:0; font-family:var(--font); background: radial-gradient(1200px 600px at 40% 0%, rgba(124,58,237,.14), transparent 60%), radial-gradient(900px 500px at 90% 10%, rgba(59,130,246,.10), transparent 55%), var(--bg); color:var(--text) }
+    a{ color:inherit; text-decoration:none } button,input{ font:inherit; color:inherit }
+    .app{ min-height:100vh; display:grid; grid-template-columns: var(--sidebar-w) 1fr }
+    .sidebar{ position:sticky; top:0; height:100vh; padding:14px 12px; background: linear-gradient(180deg, rgba(255,255,255,.03), transparent 55%), var(--surface); border-right:1px solid var(--border) }
+    .sideHeader{ display:flex; gap:10px; align-items:center; padding:10px 10px 14px }
+    .logoDot{ width:34px; height:34px; border-radius:12px; background: linear-gradient(135deg, rgba(124,58,237,.85), rgba(59,130,246,.65)); box-shadow: var(--shadow-soft) }
+    .sideTitle{ font-weight:700; letter-spacing:.2px } .sideSub{ font-size:12px; color: var(--muted); margin-top:2px }
+    .menu{ margin-top:10px; display:flex; flex-direction:column; gap:6px }
+    .menuItem{ display:flex; align-items:center; gap:10px; padding:10px 10px; border-radius:12px; color:var(--muted); border:1px solid transparent }
+    .menuItem:hover{ background: rgba(255,255,255,.04); color:var(--text); border-color:var(--border) }
+    .menuItem.active{ background: rgba(124,58,237,.14); color:var(--text); border-color: rgba(124,58,237,.35) }
+    .menuIcon{ width:18px; height:18px; border-radius:6px; background: rgba(255,255,255,.10); display:inline-block }
+    .main{ min-width:0 }
+    .topbar{ position:sticky; top:0; z-index:50; height:64px; display:flex; align-items:center; gap:12px; padding:0 18px; background: rgba(15,23,42,.72); backdrop-filter: blur(10px); border-bottom:1px solid var(--border) }
+    .iconBtn{ height:40px; width:40px; border-radius:12px; border:1px solid var(--border); background: rgba(255,255,255,.04); cursor:pointer }
+    .iconBtn:hover{ background: rgba(255,255,255,.06) } .iconBtn:focus{ outline:none; box-shadow: 0 0 0 3px rgba(124,58,237,.35) }
+    .search{ flex:1; display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:14px; border:1px solid var(--border); background: rgba(255,255,255,.04); min-width:220px }
+    .search input{ width:100%; border:0; outline:0; background:transparent; color:var(--text) } .search input::placeholder{ color: var(--muted-2) }
+    .topActions{ display:flex; gap:10px; align-items:center }
+    .pill{ height:40px; padding:0 14px; border-radius:999px; border:1px solid var(--border); background: rgba(255,255,255,.04); cursor:pointer }
+    .pill:hover{ background: rgba(255,255,255,.06) } .pill.primary{ border-color: rgba(124,58,237,.45); background: rgba(124,58,237,.18) }
+    .content{ padding:18px; max-width:1200px }
+    .pageTitle{ font-size:22px; font-weight:750; margin:8px 0 14px; letter-spacing:.2px }
+    .grid{ display:grid; grid-template-columns: repeat(12, 1fr); gap:14px }
+    .card{ grid-column: span 12; background: linear-gradient(180deg, rgba(255,255,255,.04), transparent 65%), var(--card); border:1px solid var(--border); border-radius:14px; box-shadow: 0 6px 18px rgba(0,0,0,.25); padding:14px; min-width:0 }
+    .cardHeader{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:10px }
+    .cardTitle{ font-weight:700 } .cardMeta{ color: var(--muted); font-size:13px }
+    .statRow{ display:flex; gap:12px; flex-wrap:wrap }
+    .stat{ flex:1 1 180px; padding:12px; border-radius:14px; border:1px solid var(--border); background: rgba(255,255,255,.03) }
+    .statLabel{ color: var(--muted); font-size:12px } .statValue{ font-size:22px; font-weight:750; margin-top:6px }
+    .list{ display:flex; flex-direction:column; gap:10px }
+    .listItem{ display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px; border-radius:14px; border:1px solid var(--border); background: rgba(255,255,255,.03); min-width:0 }
+    .liTitle{ font-weight:650; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+    .liSub{ color: var(--muted); font-size:12px; margin-top:4px }
+    .badge{ padding:6px 10px; border-radius:999px; border:1px solid var(--border); color: var(--muted); font-size:12px; white-space:nowrap }
+    @media (max-width:980px){ :root{ --sidebar-w:84px } .sideText{ display:none } .menuItem{ justify-content:center } }
+    @media (max-width:720px){ .app{ grid-template-columns:1fr } .sidebar{ display:none } .content{ padding:14px } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" aria-label="Nawigacja">
+      <div class="sideHeader"><div class="logoDot" aria-hidden="true"></div>
+        <div class="sideText"><div class="sideTitle">Vocab Trainer</div><div class="sideSub">Prywatna aplikacja</div></div>
+      </div>
+      <nav class="menu">
+        <a class="menuItem active" href="#"><span class="menuIcon" aria-hidden="true"></span><span class="sideText">Strona główna</span></a>
+        <a class="menuItem" href="#"><span class="menuIcon" aria-hidden="true"></span><span class="sideText">Twoje zasoby</span></a>
+        <a class="menuItem" href="#"><span class="menuIcon" aria-hidden="true"></span><span class="sideText">Ostatnie</span></a>
+        <a class="menuItem" href="#"><span class="menuIcon" aria-hidden="true"></span><span class="sideText">Ucz się</span></a>
+        <a class="menuItem" href="#"><span class="menuIcon" aria-hidden="true"></span><span class="sideText">Utwórz zestaw</span></a>
+      </nav>
+    </aside>
+    <div class="main">
+      <header class="topbar" role="banner">
+        <button class="iconBtn" aria-label="Menu">≡</button>
+        <div class="search" role="search"><span aria-hidden="true">🔎</span><input placeholder="Szukaj zestawów / folderów / słówek" /></div>
+        <div class="topActions"><button class="pill">Import</button><button class="pill primary">Nowy zestaw</button></div>
+      </header>
+      <main class="content">
+        <div class="pageTitle">Strona główna</div>
+        <section class="card">
+          <div class="cardHeader"><div class="cardTitle">Dziś</div><div class="cardMeta">podsumowanie</div></div>
+          <div class="statRow">
+            <div class="stat"><div class="statLabel">Sesje dzisiaj</div><div class="statValue">0</div></div>
+            <div class="stat"><div class="statLabel">Czas nauki</div><div class="statValue">0m</div></div>
+            <div class="stat"><div class="statLabel">Seria (dni z rzędu)</div><div class="statValue">0</div></div>
+          </div>
+        </section>
+        <section class="card">
+          <div class="cardHeader"><div class="cardTitle">Jump back in</div><div class="cardMeta">przerwane i ostatnie sesje</div></div>
+          <div class="list">
+            <div class="listItem"><div style="min-width:0"><div class="liTitle">Zestaw: Money Matters</div><div class="liSub">Tryb: Test • Ostatnio: 2 dni temu</div></div><span class="badge">Wznów</span></div>
+            <div class="listItem"><div style="min-width:0"><div class="liTitle">Zestaw: Colors A1</div><div class="liSub">Tryb: Fiszki • Ostatnio: dziś</div></div><span class="badge">Otwórz</span></div>
+          </div>
+        </section>
+        <section class="card">
+          <div class="cardHeader"><div class="cardTitle">Ostatnie</div><div class="cardMeta">co powtarzałeś</div></div>
+          <div class="list">
+            <div class="listItem"><div style="min-width:0"><div class="liTitle">chair — krzesło</div><div class="liSub">Powtórzone: 3×</div></div><span class="badge">Szczegóły</span></div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</body>
+</html>
