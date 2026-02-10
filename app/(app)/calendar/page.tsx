@@ -83,8 +83,8 @@ export default function CalendarPage() {
         ) : (
           days.map(day => {
             const dateNum = Number(day.date.split('-')[2])
-            const bgColor = day.status === 'met' ? '#ecfdf5' : day.status === 'partial' ? '#fffbeb' : 'var(--surface2)'
-            const textColor = day.status === 'met' ? '#059669' : day.status === 'partial' ? '#d97706' : 'var(--gray400)'
+            const bgColor = day.status === 'met' ? '#eef2ff' : day.status === 'partial' ? '#fffbeb' : 'var(--surface2)'
+            const textColor = day.status === 'met' ? '#4255ff' : day.status === 'partial' ? '#d97706' : 'var(--gray400)'
             return (
               <button
                 key={day.date}
@@ -100,7 +100,7 @@ export default function CalendarPage() {
         )}
       </div>
 
-      <div className="rounded-[var(--radius)] p-5" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
+      <div className="rounded-3xl p-6" style={{ border: '1px solid var(--border)', background: 'var(--surface)', boxShadow: 'var(--shadow-card)' }}>
         {selected ? (
           <div className="space-y-4">
             <div>

@@ -59,7 +59,7 @@ export function DeckStudyLauncher({ deckId, cardCount }: Props) {
   return (
     <section className="space-y-4">
       {/* Mode tiles */}
-      <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+      <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
         {modeTiles.map(tile => {
           const Icon = tile.icon
           const selected = mode === tile.id
@@ -68,14 +68,15 @@ export function DeckStudyLauncher({ deckId, cardCount }: Props) {
               key={tile.id}
               type="button"
               onClick={() => setMode(tile.id)}
-              className="flex flex-col items-center gap-1.5 rounded-lg px-2 py-3 text-xs font-medium transition-colors"
+              className="flex flex-col items-center gap-2 rounded-2xl px-3 py-4 text-sm font-medium transition-all hover:scale-[1.02]"
               style={{
                 background: selected ? 'var(--primaryBg)' : 'var(--surface)',
                 border: `1px solid ${selected ? 'var(--primary)' : 'var(--border)'}`,
                 color: selected ? 'var(--primary)' : 'var(--muted)',
+                boxShadow: selected ? '0 0 0 4px rgba(66,85,255,0.15)' : 'var(--shadow-card)',
               }}
             >
-              <Icon size={18} />
+              <Icon size={22} />
               <span>{tile.label}</span>
             </button>
           )
@@ -93,7 +94,7 @@ export function DeckStudyLauncher({ deckId, cardCount }: Props) {
             max={Math.min(35, cardCount)}
             value={targetCount}
             onChange={e => setTargetCount(Math.max(5, Math.min(Number(e.target.value || 20), Math.min(35, cardCount))))}
-            className="h-10 w-full rounded-lg px-3 text-sm focus:outline-none"
+            className="h-12 w-full rounded-xl px-4 text-base focus:outline-none"
             style={{ border: '1px solid var(--border)', color: 'var(--text)' }}
           />
         </div>
@@ -101,14 +102,14 @@ export function DeckStudyLauncher({ deckId, cardCount }: Props) {
           type="button"
           onClick={handleStart}
           disabled={loading || cardCount === 0}
-          className="h-10 rounded-lg px-5 text-sm font-semibold text-white transition-colors disabled:opacity-50"
-          style={{ background: 'var(--primary)' }}
+          className="h-12 rounded-2xl px-6 text-base font-semibold text-white transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+          style={{ background: 'linear-gradient(135deg, #4255ff 0%, #7c3aed 100%)', boxShadow: '0 2px 8px rgba(66,85,255,0.3)' }}
         >
           {loading ? 'Uruchamianie…' : `Szybki trening (${targetCount})`}
         </button>
       </div>
 
-      {error ? <p className="rounded-lg px-3 py-2 text-sm text-red-600" style={{ background: '#fef2f2' }}>{error}</p> : null}
+      {error ? <p className="rounded-xl px-4 py-3 text-sm text-red-600" style={{ background: '#fef2f2' }}>{error}</p> : null}
     </section>
   )
 }

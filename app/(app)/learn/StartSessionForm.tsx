@@ -131,13 +131,13 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
     }
   }
 
-  const selectClass = "w-full h-10 rounded-lg px-3 text-sm focus:outline-none"
+  const selectClass = "w-full h-12 rounded-xl px-4 text-base focus:outline-none"
   const selectStyle = { border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }
   const labelClass = "block text-xs font-medium mb-1.5"
 
   return (
     <div className="space-y-4">
-      <form onSubmit={handleStart} className="space-y-6 rounded-lg p-6" style={{ border: '1px solid var(--border)' }}>
+      <form onSubmit={handleStart} className="space-y-6 rounded-3xl p-8" style={{ border: '1px solid var(--border)', background: 'var(--surface)', boxShadow: 'var(--shadow-card)' }}>
         {/* Step 1: Source */}
         <fieldset className="space-y-3">
           <legend className="text-sm font-semibold" style={{ color: 'var(--text)' }}>1. Źródło</legend>
@@ -196,11 +196,12 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
                   key={level}
                   type="button"
                   onClick={() => toggleLevel(level)}
-                  className="h-9 rounded-lg text-sm font-medium transition-colors"
+                  className="h-11 rounded-xl text-sm font-medium transition-all hover:scale-[1.02]"
                   style={{
                     border: `1px solid ${levels.includes(level) ? 'var(--primary)' : 'var(--border)'}`,
                     background: levels.includes(level) ? 'var(--primaryBg)' : 'var(--surface)',
                     color: levels.includes(level) ? 'var(--primary)' : 'var(--muted)',
+                    boxShadow: levels.includes(level) ? '0 0 0 3px rgba(66,85,255,0.12)' : 'none',
                   }}
                 >
                   Level {level}
@@ -234,8 +235,8 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
         <button
           type="submit"
           disabled={loading}
-          className="h-11 w-full rounded-lg text-sm font-semibold text-white transition-colors disabled:opacity-50"
-          style={{ background: 'var(--primary)' }}
+          className="h-14 w-full rounded-2xl text-base font-semibold text-white transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+          style={{ background: 'linear-gradient(135deg, #4255ff 0%, #7c3aed 100%)', boxShadow: '0 4px 12px rgba(66, 85, 255, 0.3)' }}
         >
           {loading ? 'Uruchamiam…' : 'Rozpocznij naukę'}
         </button>

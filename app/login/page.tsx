@@ -67,12 +67,12 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'var(--surface2)' }}>
-      <form onSubmit={handleSubmit} className="w-full max-w-md rounded-[var(--radius)] p-6 space-y-4" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
+    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'linear-gradient(135deg, #eef2ff 0%, #ffffff 50%, #f5f3ff 100%)' }}>
+      <form onSubmit={handleSubmit} className="w-full max-w-md rounded-3xl p-8 space-y-5" style={{ border: '1px solid var(--border)', background: 'var(--surface)', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)' }}>
         <p style={{ color: 'var(--muted)' }}>Wprowadź dane, aby kontynuować.</p>
 
         {error && (
-          <div className="rounded-[var(--radiusSm)] px-4 py-3 text-sm" style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b' }}>
+          <div className="rounded-xl px-4 py-3 text-sm" style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b' }}>
             {error}
           </div>
         )}
@@ -84,7 +84,7 @@ export default function LoginPage() {
             value={login}
             onChange={e => setLogin(e.target.value)}
             required
-            className="w-full rounded-[var(--radiusSm)] px-3 py-2.5 text-sm focus:outline-none"
+            className="w-full rounded-xl px-4 py-3 text-base focus:outline-none"
             style={{ border: '1px solid var(--border)', color: 'var(--text)' }}
           />
         </div>
@@ -96,7 +96,7 @@ export default function LoginPage() {
             value={password}
             onChange={e => setPassword(e.target.value)}
             required
-            className="w-full rounded-[var(--radiusSm)] px-3 py-2.5 text-sm focus:outline-none"
+            className="w-full rounded-xl px-4 py-3 text-base focus:outline-none"
             style={{ border: '1px solid var(--border)', color: 'var(--text)' }}
           />
         </div>
@@ -104,8 +104,8 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-full py-2.5 text-sm font-semibold disabled:opacity-70"
-          style={{ background: 'var(--primary)', color: '#fff' }}
+          className="w-full rounded-2xl py-3.5 text-base font-semibold text-white disabled:opacity-70 transition-all hover:scale-[1.02] active:scale-[0.98]"
+          style={{ background: 'linear-gradient(135deg, #4255ff 0%, #7c3aed 100%)', boxShadow: '0 4px 12px rgba(66, 85, 255, 0.3)' }}
         >
           Zaloguj się
         </button>

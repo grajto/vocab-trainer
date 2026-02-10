@@ -83,13 +83,13 @@ export function StatsView() {
   return (
     <div className="space-y-6">
       {/* Tabs */}
-      <div className="flex gap-1 p-1 rounded-[var(--radius)]" style={{ background: 'var(--surface2)' }}>
+      <div className="flex gap-1 p-1 rounded-xl" style={{ background: 'var(--surface2)' }}>
         {(['overview', 'decks', 'folders', 'hardest', 'history'] as const).map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`flex-1 py-2 text-xs font-medium rounded-lg transition-colors capitalize`}
-            style={tab === t ? { background: 'var(--surface)', color: 'var(--text)' } : { color: 'var(--muted)' }}
+            className={`flex-1 py-2.5 text-sm font-medium rounded-xl transition-all capitalize`}
+            style={tab === t ? { background: '#4255ff', color: '#fff', boxShadow: '0 2px 4px rgba(66,85,255,0.25)' } : { color: 'var(--muted)' }}
           >
             {t}
           </button>
@@ -106,16 +106,16 @@ export function StatsView() {
               { value: stats.global.streakDays, label: 'Streak', cardStyle: { background: 'var(--primaryBg)', color: 'var(--primary)' } },
               { value: `${stats.global.avgAccuracy}%`, label: 'Śr. accuracy', cardStyle: { background: 'var(--surface2)', color: 'var(--text)' } },
             ].map(item => (
-              <div key={item.label} className="rounded-[var(--radius)] px-4 py-3 text-center" style={{ ...item.cardStyle, border: '1px solid var(--border)' }}>
-                <p className="text-xl font-bold tabular-nums">{item.value}</p>
-                <p className="text-[10px] mt-0.5" style={{ color: 'var(--muted)' }}>{item.label}</p>
+              <div key={item.label} className="rounded-2xl px-4 py-4 text-center" style={{ ...item.cardStyle, border: '1px solid var(--border)', boxShadow: 'var(--shadow-card)' }}>
+                <p className="text-2xl font-bold tabular-nums">{item.value}</p>
+                <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>{item.label}</p>
               </div>
             ))}
           </div>
 
           {stats.sessionsByDay && stats.sessionsByDay.length > 0 && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <div className="p-4 rounded-[var(--radius)]" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+              <div className="p-5 rounded-2xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-card)' }}>
                 <h3 className="text-xs font-semibold mb-3" style={{ color: 'var(--muted)' }}>Sesje w czasie (7 dni)</h3>
                 <div className="flex items-end gap-2 h-24">
                   {stats.sessionsByDay.map(day => (
@@ -126,7 +126,7 @@ export function StatsView() {
                   ))}
                 </div>
               </div>
-              <div className="p-4 rounded-[var(--radius)]" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+              <div className="p-5 rounded-2xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-card)' }}>
                 <h3 className="text-xs font-semibold mb-3" style={{ color: 'var(--muted)' }}>Czas nauki (7 dni)</h3>
                 <div className="flex items-end gap-2 h-24">
                   {stats.sessionsByDay.map(day => (

@@ -45,7 +45,7 @@ export default function NotificationsPage() {
       {loading ? (
         <p className="text-sm" style={{ color: 'var(--gray400)' }}>Ładowanie powiadomień…</p>
       ) : notifications.length === 0 ? (
-        <div className="rounded-[var(--radius)] py-12 text-center" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
+        <div className="rounded-3xl py-12 text-center" style={{ border: '1px solid var(--border)', background: 'var(--surface)', boxShadow: 'var(--shadow-card)' }}>
           <Bell className="mx-auto mb-3 h-10 w-10" style={{ color: 'var(--border)' }} />
           <p className="text-sm" style={{ color: 'var(--gray400)' }}>Brak nowych powiadomień.</p>
         </div>
@@ -56,14 +56,14 @@ export default function NotificationsPage() {
             const colors = colorMap[n.type]
             const ctaHref = n.deckId ? `/study?deck=${n.deckId}` : '/study'
             return (
-              <div key={i} className="flex items-center gap-4 rounded-[var(--radiusSm)] px-4 py-3" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
+              <div key={i} className="flex items-center gap-4 rounded-2xl px-5 py-4" style={{ border: '1px solid var(--border)', background: 'var(--surface)', boxShadow: 'var(--shadow-card)' }}>
                 <div className="inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-[8px]" style={{ background: colors.bg, color: colors.color }}>
                   <Icon className="h-3 w-3" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm" style={{ color: 'var(--text)' }}>{n.message}</p>
                 </div>
-                <Link href={ctaHref} prefetch className="whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold" style={{ background: 'var(--primaryBg)', color: 'var(--primary)' }}>
+                <Link href={ctaHref} prefetch className="whitespace-nowrap rounded-xl px-4 py-2 text-xs font-semibold text-white transition-all hover:scale-[1.02]" style={{ background: 'linear-gradient(135deg, #4255ff 0%, #7c3aed 100%)', boxShadow: '0 2px 6px rgba(66,85,255,0.25)' }}>
                   Start
                 </Link>
                 <button type="button" className="rounded-md p-1 hover:bg-[#f8fafc]" style={{ color: 'var(--gray400)' }} aria-label="Więcej">

@@ -33,11 +33,11 @@ export function ImportForm({ decks }: { decks: Deck[] }) {
     }
   }
 
-  const selectClass = "w-full h-10 rounded-lg px-3 text-sm focus:outline-none"
+  const selectClass = "w-full h-12 rounded-xl px-4 text-base focus:outline-none"
   const selectStyle = { border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 rounded-lg p-6" style={{ border: '1px solid var(--border)' }}>
+    <form onSubmit={handleSubmit} className="space-y-5 rounded-3xl p-8" style={{ border: '1px solid var(--border)', background: 'var(--surface)', boxShadow: 'var(--shadow-card)' }}>
       {/* Deck selector */}
       <div>
         <label className="mb-1.5 block text-xs font-medium" style={{ color: 'var(--muted)' }}>Docelowy zestaw</label>
@@ -54,7 +54,7 @@ export function ImportForm({ decks }: { decks: Deck[] }) {
           onChange={e => setCsvText(e.target.value)}
           placeholder={"front,back,notes\nhello,cześć,greeting\ndog,pies,animal"}
           rows={10}
-          className="w-full rounded-lg px-4 py-3 font-mono text-sm leading-relaxed focus:outline-none"
+          className="w-full rounded-xl px-4 py-3 font-mono text-base leading-relaxed focus:outline-none"
           style={{ border: '1px solid var(--border)', color: 'var(--text)', resize: 'vertical' }}
         />
         <p className="mt-1.5 text-xs" style={{ color: 'var(--gray400)' }}>Kolumny: front, back, notes (opcja), examples (opcja)</p>
@@ -64,8 +64,8 @@ export function ImportForm({ decks }: { decks: Deck[] }) {
       <button
         type="submit"
         disabled={loading}
-        className="h-11 w-full rounded-lg text-sm font-semibold text-white transition-colors disabled:opacity-50"
-        style={{ background: 'var(--primary)' }}
+        className="h-14 w-full rounded-2xl text-base font-semibold text-white transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+        style={{ background: 'linear-gradient(135deg, #4255ff 0%, #7c3aed 100%)', boxShadow: '0 4px 12px rgba(66, 85, 255, 0.3)' }}
       >
         {loading ? 'Importowanie…' : 'Importuj'}
       </button>

@@ -74,7 +74,7 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={tab === 'decks' ? 'Wyszukaj fiszki' : 'Wyszukaj folder'}
-            className="h-10 w-full rounded-full px-4 pr-12 text-sm focus:outline-none"
+            className="h-12 w-full rounded-2xl px-4 pr-12 text-base focus:outline-none"
             style={{ border: '1px solid var(--border)', background: 'var(--surface2)', color: 'var(--text)' }}
           />
         </div>
@@ -92,7 +92,7 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
               <p className="text-sm" style={{ color: 'var(--muted)' }}>Brak zestawów.</p>
             ) : (
               filteredDecks.map((d) => (
-                <Link key={d.id} href={`/decks/${d.id}`} className="flex items-center gap-3 rounded-[var(--radiusSm)] px-3 py-3 hover:bg-[#f8fafc]" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
+                <Link key={d.id} href={`/decks/${d.id}`} className="flex items-center gap-3 rounded-2xl px-4 py-4 transition-all hover:shadow-lg hover:scale-[1.01]" style={{ border: '1px solid var(--border)', background: 'var(--surface)', boxShadow: 'var(--shadow-card)' }}>
                   <span className="inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-[8px]" style={{ background: 'var(--primaryBg)', color: 'var(--primary)' }}>
                     <FolderOpen className="h-3 w-3" />
                   </span>
@@ -135,7 +135,7 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
           )}
 
           {filteredFolders.map((f) => (
-            <Link key={f.id} href={`/folders/${f.id}`} className="flex items-center gap-3 rounded-[var(--radiusSm)] px-4 py-3 hover:bg-[#f8fafc]" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
+            <Link key={f.id} href={`/folders/${f.id}`} className="flex items-center gap-3 rounded-2xl px-4 py-4 transition-all hover:shadow-lg hover:scale-[1.01]" style={{ border: '1px solid var(--border)', background: 'var(--surface)', boxShadow: 'var(--shadow-card)' }}>
               <span className="inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-[8px]" style={{ background: 'var(--primaryBg)', color: 'var(--primary)' }}>
                 <FolderOpen className="h-3 w-3" />
               </span>

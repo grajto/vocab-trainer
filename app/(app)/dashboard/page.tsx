@@ -202,7 +202,7 @@ export default async function DashboardPage() {
 
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-sm">
             <p style={{ color: 'var(--muted)' }}>Do celu zostało: <strong>{remainingToGoal}</strong> sesji</p>
-            <Link href="/study" className="inline-flex min-h-9 items-center rounded-full px-4 text-sm font-semibold" style={{ background: 'var(--primaryBg)', color: 'var(--primary)' }}>
+            <Link href="/study" className="inline-flex min-h-11 items-center rounded-2xl px-5 text-sm font-semibold text-white transition-all hover:scale-[1.02] active:scale-[0.98]" style={{ background: 'linear-gradient(135deg, #4255ff 0%, #7c3aed 100%)', boxShadow: '0 2px 8px rgba(66, 85, 255, 0.3)' }}>
               Rozpocznij sesję
             </Link>
           </div>
@@ -297,11 +297,11 @@ export default async function DashboardPage() {
           <p className="mb-4 text-sm" style={{ color: 'var(--muted)' }}>Uruchom naukę jednym kliknięciem albo przejdź do tworzenia nowych zestawów.</p>
 
           <div className="space-y-2">
-            <Link href="/study" className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold" style={{ background: 'var(--primaryBg)', color: 'var(--primary)' }}>
+            <Link href="/study" className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl px-4 text-base font-semibold text-white transition-all hover:scale-[1.02] active:scale-[0.98]" style={{ background: 'linear-gradient(135deg, #4255ff 0%, #7c3aed 100%)', boxShadow: '0 2px 8px rgba(66, 85, 255, 0.3)' }}>
               Ucz się
               <ArrowRight size={15} />
             </Link>
-            <Link href="/create" className="inline-flex min-h-10 w-full items-center justify-center rounded-full px-4 text-sm font-semibold" style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}>
+            <Link href="/create" className="inline-flex min-h-11 w-full items-center justify-center rounded-2xl px-4 text-sm font-semibold transition-all hover:scale-[1.01]" style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}>
               Kreator zestawów
             </Link>
           </div>

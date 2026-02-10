@@ -33,13 +33,13 @@ export function FolderDeckList({ decks }: { decks: DeckItem[] }) {
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Szukaj w folderze"
-          className="flex-1 min-w-[200px] rounded-[var(--radiusSm)] px-3 py-2 text-sm focus:outline-none"
+          className="flex-1 min-w-[200px] rounded-xl px-4 py-3 text-base focus:outline-none"
           style={{ border: '1px solid var(--border)', color: 'var(--text)' }}
         />
         <select
           value={sort}
           onChange={e => setSort(e.target.value as typeof sort)}
-          className="rounded-[var(--radiusSm)] px-3 py-2 text-sm focus:outline-none"
+          className="rounded-xl px-4 py-3 text-base focus:outline-none"
           style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
         >
           <option value="date">Wg daty</option>
@@ -49,7 +49,7 @@ export function FolderDeckList({ decks }: { decks: DeckItem[] }) {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="text-center py-12 rounded-[var(--radius)]" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+        <div className="text-center py-12 rounded-3xl" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-card)' }}>
           <p className="text-sm mb-2" style={{ color: 'var(--gray400)' }}>Brak zestawów w folderze.</p>
         </div>
       ) : (
@@ -59,8 +59,8 @@ export function FolderDeckList({ decks }: { decks: DeckItem[] }) {
               key={deck.id}
               href={`/decks/${deck.id}`}
               prefetch={true}
-              className="block rounded-[var(--radius)] px-5 py-4 transition-colors hover:bg-[var(--hover-bg)]"
-              style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+              className="block rounded-3xl px-5 py-4 transition-all hover:shadow-lg hover:scale-[1.01]"
+              style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-card)' }}
             >
               <p className="font-medium" style={{ color: 'var(--text)' }}>{deck.name}</p>
               {deck.description && <p className="text-sm mt-0.5" style={{ color: 'var(--gray400)' }}>{deck.description}</p>}

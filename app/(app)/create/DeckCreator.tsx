@@ -208,7 +208,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
           <button
             onClick={() => saveDeck(true)}
             disabled={saving}
-            className="px-4 py-2 rounded-full text-sm font-semibold disabled:opacity-50 transition-colors"
+            className="px-5 py-2.5 rounded-2xl text-sm font-semibold disabled:opacity-50 transition-all hover:scale-[1.02]"
             style={{ background: 'var(--primaryBg)', color: 'var(--primary)', border: '1px solid transparent' }}
           >
             {saving ? 'Zapisywanie…' : 'Utwórz i ćwicz'}
@@ -216,8 +216,8 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
           <button
             onClick={() => saveDeck(false)}
             disabled={saving}
-            className="px-5 py-2 rounded-full text-sm font-semibold disabled:opacity-50 transition-colors"
-            style={{ background: 'var(--primary)', color: '#fff', border: '1px solid var(--primary)' }}
+            className="px-6 py-2.5 rounded-2xl text-sm font-semibold text-white disabled:opacity-50 transition-all hover:scale-[1.02]"
+            style={{ background: 'linear-gradient(135deg, #4255ff 0%, #7c3aed 100%)', border: 'none', boxShadow: '0 2px 8px rgba(66,85,255,0.3)' }}
           >
             {saving ? 'Zapisywanie…' : 'Utwórz zestaw'}
           </button>
@@ -227,7 +227,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
       {error && <p className="text-sm rounded-[var(--radiusSm)] px-4 py-2" style={{ color: '#dc2626', background: '#fef2f2', border: '1px solid #fecaca' }}>{error}</p>}
 
       {/* Deck meta */}
-      <div className="rounded-[var(--radius)] p-5 space-y-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+      <div className="rounded-3xl p-6 space-y-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-card)' }}>
         <div>
           <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>Nazwa zestawu *</label>
           <input
@@ -235,7 +235,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
             value={name}
             onChange={e => setName(e.target.value)}
             placeholder="e.g. English B2 Vocabulary"
-            className="w-full rounded-[var(--radiusSm)] px-3 py-2.5 text-sm focus:outline-none"
+            className="w-full rounded-xl px-4 py-3 text-base focus:outline-none"
             style={{ border: '1px solid var(--border)', color: 'var(--text)' }}
           />
         </div>
@@ -246,7 +246,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
             <select
               value={folderId}
               onChange={e => setFolderId(e.target.value)}
-              className="w-full rounded-[var(--radiusSm)] px-3 py-2.5 text-sm focus:outline-none"
+              className="w-full rounded-xl px-4 py-3 text-base focus:outline-none"
               style={{ border: '1px solid var(--border)', color: 'var(--text)', background: 'var(--surface)' }}
             >
               <option value="">Bez folderu</option>
@@ -259,7 +259,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
             <select
               value={direction}
               onChange={e => setKierunek(e.target.value as typeof direction)}
-              className="w-full rounded-[var(--radiusSm)] px-3 py-2.5 text-sm focus:outline-none"
+              className="w-full rounded-xl px-4 py-3 text-base focus:outline-none"
               style={{ border: '1px solid var(--border)', color: 'var(--text)', background: 'var(--surface)' }}
             >
               <option value="front-to-back">Przód → Tył</option>
@@ -275,7 +275,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
               value={description}
               onChange={e => setOpis(e.target.value)}
               placeholder="Opcjonalny opis"
-              className="w-full rounded-[var(--radiusSm)] px-3 py-2.5 text-sm focus:outline-none"
+              className="w-full rounded-xl px-4 py-3 text-base focus:outline-none"
               style={{ border: '1px solid var(--border)', color: 'var(--text)' }}
             />
           </div>
@@ -364,7 +364,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
           <button
             onClick={() => saveDeck(true)}
             disabled={saving}
-            className="px-5 py-2.5 rounded-full text-sm font-semibold disabled:opacity-50 transition-colors"
+            className="px-5 py-2.5 rounded-2xl text-sm font-semibold disabled:opacity-50 transition-all hover:scale-[1.02]"
             style={{ background: 'var(--primaryBg)', color: 'var(--primary)', border: '1px solid transparent' }}
           >
             {saving ? 'Zapisywanie…' : 'Utwórz i ćwicz'}
@@ -372,8 +372,8 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
           <button
             onClick={() => saveDeck(false)}
             disabled={saving}
-            className="px-6 py-2.5 rounded-full text-sm font-semibold disabled:opacity-50 transition-colors"
-            style={{ background: 'var(--primary)', color: '#fff', border: '1px solid var(--primary)' }}
+            className="px-6 py-2.5 rounded-2xl text-sm font-semibold text-white disabled:opacity-50 transition-all hover:scale-[1.02]"
+            style={{ background: 'linear-gradient(135deg, #4255ff 0%, #7c3aed 100%)', border: 'none', boxShadow: '0 2px 8px rgba(66,85,255,0.3)' }}
           >
             {saving ? 'Saving…' : `Create (${cards.filter(c => c.front && c.back).length} cards)`}
           </button>
@@ -439,8 +439,8 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
               <button
                 onClick={handleImport}
                 disabled={importPreview.length === 0}
-                className="px-5 py-2 rounded-full text-sm font-semibold disabled:opacity-50 transition-colors"
-                style={{ background: 'var(--primary)', color: '#fff' }}
+                className="px-5 py-2.5 rounded-2xl text-sm font-semibold text-white disabled:opacity-50 transition-all hover:scale-[1.02]"
+                style={{ background: 'linear-gradient(135deg, #4255ff 0%, #7c3aed 100%)', boxShadow: '0 2px 8px rgba(66,85,255,0.3)' }}
               >
                 Import {importPreview.length} cards
               </button>
