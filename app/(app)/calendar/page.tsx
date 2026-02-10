@@ -122,7 +122,7 @@ export default function CalendarPage() {
                       <p className="font-medium text-slate-900">{item.deckName}</p>
                       <p className="text-xs text-slate-400 capitalize">{item.mode} · {item.minutes} min</p>
                     </div>
-                    <span className="text-xs text-indigo-600 font-semibold">{item.accuracy ?? 0}%</span>
+                    <span className="text-xs text-blue-600 font-semibold">{item.accuracy ?? 0}%</span>
                   </div>
                 ))}
               </div>

@@ -201,7 +201,7 @@ export function StatsView() {
       {tab === 'decks' && (
         <div className="space-y-2">
           {stats.deckStats.map(deck => (
-            <Link key={deck.deckId} href={`/decks/${deck.deckId}`} prefetch={true} className="block bg-white border border-slate-200 rounded-xl px-5 py-4 shadow-sm hover:border-indigo-300 transition-colors">
+            <Link key={deck.deckId} href={`/decks/${deck.deckId}`} prefetch={true} className="block bg-white border border-slate-200 rounded-xl px-5 py-4 shadow-sm hover:border-blue-300 transition-colors">
               <div className="flex justify-between items-center mb-3">
                 <p className="font-medium text-sm text-slate-900">{deck.deckName}</p>
                 <p className="text-xs text-slate-400">{deck.cardCount} cards · {deck.dueCount} due</p>
@@ -234,7 +234,7 @@ export function StatsView() {
       {tab === 'folders' && (
         <div className="space-y-2">
           {(stats.folderStats || []).map(folder => (
-            <Link key={folder.folderId} href={`/folders/${folder.folderId}`} prefetch={true} className="block bg-white border border-slate-200 rounded-xl px-5 py-4 shadow-sm hover:border-indigo-300 transition-colors">
+            <Link key={folder.folderId} href={`/folders/${folder.folderId}`} prefetch={true} className="block bg-white border border-slate-200 rounded-xl px-5 py-4 shadow-sm hover:border-blue-300 transition-colors">
               <div className="flex justify-between items-center">
                 <p className="font-medium text-sm text-slate-900">{folder.folderName}</p>
                 <p className="text-xs text-slate-400">{folder.deckCount} decks</p>
@@ -258,7 +258,7 @@ export function StatsView() {
             <div key={card.cardId} className="bg-white border border-slate-200 rounded-lg px-4 py-3 flex justify-between items-center">
               <div className="text-sm">
                 <span className="font-medium text-slate-900">{card.front}</span>
-                <span className="text-indigo-300 mx-2">→</span>
+                <span className="text-blue-300 mx-2">→</span>
                 <span className="text-slate-600">{card.back}</span>
                 <span className="text-slate-300 mx-2">·</span>
                 <span className="text-xs text-slate-400">{card.deckName}</span>
@@ -291,7 +291,7 @@ export function StatsView() {
                 <span className="text-slate-500 capitalize">{session.mode}</span>
               </div>
               <div className="text-right tabular-nums">
-                <span className="font-medium text-indigo-600">{session.accuracy}%</span>
+                <span className="font-medium text-blue-600">{session.accuracy}%</span>
                 <span className="text-slate-400 ml-2">{session.completedCount}/{session.targetCount}</span>
               </div>
             </div>
