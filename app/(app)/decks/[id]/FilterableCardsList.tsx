@@ -21,7 +21,7 @@ export function FilterableCardsList({ cards }: Props) {
     if (!searchTerm.trim()) return cards
     const query = searchTerm.toLowerCase().trim()
     return cards.filter(
-      card =>
+      (card) =>
         card.front.toLowerCase().includes(query) ||
         card.back.toLowerCase().includes(query)
     )
@@ -46,7 +46,7 @@ export function FilterableCardsList({ cards }: Props) {
           type="text"
           placeholder="Szukaj słówek..."
           value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
+          onChange={(e) => setSearchTerm(e.target.value)}
           className="input w-full pl-9"
         />
       </div>
@@ -58,7 +58,7 @@ export function FilterableCardsList({ cards }: Props) {
         </p>
       ) : (
         <div className="space-y-2">
-          {filteredCards.map(card => (
+          {filteredCards.map((card) => (
             <div
               key={card.id}
               className="flex items-center gap-3 rounded-lg px-4 py-3"
