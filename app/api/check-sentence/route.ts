@@ -7,9 +7,38 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const MODEL = 'gpt-5-nano'
-const PRIMARY_MAX_OUTPUT_TOKENS = 300
-const RETRY_MAX_OUTPUT_TOKENS = 300
+const PRIMARY_MAX_OUTPUT_TOKENS = 900
+const RETRY_MAX_OUTPUT_TOKENS = 1200
 const PREVIEW_LENGTH = 200
+
+const RESPONSE_JSON_SCHEMA = {
+  name: 'check_sentence_response',
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    required: ['ok', 'corrected', 'errors', 'comment'],
+    properties: {
+      ok: { type: 'boolean' },
+      corrected: { type: 'string' },
+      errors: {
+        type: 'array',
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['type', 'from', 'to', 'explain'],
+          properties: {
+            type: { type: 'string' },
+            from: { type: 'string' },
+            to: { type: 'string' },
+            explain: { type: 'string' },
+          },
+        },
+      },
+      comment: { type: 'string' },
+    },
+  },
+  strict: true,
+} as const
 
 /** Collapse whitespace and lowercase for phrase containment check */
 function norm(s: string): string {
@@ -67,7 +96,6 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json()
     const { phrase, requiredPhrase, sentence, promptPl } = body
-    // Support both field names for backwards compat
     const targetPhrase = phrase || requiredPhrase
 
     if (!targetPhrase) {
@@ -90,7 +118,6 @@ export async function POST(req: NextRequest) {
 
     const trimmed = sentence.trim()
 
-    // Pre-AI validation: length
     if (trimmed.length < 8) {
       return NextResponse.json(buildCheckSentenceResponse({
         ok: false,
@@ -108,7 +135,6 @@ export async function POST(req: NextRequest) {
       }))
     }
 
-    // Pre-AI validation: phrase containment (case-insensitive, collapsed whitespace)
     if (!norm(trimmed).includes(norm(targetPhrase))) {
       return NextResponse.json(buildCheckSentenceResponse({
         ok: false,
@@ -132,9 +158,7 @@ export async function POST(req: NextRequest) {
       const { client: openai, apiKey, baseURL } = createOpenAIClient()
       logOpenAIEnv({ client: openai, apiKey, baseURL })
 
-      const meaningContext = promptPl
-        ? `PL znaczenie: "${promptPl}".`
-        : ''
+      const meaningContext = promptPl ? `PL znaczenie: "${promptPl}".` : ''
 
       console.info('[AI] calling OpenAI', { model: MODEL })
       const userContent = `requiredEn: ${targetPhrase}\n${meaningContext}\nsentence: ${trimmed}`
@@ -143,17 +167,22 @@ export async function POST(req: NextRequest) {
         console.info('[AI] request config', {
           apiType: 'responses',
           max_output_tokens: maxTokens,
-          max_tokens: null,
+          reasoning_effort: 'minimal',
+          response_format: 'json_schema',
         })
+
         const response = await openai.responses.create({
           model: MODEL,
           max_output_tokens: maxTokens,
           tool_choice: 'none',
+          reasoning: { effort: 'minimal' },
+          text: { format: { type: 'json_schema', ...RESPONSE_JSON_SCHEMA } },
           input: [
             { role: 'system', content: prompt },
             { role: 'user', content: userContent },
           ],
         })
+
         const text = (response.output_text ?? '').trim()
         let fallbackText = ''
         if (!text) {
@@ -165,15 +194,10 @@ export async function POST(req: NextRequest) {
             .join('')
             .trim()
         }
+
         const finalText = text || fallbackText
-        const {
-          finishReason,
-          hasToolCalls,
-          outputTypes,
-          outputContentTypes,
-          outputTextLength,
-          outputLength,
-        } = extractResponseMeta(response)
+        const { finishReason, hasToolCalls, outputTypes, outputContentTypes, outputTextLength, outputLength } = extractResponseMeta(response)
+
         console.info('[AI] response meta', {
           finish_reason: finishReason,
           output_text_length: outputTextLength,
@@ -184,12 +208,7 @@ export async function POST(req: NextRequest) {
           has_tool_calls: hasToolCalls,
           has_text: finalText.length > 0,
         })
-        const responseHeaders = (response as unknown as { response?: { headers?: Record<string, string> } }).response?.headers
-        if (responseHeaders) {
-          console.info('[AI] response headers', {
-            requestId: responseHeaders['x-request-id'] || responseHeaders['request-id'] || null,
-          })
-        }
+
         return { text: finalText, finishReason, hasToolCalls }
       }
 
@@ -204,8 +223,9 @@ export async function POST(req: NextRequest) {
         const { text, finishReason, hasToolCalls } = await runRequest(prompt, maxTokens)
         const preview = text.slice(0, PREVIEW_LENGTH)
 
-        if (finishReason === 'length' || !text) {
-          lastError = finishReason === 'length' ? 'finish_reason=length' : 'empty_text'
+        const wasTruncated = finishReason === 'length' || finishReason === 'max_output_tokens'
+        if (wasTruncated || !text) {
+          lastError = wasTruncated ? `finish_reason=${finishReason}` : 'empty_text'
           console.warn('[AI] response truncated or empty, retrying', { attempt, finish_reason: finishReason, preview })
           continue
         }
@@ -226,17 +246,13 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      if (lastError?.includes('length') || lastError?.includes('empty_text')) {
-        return NextResponse.json({
-          error: 'AI_TRUNCATED',
-          detail: lastError || 'Response truncated or empty after retries.',
-        }, { status: 502 })
-      }
-
-      return NextResponse.json({
-        error: 'AI_INVALID_JSON',
-        detail: lastError || 'Invalid AI response after retries.',
-      }, { status: 502 })
+      console.error('[AI] final failure', { lastError })
+      return NextResponse.json(buildCheckSentenceResponse({
+        ok: false,
+        corrected: getFallbackCorrected(trimmed, targetPhrase),
+        errors: [{ type: 'other', from: '', to: '', explain: 'AI nie zwróciło poprawnej odpowiedzi. Spróbuj ponownie.' }],
+        comment: 'AI nie zwróciło poprawnej odpowiedzi. Spróbuj ponownie.',
+      }), { status: 502 })
     } catch (err: unknown) {
       console.error('OpenAI call failed:', err)
       return NextResponse.json(buildCheckSentenceResponse({
