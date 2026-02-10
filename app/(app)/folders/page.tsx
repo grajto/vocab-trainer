@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getUser } from '@/src/lib/getUser'
@@ -10,11 +11,8 @@ export default async function FoldersPage() {
   if (!user) redirect('/login')
 
   const payload = await getPayload()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let folders: any = { docs: [] }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let decks: any = { docs: [] }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let cards: any = { docs: [] }
 
   try {
@@ -57,7 +55,10 @@ export default async function FoldersPage() {
     <div className="p-6 lg:p-8 max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-slate-900">Foldery</h2>
-        <Link href="/library?tab=folders&create=true" className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">Utwórz folder</Link>
+        <div className="flex items-center gap-4">
+          <Link href="/library?tab=folders&create=true" className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">Nowy folder</Link>
+          <Link href="/library" className="text-sm text-slate-500 hover:text-indigo-700 font-medium">Zobacz wszystkie</Link>
+        </div>
       </div>
       <div className="space-y-2">
         {folders.docs.length === 0 ? (
