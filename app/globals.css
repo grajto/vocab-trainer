@@ -2166,17 +2166,17 @@ button, input { font: inherit; }
   }
 }
 
-/* ====== Warm accent + white home background override ====== */
+/* ====== Soft blue accent + white home background override ====== */
 :root {
-  --primary-500: #fb923c;
-  --primary-600: #f97316;
-  --primary-700: #ea580c;
-  --accent: #fb923c;
-  --focus-300: rgba(251, 146, 60, 0.35);
-  --primary-500-alpha-08: rgba(251, 146, 60, 0.08);
-  --primary-500-alpha-15: rgba(251, 146, 60, 0.15);
-  --primary-500-alpha-20: rgba(251, 146, 60, 0.2);
-  --primary-500-alpha-35: rgba(251, 146, 60, 0.35);
+  --primary-500: #4255ff;
+  --primary-600: #3245dc;
+  --primary-700: #2a3ac0;
+  --accent: #4255ff;
+  --focus-300: rgba(66, 85, 255, 0.32);
+  --primary-500-alpha-08: rgba(66, 85, 255, 0.08);
+  --primary-500-alpha-15: rgba(66, 85, 255, 0.15);
+  --primary-500-alpha-20: rgba(66, 85, 255, 0.2);
+  --primary-500-alpha-35: rgba(66, 85, 255, 0.32);
   --bg: #ffffff;
 }
 

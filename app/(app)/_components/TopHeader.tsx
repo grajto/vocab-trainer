@@ -20,7 +20,7 @@ export function TopHeader({ onMenuClick }: { onMenuClick: () => void }) {
       </button>
 
       <form
-        className="mx-auto flex h-11 w-full max-w-[760px] items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 shadow-sm"
+        className="mx-auto flex h-11 w-full max-w-[760px] items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4"
         onSubmit={(e) => {
           e.preventDefault()
           if (q.trim()) router.push(`/library?q=${encodeURIComponent(q.trim())}`)
