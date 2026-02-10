@@ -1,8 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { StartSessionForm } from '@/app/(app)/learn/StartSessionForm'
+import { Card } from '@/app/(app)/_components/ui/Card'
+import { SectionHeader } from '@/app/(app)/_components/ui/SectionHeader'
+import { Button } from '@/app/(app)/_components/ui/Button'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,39 +15,32 @@ export default async function StudyPage() {
   if (!user) redirect('/login')
 
   const payload = await getPayload()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let decks: any = { docs: [] }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let folders: any = { docs: [] }
   try {
     const results = await Promise.all([
-      payload.find({
-        collection: 'decks',
-        where: { owner: { equals: user.id } },
-        limit: 100,
-        depth: 0,
-      }),
-      payload.find({
-        collection: 'folders',
-        where: { owner: { equals: user.id } },
-        limit: 100,
-        depth: 0,
-      }),
+      payload.find({ collection: 'decks', where: { owner: { equals: user.id } }, limit: 100, depth: 0 }),
+      payload.find({ collection: 'folders', where: { owner: { equals: user.id } }, limit: 100, depth: 0 }),
     ])
     decks = results[0]
     folders = results[1]
   } catch (err) {
-    console.error('Study page data fetch error (migration may be pending):', err)
+    console.error('Study page data fetch error:', err)
   }
 
   return (
-    <div className="p-6 lg:p-8 max-w-2xl mx-auto space-y-6">
-      <h2 className="text-xl font-semibold text-slate-900">Ucz się</h2>
+    <div className="study-shell">
+      <div className="study-header">
+        <Card compact>
+          <SectionHeader title="Study mode" description="Pick your set, mode and session length." />
+        </Card>
+      </div>
+
       {decks.docs.length === 0 ? (
-        <div className="text-center py-8">
-          <p className="text-sm text-slate-400 mb-2">Brak zestawów do nauki.</p>
-          <Link href="/create" prefetch={true} className="text-sm text-indigo-600 underline underline-offset-2">Utwórz pierwszy zestaw</Link>
-        </div>
+        <Card>
+          <p className="p-muted" style={{ marginBottom: '12px' }}>No sets available yet.</p>
+          <Link href="/create"><Button>Create your first set</Button></Link>
+        </Card>
       ) : (
         <StartSessionForm
           decks={decks.docs.map((d: any) => ({ id: String(d.id), name: d.name }))}
