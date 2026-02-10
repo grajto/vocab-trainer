@@ -38,18 +38,18 @@ export default async function StudyStartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <nav className="border-b border-slate-200 bg-white/80 backdrop-blur-sm px-6 py-4">
+    <div className="min-h-screen" style={{ background: 'var(--surface2)' }}>
+      <nav className="backdrop-blur-sm px-6 py-4" style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
         <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <Link href="/dashboard" className="text-lg font-semibold tracking-tight text-indigo-600">Dashboard</Link>
+          <Link href="/dashboard" className="text-lg font-semibold tracking-tight" style={{ color: 'var(--primary)' }}>Dashboard</Link>
         </div>
       </nav>
       <main className="max-w-lg mx-auto px-6 py-8 space-y-6">
-        <h2 className="text-xl font-semibold text-slate-900">Start Learning</h2>
+        <h2 className="text-xl font-semibold" style={{ color: 'var(--text)' }}>Start Learning</h2>
         {decks.docs.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-sm text-slate-400 mb-2">No decks available.</p>
-            <Link href="/decks" className="text-sm text-indigo-600 underline underline-offset-2">Create a deck first</Link>
+            <p className="text-sm mb-2" style={{ color: 'var(--gray400)' }}>No decks available.</p>
+            <Link href="/decks" className="text-sm underline underline-offset-2" style={{ color: 'var(--primary)' }}>Create a deck first</Link>
           </div>
         ) : (
           <StartSessionForm

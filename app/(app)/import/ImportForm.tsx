@@ -34,30 +34,30 @@ export function ImportForm({ decks }: { decks: Deck[] }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-xl p-6 space-y-4 shadow-sm">
+    <form onSubmit={handleSubmit} className="rounded-[var(--radius)] p-6 space-y-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
       <div>
-        <label className="block text-xs font-medium text-slate-500 mb-1.5">Deck</label>
-        <select value={deckId} onChange={e => setDeckId(e.target.value)} className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none bg-white">
+        <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>Deck</label>
+        <select value={deckId} onChange={e => setDeckId(e.target.value)} className="w-full border border-[var(--border)] rounded-[var(--radiusSm)] px-3 py-2.5 text-sm focus:border-[var(--primary)] focus:outline-none bg-[var(--surface)]">
           {decks.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
         </select>
       </div>
       <div>
-        <label className="block text-xs font-medium text-slate-500 mb-1.5">CSV Data</label>
+        <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>CSV Data</label>
         <textarea
           value={csvText}
           onChange={e => setCsvText(e.target.value)}
           placeholder={"front,back,notes\nhello,cześć,greeting\ndog,pies,animal"}
           rows={8}
-          className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm font-mono focus:border-indigo-500 focus:outline-none"
+          className="w-full border border-[var(--border)] rounded-[var(--radiusSm)] px-3 py-2.5 text-sm font-mono focus:border-[var(--primary)] focus:outline-none"
         />
-        <p className="text-[10px] text-slate-400 mt-1.5">Columns: front, back, notes (optional), examples (optional)</p>
+        <p className="text-[10px] mt-1.5" style={{ color: 'var(--gray400)' }}>Columns: front, back, notes (optional), examples (optional)</p>
       </div>
-      <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-2.5 rounded-lg text-sm font-medium hover:from-indigo-700 hover:to-violet-700 disabled:opacity-50 transition-all">
+      <button type="submit" disabled={loading} className="w-full bg-[var(--primary)] text-white py-2.5 rounded-[var(--radiusSm)] text-sm font-medium hover:brightness-90 disabled:opacity-50 transition-all">
         {loading ? 'Importing…' : 'Import'}
       </button>
 
       {result && (
-        <div className="border border-slate-200 rounded-lg p-4 space-y-1 text-sm">
+        <div className="border border-[var(--border)] rounded-[var(--radiusSm)] p-4 space-y-1 text-sm">
           <p className="text-emerald-600">Created: {result.createdCount}</p>
           {result.skippedCount > 0 && <p className="text-amber-600">Skipped: {result.skippedCount}</p>}
           {result.errors.length > 0 && (

@@ -133,10 +133,10 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
 
   return (
     <div className="space-y-4">
-      <form onSubmit={handleStart} className="bg-white border border-slate-200 rounded-2xl p-6 space-y-5 shadow-sm">
+      <form onSubmit={handleStart} className="rounded-[var(--radius)] p-6 space-y-5" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-slate-900">Panel nauki</h3>
-          <button type="button" onClick={saveFavorite} className="inline-flex items-center gap-1.5 text-xs text-indigo-700 border border-indigo-200 rounded-full px-3 py-1.5 hover:bg-indigo-50">
+          <h3 className="text-lg font-semibold" style={{ color: 'var(--text)' }}>Panel nauki</h3>
+          <button type="button" onClick={saveFavorite} className="inline-flex items-center gap-1.5 text-xs text-[var(--primary)] border border-[var(--primary)] rounded-full px-3 py-1.5 hover:bg-[var(--primaryBg)]">
             <Star className="w-3.5 h-3.5" /> Dodaj do ulubionych
           </button>
         </div>
@@ -145,15 +145,15 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1.5">Wybór zasobu</label>
-            <select value={resourceType} onChange={e => setResourceType(e.target.value as 'deck' | 'folder')} className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none bg-white">
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>Wybór zasobu</label>
+            <select value={resourceType} onChange={e => setResourceType(e.target.value as 'deck' | 'folder')} className="w-full border border-[var(--border)] rounded-[var(--radiusSm)] px-3 py-2.5 text-sm focus:border-[var(--primary)] focus:outline-none bg-[var(--surface)]">
               <option value="deck">Deck</option>
               <option value="folder">Folder</option>
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1.5">{resourceType === 'deck' ? 'Deck' : 'Folder'}</label>
-            <select value={resourceType === 'deck' ? deckId : folderId} onChange={e => resourceType === 'deck' ? setDeckId(e.target.value) : setFolderId(e.target.value)} className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none bg-white">
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>{resourceType === 'deck' ? 'Deck' : 'Folder'}</label>
+            <select value={resourceType === 'deck' ? deckId : folderId} onChange={e => resourceType === 'deck' ? setDeckId(e.target.value) : setFolderId(e.target.value)} className="w-full border border-[var(--border)] rounded-[var(--radiusSm)] px-3 py-2.5 text-sm focus:border-[var(--primary)] focus:outline-none bg-[var(--surface)]">
               {(resourceType === 'deck' ? decks : folders).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
             </select>
           </div>
@@ -161,8 +161,8 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1.5">Tryb ćwiczeń</label>
-            <select value={mode} onChange={e => setMode(e.target.value)} className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none bg-white">
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>Tryb ćwiczeń</label>
+            <select value={mode} onChange={e => setMode(e.target.value)} className="w-full border border-[var(--border)] rounded-[var(--radiusSm)] px-3 py-2.5 text-sm focus:border-[var(--primary)] focus:outline-none bg-[var(--surface)]">
               <option value="translate">Wpisywanie</option>
               <option value="abcd">ABCD</option>
               <option value="sentence">Sentence</option>
@@ -172,8 +172,8 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1.5">Kierunek</label>
-            <select value={direction} onChange={e => setDirection(e.target.value as typeof direction)} className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none bg-white">
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>Kierunek</label>
+            <select value={direction} onChange={e => setDirection(e.target.value as typeof direction)} className="w-full border border-[var(--border)] rounded-[var(--radiusSm)] px-3 py-2.5 text-sm focus:border-[var(--primary)] focus:outline-none bg-[var(--surface)]">
               <option value="pl-en">PL → EN</option>
               <option value="en-pl">EN → PL</option>
               <option value="both">Oba</option>
@@ -182,10 +182,10 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-slate-500 mb-2">Preferowany level słówek</label>
+          <label className="block text-xs font-medium mb-2" style={{ color: 'var(--muted)' }}>Preferowany level słówek</label>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {[1, 2, 3, 4].map(level => (
-              <button key={level} type="button" onClick={() => toggleLevel(level)} className={`text-sm border rounded-lg px-3 py-2 ${levels.includes(level) ? 'bg-indigo-50 border-indigo-300 text-indigo-700' : 'border-slate-200 text-slate-600'}`}>
+              <button key={level} type="button" onClick={() => toggleLevel(level)} className={`text-sm border rounded-[var(--radiusSm)] px-3 py-2 ${levels.includes(level) ? 'bg-[var(--primaryBg)] border-[var(--primary)] text-[var(--primary)]' : 'border-[var(--border)] text-[var(--muted)]'}`}>
                 Level {level}
               </button>
             ))}
@@ -193,30 +193,30 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-slate-500 mb-1.5">Długość sesji: <span className="text-indigo-600 font-semibold">{targetCount} kart</span></label>
-          <input type="range" min={5} max={35} value={targetCount} onChange={e => setTargetCount(Number(e.target.value))} className="w-full accent-indigo-600" />
+          <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>Długość sesji: <span className="font-semibold" style={{ color: 'var(--primary)' }}>{targetCount} kart</span></label>
+          <input type="range" min={5} max={35} value={targetCount} onChange={e => setTargetCount(Number(e.target.value))} className="w-full accent-[var(--primary)]" />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-slate-600">
-          <label className="flex items-center gap-2"><input type="checkbox" checked={shuffle} onChange={e => setShuffle(e.target.checked)} className="accent-indigo-600" />Mieszaj kolejność</label>
-          <label className="flex items-center gap-2"><input type="checkbox" checked={requireCorrect} onChange={e => setRequireCorrect(e.target.checked)} className="accent-indigo-600" />Wymagaj poprawnej odpowiedzi</label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm" style={{ color: 'var(--muted)' }}>
+          <label className="flex items-center gap-2"><input type="checkbox" checked={shuffle} onChange={e => setShuffle(e.target.checked)} className="accent-[var(--primary)]" />Mieszaj kolejność</label>
+          <label className="flex items-center gap-2"><input type="checkbox" checked={requireCorrect} onChange={e => setRequireCorrect(e.target.checked)} className="accent-[var(--primary)]" />Wymagaj poprawnej odpowiedzi</label>
         </div>
 
-        <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3 rounded-xl text-sm font-medium hover:from-indigo-700 hover:to-violet-700 disabled:opacity-50 transition-all">
+        <button type="submit" disabled={loading} className="w-full bg-[var(--primary)] text-white py-3 rounded-[var(--radius)] text-sm font-medium hover:brightness-90 disabled:opacity-50 transition-all">
           {loading ? 'Uruchamiam…' : 'Zacznij sesję'}
         </button>
       </form>
 
-      <section className="bg-white border border-slate-200 rounded-2xl p-4">
-        <h4 className="text-sm font-semibold text-slate-900 mb-3">Ulubione ustawienia sesji</h4>
+      <section className="rounded-[var(--radius)] p-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+        <h4 className="text-sm font-semibold mb-3" style={{ color: 'var(--text)' }}>Ulubione ustawienia sesji</h4>
         {favorites.length === 0 ? (
-          <p className="text-sm text-slate-500">Nie masz jeszcze ulubionych presetów.</p>
+          <p className="text-sm" style={{ color: 'var(--muted)' }}>Nie masz jeszcze ulubionych presetów.</p>
         ) : (
           <div className="grid sm:grid-cols-2 gap-2">
             {favorites.map(fav => (
-              <button key={fav.id} type="button" onClick={() => loadFavorite(fav)} className="text-left border border-slate-200 rounded-lg px-3 py-2 hover:border-indigo-300">
-                <p className="text-sm font-medium text-slate-900 truncate">{fav.label}</p>
-                <p className="text-xs text-slate-500 mt-1">{fav.resourceType === 'deck' ? 'Deck' : 'Folder'} · {fav.direction}</p>
+              <button key={fav.id} type="button" onClick={() => loadFavorite(fav)} className="text-left border border-[var(--border)] rounded-[var(--radiusSm)] px-3 py-2 hover:border-[var(--primary)]">
+                <p className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>{fav.label}</p>
+                <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>{fav.resourceType === 'deck' ? 'Deck' : 'Folder'} · {fav.direction}</p>
               </button>
             ))}
           </div>

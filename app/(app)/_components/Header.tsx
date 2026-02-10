@@ -45,7 +45,7 @@ export function Header({ username }: { username: string }) {
   }, [query])
 
   return (
-    <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-slate-200">
+    <header className="sticky top-0 z-30 bg-[var(--surface)] backdrop-blur-sm" style={{ borderBottom: '1px solid var(--border)' }}>
       <div className="flex items-center gap-4 px-4 lg:px-6 py-4">
         {/* Spacer for mobile hamburger */}
         <div className="w-10 lg:hidden" />
@@ -53,18 +53,18 @@ export function Header({ username }: { username: string }) {
         {/* Search */}
         <div ref={searchRef} className="flex-1 max-w-2xl relative">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--gray400)]" />
             <input
               type="text"
               value={query}
               onChange={e => setQuery(e.target.value)}
               onFocus={() => results.length > 0 && setShowResults(true)}
               placeholder="Szukaj zestawów, folderów, pytań"
-              className="w-full pl-10 pr-4 py-2.5 text-sm bg-white border border-slate-200 rounded-full text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-indigo-500 focus:outline-none transition-colors"
+              className="w-full pl-10 pr-4 py-2.5 text-sm bg-[var(--surface)] border border-[var(--border)] rounded-full text-[var(--text)] placeholder:text-[var(--gray400)] focus:bg-[var(--surface)] focus:border-[var(--primary)] focus:outline-none transition-colors"
             />
           </div>
           {showResults && results.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden z-50">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius)] overflow-hidden z-50">
               {results.map(r => (
                 <button
                   key={`${r.type}-${r.id}`}
@@ -73,10 +73,10 @@ export function Header({ username }: { username: string }) {
                     setShowResults(false)
                     setQuery('')
                   }}
-                  className="w-full text-left px-4 py-2.5 text-sm hover:bg-slate-100 flex items-center gap-2 text-slate-900"
+                  className="w-full text-left px-4 py-2.5 text-sm hover:bg-[var(--surface2)] flex items-center gap-2" style={{ color: 'var(--text)' }}
                 >
-                  <span className="text-[10px] font-medium uppercase tracking-wide text-slate-400 w-12">{r.type}</span>
-                  <span className="text-slate-900">{r.name}</span>
+                  <span className="text-[10px] font-medium uppercase tracking-wide w-12" style={{ color: 'var(--gray400)' }}>{r.type}</span>
+                  <span style={{ color: 'var(--text)' }}>{r.name}</span>
                 </button>
               ))}
             </div>
@@ -87,20 +87,20 @@ export function Header({ username }: { username: string }) {
         <div className="relative">
           <button
             onClick={() => setShowCreate(!showCreate)}
-            className="p-2 rounded-full bg-indigo-600 text-white hover:bg-indigo-500 transition-colors"
+            className="p-2 rounded-full bg-[var(--primary)] text-white hover:brightness-110 transition-colors"
             aria-label="Create"
           >
             {showCreate ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
           </button>
           {showCreate && (
-            <div className="absolute right-0 top-full mt-2 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden z-50 w-48">
-              <Link href="/decks?create=true" onClick={() => setShowCreate(false)} className="block px-4 py-2.5 text-sm hover:bg-slate-100 text-slate-900">
+            <div className="absolute right-0 top-full mt-2 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius)] overflow-hidden z-50 w-48">
+              <Link href="/decks?create=true" onClick={() => setShowCreate(false)} className="block px-4 py-2.5 text-sm hover:bg-[var(--surface2)]" style={{ color: 'var(--text)' }}>
                 Nowy zestaw
               </Link>
-              <Link href="/library?tab=folders&create=true" onClick={() => setShowCreate(false)} className="block px-4 py-2.5 text-sm hover:bg-slate-100 text-slate-900">
+              <Link href="/library?tab=folders&create=true" onClick={() => setShowCreate(false)} className="block px-4 py-2.5 text-sm hover:bg-[var(--surface2)]" style={{ color: 'var(--text)' }}>
                 Nowy folder
               </Link>
-              <Link href="/import" onClick={() => setShowCreate(false)} className="block px-4 py-2.5 text-sm hover:bg-slate-100 text-slate-900">
+              <Link href="/import" onClick={() => setShowCreate(false)} className="block px-4 py-2.5 text-sm hover:bg-[var(--surface2)]" style={{ color: 'var(--text)' }}>
                 Importuj CSV
               </Link>
             </div>
@@ -108,7 +108,7 @@ export function Header({ username }: { username: string }) {
         </div>
 
         {/* User */}
-        <span className="text-xs text-slate-500 hidden sm:block">{username}</span>
+        <span className="text-xs hidden sm:block" style={{ color: 'var(--muted)' }}>{username}</span>
       </div>
     </header>
   )

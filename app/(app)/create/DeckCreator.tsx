@@ -201,49 +201,53 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
   }
 
   return (
-    <div className="max-w-[1120px] mx-auto p-4 lg:p-6 space-y-6">
+    <div className="mx-auto p-4 lg:p-6 space-y-6" style={{ maxWidth: 'var(--containerMax)' }}>
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-slate-900">Kreator zestawów</h2>
+        <h2 className="text-base font-semibold" style={{ color: 'var(--text)' }}>Kreator zestawów</h2>
         <div className="flex gap-2">
           <button
             onClick={() => saveDeck(true)}
             disabled={saving}
-            className="bg-white border border-indigo-200 text-[#4255ff] px-4 py-2 rounded-xl text-sm font-medium hover:bg-[#eef1ff] disabled:opacity-50 transition-all"
+            className="px-4 py-2 rounded-full text-sm font-semibold disabled:opacity-50 transition-colors"
+            style={{ background: 'var(--primaryBg)', color: 'var(--primary)', border: '1px solid transparent' }}
           >
             {saving ? 'Zapisywanie…' : 'Utwórz i ćwicz'}
           </button>
           <button
             onClick={() => saveDeck(false)}
             disabled={saving}
-            className="bg-[#4255ff] text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-[#3245dc] disabled:opacity-50 transition-all"
+            className="px-5 py-2 rounded-full text-sm font-semibold disabled:opacity-50 transition-colors"
+            style={{ background: 'var(--primary)', color: '#fff', border: '1px solid var(--primary)' }}
           >
             {saving ? 'Zapisywanie…' : 'Utwórz zestaw'}
           </button>
         </div>
       </div>
 
-      {error && <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-2">{error}</p>}
+      {error && <p className="text-sm rounded-[var(--radiusSm)] px-4 py-2" style={{ color: '#dc2626', background: '#fef2f2', border: '1px solid #fecaca' }}>{error}</p>}
 
       {/* Deck meta */}
-      <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-4 ">
+      <div className="rounded-[var(--radius)] p-5 space-y-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
         <div>
-          <label className="block text-xs font-medium text-slate-500 mb-1.5">Nazwa zestawu *</label>
+          <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>Nazwa zestawu *</label>
           <input
             type="text"
             value={name}
             onChange={e => setName(e.target.value)}
             placeholder="e.g. English B2 Vocabulary"
-            className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-[#4255ff] focus:outline-none"
+            className="w-full rounded-[var(--radiusSm)] px-3 py-2.5 text-sm focus:outline-none"
+            style={{ border: '1px solid var(--border)', color: 'var(--text)' }}
           />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1.5">Folder (opcjonalnie)</label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>Folder (opcjonalnie)</label>
             <select
               value={folderId}
               onChange={e => setFolderId(e.target.value)}
-              className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-[#4255ff] focus:outline-none bg-white"
+              className="w-full rounded-[var(--radiusSm)] px-3 py-2.5 text-sm focus:outline-none"
+              style={{ border: '1px solid var(--border)', color: 'var(--text)', background: 'var(--surface)' }}
             >
               <option value="">Bez folderu</option>
               {folders.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
@@ -251,11 +255,12 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1.5">Kierunek</label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>Kierunek</label>
             <select
               value={direction}
               onChange={e => setKierunek(e.target.value as typeof direction)}
-              className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-[#4255ff] focus:outline-none bg-white"
+              className="w-full rounded-[var(--radiusSm)] px-3 py-2.5 text-sm focus:outline-none"
+              style={{ border: '1px solid var(--border)', color: 'var(--text)', background: 'var(--surface)' }}
             >
               <option value="front-to-back">Przód → Tył</option>
               <option value="back-to-front">Tył → Przód</option>
@@ -264,36 +269,37 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1.5">Opis</label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>Opis</label>
             <input
               type="text"
               value={description}
               onChange={e => setOpis(e.target.value)}
               placeholder="Opcjonalny opis"
-              className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-[#4255ff] focus:outline-none"
+              className="w-full rounded-[var(--radiusSm)] px-3 py-2.5 text-sm focus:outline-none"
+              style={{ border: '1px solid var(--border)', color: 'var(--text)' }}
             />
           </div>
         </div>
       </div>
 
       {/* Cards table */}
-      <div className="bg-white border border-slate-200 rounded-xl  overflow-hidden">
-        <div className="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
-          <p className="text-sm font-medium text-slate-900">
-            Cards <span className="text-slate-400">({cards.filter(c => c.front && c.back).length} valid)</span>
+      <div className="rounded-[var(--radius)] overflow-hidden" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+        <div className="px-5 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid var(--border)' }}>
+          <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>
+            Cards <span style={{ color: 'var(--gray400)' }}>({cards.filter(c => c.front && c.back).length} valid)</span>
           </p>
           <div className="flex gap-2">
-            <button onClick={() => setShowImport(true)} className="text-xs text-slate-500 hover:text-[#4255ff] font-medium border border-slate-200 px-3 py-1.5 rounded-lg hover:border-indigo-300 transition-colors">
+            <button onClick={() => setShowImport(true)} className="text-xs font-medium px-3 py-1.5 rounded-[var(--radiusSm)] transition-colors" style={{ color: 'var(--muted)', border: '1px solid var(--border)' }}>
               Import
             </button>
-            <button onClick={addRow} className="text-xs text-[#4255ff] hover:text-[#3245dc] font-medium">
+            <button onClick={addRow} className="text-xs font-medium" style={{ color: 'var(--primary)' }}>
               + Add Row
             </button>
           </div>
         </div>
 
         {/* Header */}
-        <div className="grid grid-cols-[2rem_1fr_1fr_2rem] sm:grid-cols-[2rem_1fr_1fr_1fr_2rem] gap-0 px-5 py-2 bg-slate-50 text-[10px] font-medium text-slate-400 uppercase tracking-wider">
+        <div className="grid grid-cols-[2rem_1fr_1fr_2rem] sm:grid-cols-[2rem_1fr_1fr_1fr_2rem] gap-0 px-5 py-2 text-[10px] font-medium uppercase tracking-wider" style={{ background: 'var(--surface2)', color: 'var(--gray400)' }}>
           <span>#</span>
           <span>Front (term)</span>
           <span>Back (definition)</span>
@@ -302,10 +308,10 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
         </div>
 
         {/* Rows */}
-        <div className="divide-y divide-slate-100">
+        <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
           {cards.map((card, idx) => (
-            <div key={card.id} className="grid grid-cols-[2rem_1fr_1fr_2rem] sm:grid-cols-[2rem_1fr_1fr_1fr_2rem] gap-0 px-5 py-2 items-center group hover:bg-slate-50/50">
-              <span className="text-xs text-slate-300 tabular-nums">{idx + 1}</span>
+            <div key={card.id} className="grid grid-cols-[2rem_1fr_1fr_2rem] sm:grid-cols-[2rem_1fr_1fr_1fr_2rem] gap-0 px-5 py-2 items-center group hover:bg-[#f8fafc]">
+              <span className="text-xs tabular-nums" style={{ color: 'var(--gray400)' }}>{idx + 1}</span>
               <input
                 ref={idx === cards.length - 1 ? lastInputRef : undefined}
                 type="text"
@@ -313,7 +319,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
                 onChange={e => updateCard(card.id, 'front', e.target.value)}
                 onKeyDown={e => handleKeyDown(e, card.id, 'front')}
                 placeholder="Term"
-                className="text-sm border-0 bg-transparent px-2 py-1.5 focus:outline-none focus:bg-indigo-50 rounded"
+                className="text-sm border-0 bg-transparent px-2 py-1.5 focus:outline-none focus:bg-[var(--primaryBg)] rounded"
               />
               <input
                 type="text"
@@ -321,18 +327,19 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
                 onChange={e => updateCard(card.id, 'back', e.target.value)}
                 onKeyDown={e => handleKeyDown(e, card.id, 'back')}
                 placeholder="Definition"
-                className="text-sm border-0 bg-transparent px-2 py-1.5 focus:outline-none focus:bg-indigo-50 rounded"
+                className="text-sm border-0 bg-transparent px-2 py-1.5 focus:outline-none focus:bg-[var(--primaryBg)] rounded"
               />
               <input
                 type="text"
                 value={card.examples}
                 onChange={e => updateCard(card.id, 'examples', e.target.value)}
                 placeholder="Example sentence"
-                className="hidden sm:block text-sm border-0 bg-transparent px-2 py-1.5 focus:outline-none focus:bg-indigo-50 rounded"
+                className="hidden sm:block text-sm border-0 bg-transparent px-2 py-1.5 focus:outline-none focus:bg-[var(--primaryBg)] rounded"
               />
               <button
                 onClick={() => removeRow(card.id)}
-                className="text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 text-sm"
+                className="opacity-0 group-hover:opacity-100 text-sm transition-colors hover:text-red-500"
+                style={{ color: 'var(--gray400)' }}
                 title="Remove"
               >
                 ×
@@ -341,8 +348,8 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
           ))}
         </div>
 
-        <div className="px-5 py-3 border-t border-slate-100">
-          <button onClick={addRow} className="w-full py-2 border border-dashed border-slate-200 rounded-lg text-sm text-slate-400 hover:border-indigo-300 hover:text-[#4255ff] transition-colors">
+        <div className="px-5 py-3" style={{ borderTop: '1px solid var(--border)' }}>
+          <button onClick={addRow} className="w-full py-2 rounded-[var(--radiusSm)] text-sm transition-colors" style={{ border: '1px dashed var(--border)', color: 'var(--gray400)' }}>
             + Add another card
           </button>
         </div>
@@ -350,21 +357,23 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
 
       {/* Bottom actions */}
       <div className="flex items-center justify-between">
-        <button onClick={() => router.back()} className="text-sm text-slate-400 hover:text-slate-600 transition-colors">
+        <button onClick={() => router.back()} className="text-sm transition-colors" style={{ color: 'var(--gray400)' }}>
           Cancel
         </button>
         <div className="flex gap-2">
           <button
             onClick={() => saveDeck(true)}
             disabled={saving}
-            className="bg-white border border-indigo-200 text-[#4255ff] px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#eef1ff] disabled:opacity-50 transition-all"
+            className="px-5 py-2.5 rounded-full text-sm font-semibold disabled:opacity-50 transition-colors"
+            style={{ background: 'var(--primaryBg)', color: 'var(--primary)', border: '1px solid transparent' }}
           >
             {saving ? 'Zapisywanie…' : 'Utwórz i ćwicz'}
           </button>
           <button
             onClick={() => saveDeck(false)}
             disabled={saving}
-            className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:from-indigo-700 hover:to-violet-700 disabled:opacity-50 transition-all"
+            className="px-6 py-2.5 rounded-full text-sm font-semibold disabled:opacity-50 transition-colors"
+            style={{ background: 'var(--primary)', color: '#fff', border: '1px solid var(--primary)' }}
           >
             {saving ? 'Saving…' : `Create (${cards.filter(c => c.front && c.back).length} cards)`}
           </button>
@@ -374,10 +383,10 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
       {/* Import Modal */}
       {showImport && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setShowImport(false)}>
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-auto" onClick={e => e.stopPropagation()}>
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-slate-900">Import Cards</h3>
-              <button onClick={() => setShowImport(false)} className="text-slate-400 hover:text-slate-600 text-xl">×</button>
+          <div className="w-full max-w-2xl max-h-[90vh] overflow-auto rounded-[var(--radius)]" style={{ background: 'var(--surface)' }} onClick={e => e.stopPropagation()}>
+            <div className="px-6 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--border)' }}>
+              <h3 className="text-base font-semibold" style={{ color: 'var(--text)' }}>Import Cards</h3>
+              <button onClick={() => setShowImport(false)} className="text-xl" style={{ color: 'var(--gray400)' }}>×</button>
             </div>
             <div className="px-6 py-5 space-y-4">
               <textarea
@@ -385,20 +394,21 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
                 onChange={e => setImportText(e.target.value)}
                 placeholder={`Paste your data here...\n\nExample (tab-separated):\nhello\tcześć\ndog\tpies\ncat\tkot`}
                 rows={8}
-                className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-[#4255ff] focus:outline-none resize-none font-mono"
+                className="w-full rounded-[var(--radiusSm)] px-4 py-3 text-sm focus:outline-none resize-none font-mono"
+                style={{ border: '1px solid var(--border)', color: 'var(--text)' }}
               />
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-slate-500 mb-1.5">Between term and definition</label>
-                  <select value={termDel} onChange={e => setTermDel(e.target.value)} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:border-[#4255ff] focus:outline-none">
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>Between term and definition</label>
+                  <select value={termDel} onChange={e => setTermDel(e.target.value)} className="w-full rounded-[var(--radiusSm)] px-3 py-2 text-sm focus:outline-none" style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}>
                     <option value="tab">Tab</option>
                     <option value="comma">Comma</option>
                     <option value="semicolon">Semicolon</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-500 mb-1.5">Between cards</label>
-                  <select value={cardDel} onChange={e => setCardDel(e.target.value)} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:border-[#4255ff] focus:outline-none">
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>Between cards</label>
+                  <select value={cardDel} onChange={e => setCardDel(e.target.value)} className="w-full rounded-[var(--radiusSm)] px-3 py-2 text-sm focus:outline-none" style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}>
                     <option value="newline">New line</option>
                     <option value="semicolon">Semicolon</option>
                   </select>
@@ -406,30 +416,31 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
               </div>
               {importPreview.length > 0 && (
                 <div>
-                  <p className="text-xs font-medium text-slate-500 mb-2">Preview ({importPreview.length} cards)</p>
-                  <div className="max-h-40 overflow-auto border border-slate-200 rounded-lg divide-y divide-slate-100">
+                  <p className="text-xs font-medium mb-2" style={{ color: 'var(--muted)' }}>Preview ({importPreview.length} cards)</p>
+                  <div className="max-h-40 overflow-auto rounded-[var(--radiusSm)] divide-y" style={{ border: '1px solid var(--border)' }}>
                     {importPreview.slice(0, 10).map((card, i) => (
                       <div key={i} className="px-3 py-2 text-sm flex gap-4">
-                        <span className="text-slate-400 tabular-nums w-6">{i + 1}</span>
-                        <span className="font-medium text-slate-900 flex-1">{card.front}</span>
-                        <span className="text-slate-500 flex-1">{card.back}</span>
+                        <span className="tabular-nums w-6" style={{ color: 'var(--gray400)' }}>{i + 1}</span>
+                        <span className="font-medium flex-1" style={{ color: 'var(--text)' }}>{card.front}</span>
+                        <span className="flex-1" style={{ color: 'var(--muted)' }}>{card.back}</span>
                       </div>
                     ))}
                     {importPreview.length > 10 && (
-                      <p className="px-3 py-2 text-xs text-slate-400">…and {importPreview.length - 10} more</p>
+                      <p className="px-3 py-2 text-xs" style={{ color: 'var(--gray400)' }}>…and {importPreview.length - 10} more</p>
                     )}
                   </div>
                 </div>
               )}
             </div>
-            <div className="px-6 py-4 border-t border-slate-100 flex justify-end gap-2">
-              <button onClick={() => setShowImport(false)} className="text-sm text-slate-500 hover:text-slate-700 px-4 py-2">
+            <div className="px-6 py-4 flex justify-end gap-2" style={{ borderTop: '1px solid var(--border)' }}>
+              <button onClick={() => setShowImport(false)} className="text-sm px-4 py-2" style={{ color: 'var(--muted)' }}>
                 Cancel
               </button>
               <button
                 onClick={handleImport}
                 disabled={importPreview.length === 0}
-                className="bg-[#4255ff] text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-[#3245dc] disabled:opacity-50 transition-all"
+                className="px-5 py-2 rounded-full text-sm font-semibold disabled:opacity-50 transition-colors"
+                style={{ background: 'var(--primary)', color: '#fff' }}
               >
                 Import {importPreview.length} cards
               </button>
