@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Target, Clock, Languages, Shuffle, TrendingUp, Save, Check } from 'lucide-react'
 
 type Settings = {
   minSessionsPerDay: number
@@ -16,6 +17,7 @@ type Settings = {
 export default function SettingsPage() {
   const [settings, setSettings] = useState<Settings | null>(null)
   const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
   const [status, setStatus] = useState('')
 
   useEffect(() => {
@@ -28,6 +30,7 @@ export default function SettingsPage() {
   async function save() {
     if (!settings) return
     setSaving(true)
+    setSaved(false)
     setStatus('')
     try {
       const res = await fetch('/api/settings', {
@@ -37,7 +40,9 @@ export default function SettingsPage() {
         body: JSON.stringify(settings),
       })
       if (!res.ok) throw new Error('save')
+      setSaved(true)
       setStatus('Zapisano ustawienia.')
+      setTimeout(() => setSaved(false), 2000)
     } catch {
       setStatus('Nie udało się zapisać ustawień.')
     } finally {
@@ -46,127 +51,205 @@ export default function SettingsPage() {
   }
 
   if (!settings) {
-    return <div className="p-6 lg:p-8 max-w-3xl mx-auto text-sm text-slate-400">Ładowanie ustawień…</div>
+    return (
+      <div className="settings-container">
+        <div className="settings-loading">Ładowanie ustawień…</div>
+      </div>
+    )
   }
 
   return (
-    <div className="p-6 lg:p-8 max-w-3xl mx-auto space-y-6">
-      <div>
-        <h2 className="text-xl font-semibold text-slate-900">Ustawienia</h2>
-        <p className="text-sm text-slate-400">Cele dzienne, preferencje językowe i mix trybów.</p>
+    <div className="settings-container">
+      <div className="settings-header">
+        <h1 className="settings-title">Ustawienia</h1>
+        <p className="settings-subtitle">Dostosuj swoją naukę do swoich potrzeb</p>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-5">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1.5">Min. sesji dziennie</label>
+      {/* Daily Goals Section */}
+      <section className="settings-section">
+        <div className="settings-section-header">
+          <Target size={20} />
+          <h2>Cele dzienne</h2>
+        </div>
+        <div className="settings-grid">
+          <div className="settings-field">
+            <label>
+              <Clock size={16} />
+              <span>Min. sesji dziennie</span>
+            </label>
             <input
               type="number"
               min={1}
               max={10}
               value={settings.minSessionsPerDay}
               onChange={e => setSettings({ ...settings, minSessionsPerDay: Number(e.target.value) })}
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+              className="settings-input"
             />
+            <p className="settings-hint">Ile sesji chcesz robić każdego dnia</p>
           </div>
-          <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1.5">Min. minut dziennie</label>
+
+          <div className="settings-field">
+            <label>
+              <Clock size={16} />
+              <span>Min. minut dziennie</span>
+            </label>
             <input
               type="number"
               min={5}
               max={180}
               value={settings.minMinutesPerDay}
               onChange={e => setSettings({ ...settings, minMinutesPerDay: Number(e.target.value) })}
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+              className="settings-input"
             />
+            <p className="settings-hint">Ile minut chcesz uczyć się dziennie</p>
           </div>
         </div>
 
-        <div>
-          <label className="block text-xs font-medium text-slate-500 mb-1.5">Cel dzienny</label>
+        <div className="settings-field">
+          <label>
+            <Target size={16} />
+            <span>Tryb celu dziennego</span>
+          </label>
           <select
             value={settings.dailyGoalMode}
             onChange={e => setSettings({ ...settings, dailyGoalMode: e.target.value as Settings['dailyGoalMode'] })}
-            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white"
+            className="settings-select"
           >
-            <option value="sessions">Sesje</option>
-            <option value="minutes">Minuty</option>
-            <option value="hybrid">Hybrydowy</option>
+            <option value="sessions">Sesje - cel oparty na liczbie sesji</option>
+            <option value="minutes">Minuty - cel oparty na czasie nauki</option>
+            <option value="hybrid">Hybrydowy - sesje + minuty</option>
           </select>
+          <p className="settings-hint">Jak chcesz mierzyć swój dzienny postęp</p>
         </div>
+      </section>
 
-        <div>
-          <label className="block text-xs font-medium text-slate-500 mb-1.5">Domyślny kierunek</label>
+      {/* Language Direction Section */}
+      <section className="settings-section">
+        <div className="settings-section-header">
+          <Languages size={20} />
+          <h2>Preferencje językowe</h2>
+        </div>
+        <div className="settings-field">
+          <label>
+            <Languages size={16} />
+            <span>Domyślny kierunek tłumaczenia</span>
+          </label>
           <select
             value={settings.defaultDirection}
             onChange={e => setSettings({ ...settings, defaultDirection: e.target.value as Settings['defaultDirection'] })}
-            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white"
+            className="settings-select"
           >
-            <option value="pl-en">PL → EN</option>
-            <option value="en-pl">EN → PL</option>
-            <option value="both">Oba</option>
+            <option value="pl-en">Polski → Angielski</option>
+            <option value="en-pl">Angielski → Polski</option>
+            <option value="both">Oba kierunki (losowo)</option>
           </select>
+          <p className="settings-hint">W którą stronę chcesz tłumaczyć domyślnie</p>
         </div>
+      </section>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1.5">Mix Translate %</label>
-            <input
-              type="number"
-              min={0}
-              max={100}
-              value={settings.mixTranslate}
-              onChange={e => setSettings({ ...settings, mixTranslate: Number(e.target.value) })}
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
-            />
+      {/* Mode Mix Section */}
+      <section className="settings-section">
+        <div className="settings-section-header">
+          <Shuffle size={20} />
+          <h2>Proporcje trybów w trybie Mixed</h2>
+        </div>
+        <div className="settings-grid-3">
+          <div className="settings-field">
+            <label>
+              <span>Tłumaczenie</span>
+            </label>
+            <div className="settings-slider-container">
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={settings.mixTranslate}
+                onChange={e => setSettings({ ...settings, mixTranslate: Number(e.target.value) })}
+                className="settings-slider"
+              />
+              <span className="settings-slider-value">{settings.mixTranslate}%</span>
+            </div>
           </div>
-          <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1.5">Mix ABCD %</label>
-            <input
-              type="number"
-              min={0}
-              max={100}
-              value={settings.mixAbcd}
-              onChange={e => setSettings({ ...settings, mixAbcd: Number(e.target.value) })}
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
-            />
+
+          <div className="settings-field">
+            <label>
+              <span>Test wyboru (ABCD)</span>
+            </label>
+            <div className="settings-slider-container">
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={settings.mixAbcd}
+                onChange={e => setSettings({ ...settings, mixAbcd: Number(e.target.value) })}
+                className="settings-slider"
+              />
+              <span className="settings-slider-value">{settings.mixAbcd}%</span>
+            </div>
           </div>
-          <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1.5">Mix Sentence %</label>
-            <input
-              type="number"
-              min={0}
-              max={100}
-              value={settings.mixSentence}
-              onChange={e => setSettings({ ...settings, mixSentence: Number(e.target.value) })}
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
-            />
+
+          <div className="settings-field">
+            <label>
+              <span>Zdania</span>
+            </label>
+            <div className="settings-slider-container">
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={settings.mixSentence}
+                onChange={e => setSettings({ ...settings, mixSentence: Number(e.target.value) })}
+                className="settings-slider"
+              />
+              <span className="settings-slider-value">{settings.mixSentence}%</span>
+            </div>
           </div>
         </div>
+        <p className="settings-hint">Proporcje nie muszą sumować się do 100% - system dostosuje je automatycznie</p>
+      </section>
 
-        <div>
-          <label className="block text-xs font-medium text-slate-500 mb-1.5">Max nowych kart dziennie (SRS)</label>
+      {/* Advanced Section */}
+      <section className="settings-section">
+        <div className="settings-section-header">
+          <TrendingUp size={20} />
+          <h2>Zaawansowane</h2>
+        </div>
+        <div className="settings-field">
+          <label>
+            <TrendingUp size={16} />
+            <span>Max nowych kart dziennie (SRS)</span>
+          </label>
           <input
             type="number"
             min={0}
             max={200}
             value={settings.maxNewPerDay}
             onChange={e => setSettings({ ...settings, maxNewPerDay: Number(e.target.value) })}
-            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+            className="settings-input"
           />
+          <p className="settings-hint">Limit nowych kart w systemie powtórek rozłożonych (SRS)</p>
         </div>
-      </div>
+      </section>
 
-      <div className="flex items-center gap-3">
+      {/* Save Button */}
+      <div className="settings-actions">
         <button
           type="button"
           onClick={save}
           disabled={saving}
-          className="px-5 py-2 rounded-xl bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+          className={`settings-save-btn ${saved ? 'settings-save-btn--saved' : ''}`}
         >
-          {saving ? 'Zapisywanie…' : 'Zapisz'}
+          {saved ? (
+            <>
+              <Check size={18} /> Zapisano
+            </>
+          ) : (
+            <>
+              <Save size={18} /> {saving ? 'Zapisywanie…' : 'Zapisz ustawienia'}
+            </>
+          )}
         </button>
-        {status && <span className="text-xs text-slate-500">{status}</span>}
+        {status && <span className="settings-status">{status}</span>}
       </div>
     </div>
   )

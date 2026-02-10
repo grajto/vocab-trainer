@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { BookOpen, CalendarClock, FolderOpen } from 'lucide-react'
+import { BookOpen, CalendarClock, FolderOpen, Zap } from 'lucide-react'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { getStudySettings, isDailyGoalMet } from '@/src/lib/userSettings'
 import { JumpBackInList } from './JumpBackInList'
+import { getQuickSuggestions } from '@/src/lib/studyAlgorithm'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,11 +31,32 @@ export default async function DashboardPage() {
 
   try {
     const results = await Promise.all([
-      payload.find({ collection: 'sessions', where: { owner: { equals: user.id }, startedAt: { greater_than_equal: todayStart.toISOString() } }, limit: 100, depth: 0 }),
+      // Only fetch COMPLETED sessions for today (endedAt must not be null)
+      payload.find({ 
+        collection: 'sessions', 
+        where: { 
+          owner: { equals: user.id }, 
+          startedAt: { greater_than_equal: todayStart.toISOString() },
+          endedAt: { not_equals: null }
+        }, 
+        limit: 100, 
+        depth: 0 
+      }),
       payload.find({ collection: 'decks', where: { owner: { equals: user.id } }, sort: '-updatedAt', limit: 200, depth: 0 }),
       payload.find({ collection: 'folders', where: { owner: { equals: user.id } }, sort: '-updatedAt', limit: 200, depth: 0 }),
       payload.find({ collection: 'sessions', where: { owner: { equals: user.id } }, sort: '-startedAt', limit: 30, depth: 0 }),
-      payload.find({ collection: 'sessions', where: { owner: { equals: user.id }, startedAt: { greater_than_equal: new Date(now.getFullYear() - 1, now.getMonth(), now.getDate()).toISOString() } }, sort: '-startedAt', limit: 0, depth: 0 }),
+      // For streak calculation, get all sessions from the past year
+      payload.find({ 
+        collection: 'sessions', 
+        where: { 
+          owner: { equals: user.id }, 
+          startedAt: { greater_than_equal: new Date(now.getFullYear() - 1, now.getMonth(), now.getDate()).toISOString() },
+          endedAt: { not_equals: null }
+        }, 
+        sort: '-startedAt', 
+        limit: 0, 
+        depth: 0 
+      }),
     ])
     sessionsToday = results[0]
     decks = results[1]
@@ -46,22 +68,27 @@ export default async function DashboardPage() {
   }
 
   const settings = getStudySettings(user as Record<string, unknown>)
+  
+  // Calculate time only from COMPLETED sessions
   const timeTodayMinutes = sessionsToday.docs.reduce((sum: number, s: any) => {
-    if (!s.startedAt) return sum
+    if (!s.startedAt || !s.endedAt) return sum
     const start = new Date(s.startedAt)
-    const end = s.endedAt ? new Date(s.endedAt) : now
-    return sum + Math.max(1, Math.round((end.getTime() - start.getTime()) / 60000))
+    const end = new Date(s.endedAt)
+    const minutes = Math.round((end.getTime() - start.getTime()) / 60000)
+    return sum + Math.max(0, minutes) // Don't count negative times
   }, 0)
 
+  // Calculate session data by day for streak
   const sessionsByDay = new Map<string, { sessions: number; minutes: number }>()
   for (const s of allSessionsYear.docs) {
-    if (!s.startedAt) continue
+    if (!s.startedAt || !s.endedAt) continue
     const start = new Date(s.startedAt)
-    const end = s.endedAt ? new Date(s.endedAt) : now
+    const end = new Date(s.endedAt)
     const key = getDayKey(start)
     const existing = sessionsByDay.get(key) ?? { sessions: 0, minutes: 0 }
     existing.sessions += 1
-    existing.minutes += Math.max(1, Math.round((end.getTime() - start.getTime()) / 60000))
+    const minutes = Math.round((end.getTime() - start.getTime()) / 60000)
+    existing.minutes += Math.max(0, minutes)
     sessionsByDay.set(key, existing)
   }
 
@@ -110,18 +137,41 @@ export default async function DashboardPage() {
     .map((d: any) => ({
       id: String(d.id),
       name: d.name,
-      cardCount: Number(d.cardCount || 0),
+      count: Number(d.cardCount || 0),
+      countLabel: `${Number(d.cardCount || 0)} słówek`,
       type: 'deck' as const,
     }))
 
-  const recentFolders = folders.docs.slice(0, 4).map((f: any) => ({
-    id: String(f.id),
-    name: f.name,
-    cardCount: decks.docs.filter((d: any) => String(d.folder) === String(f.id)).reduce((sum: number, d: any) => sum + Number(d.cardCount || 0), 0),
-    type: 'folder' as const,
-  }))
+  const recentFolders = folders.docs.slice(0, 4).map((f: any) => {
+    const folderDecks = decks.docs.filter((d: any) => String(d.folder) === String(f.id))
+    return {
+      id: String(f.id),
+      name: f.name,
+      count: folderDecks.length,
+      countLabel: `${folderDecks.length} zestawów`,
+      type: 'folder' as const,
+    }
+  })
 
   const recents = [...recentDecks, ...recentFolders].slice(0, 8)
+
+  // Get quick suggestions using algorithm
+  const quickSuggestions = getQuickSuggestions(
+    decks.docs.map((d: any) => ({
+      id: String(d.id),
+      name: d.name,
+      cardCount: Number(d.cardCount || 0),
+      updatedAt: d.updatedAt
+    })),
+    recentSessions.docs.map((s: any) => ({
+      deck: String(s.deck),
+      startedAt: s.startedAt,
+      completedCount: Number(s.completedCount || 0),
+      targetCount: Number(s.targetCount || 0),
+      mode: s.mode || 'translate'
+    })),
+    3
+  )
 
   const last3Days = [2, 1, 0].map(offset => {
     const d = new Date(now)
@@ -165,6 +215,34 @@ export default async function DashboardPage() {
         </div>
       </section>
 
+      {/* Quick Suggestions Section */}
+      {quickSuggestions.length > 0 && (
+        <section className="dash-section">
+          <div className="dash-section__head">
+            <h3><Zap size={20} style={{ display: 'inline', marginRight: '8px', verticalAlign: 'middle' }} />Szybkie propozycje</h3>
+            <span className="text-sm text-slate-500">Krótkie sesje • 15 słówek max</span>
+          </div>
+          <div className="quick-suggestions-grid">
+            {quickSuggestions.map((suggestion, idx) => (
+              <Link 
+                key={`${suggestion.deckId}-${idx}`}
+                href={`/api/session/start?deckId=${suggestion.deckId}&mode=${suggestion.mode}&targetCount=${suggestion.cardCount}`}
+                className="quick-suggestion-card"
+              >
+                <div className="quick-suggestion-header">
+                  <h4 className="quick-suggestion-title">{suggestion.name}</h4>
+                  <span className="quick-suggestion-badge">{suggestion.mode === 'translate' ? 'Tłumaczenie' : suggestion.mode === 'abcd' ? 'Test wyboru' : 'Zdania'}</span>
+                </div>
+                <p className="quick-suggestion-meta">{suggestion.cardCount} słówek • {suggestion.reason}</p>
+                <button className="quick-suggestion-btn">
+                  <Zap size={14} /> Zacznij teraz
+                </button>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
       <section className="dash-section">
         <div className="dash-section__head">
           <h3>Jump back in</h3>
@@ -183,10 +261,12 @@ export default async function DashboardPage() {
           <div className="dash-recents-grid">
             {recents.map(item => (
               <Link key={`${item.type}-${item.id}`} href={item.type === 'deck' ? `/decks/${item.id}` : `/folders/${item.id}`} className="dash-recent-row">
-                <span className="dash-recent-emoji">{item.type === 'deck' ? '📘' : '📁'}</span>
+                <span className="dash-recent-icon">
+                  {item.type === 'deck' ? <BookOpen size={18} /> : <FolderOpen size={18} />}
+                </span>
                 <span className="dash-recent-main">
                   <strong>{item.name}</strong>
-                  <small>{item.cardCount} słówek</small>
+                  <small>{item.countLabel}</small>
                 </span>
               </Link>
             ))}
@@ -196,7 +276,7 @@ export default async function DashboardPage() {
 
       <section className="dash-split-two">
         <div className="dash-card-box">
-          <h3 className="dash-card-title"><CalendarClock size={18} /> Mini kalendarz</h3>
+          <h3 className="dash-card-title"><CalendarClock size={18} /> Twoja aktywność</h3>
           <div className="dash-mini-calendar">
             {last3Days.map(day => (
               <div key={day.label} className={`dash-day ${day.sessions === 0 ? 'is-none' : day.met ? 'is-met' : 'is-partial'}`}>
@@ -206,7 +286,20 @@ export default async function DashboardPage() {
               </div>
             ))}
           </div>
-          <p className="dash-hint">Wczoraj zrobiłeś {yesterday.sessions} sesji i {yesterday.minutes} minut nauki.</p>
+          {yesterday.sessions > 0 ? (
+            <div className="dash-motivation">
+              <p className="dash-hint">
+                💪 Wczoraj: <strong>{yesterday.sessions} sesji</strong> i <strong>{yesterday.minutes} min</strong>
+              </p>
+              {sessionsToday.totalDocs >= yesterday.sessions ? (
+                <p className="dash-success">✨ Świetnie! Dzisiaj pobij swój rekord!</p>
+              ) : (
+                <p className="dash-challenge">🎯 Zrób dziś więcej niż wczoraj!</p>
+              )}
+            </div>
+          ) : (
+            <p className="dash-hint">Wczoraj nie było sesji. Zrób dzisiaj sesję i zacznij swoją serię!</p>
+          )}
           <Link href="/calendar" className="dash-link-inline">Przejdź do pełnego kalendarza</Link>
         </div>
 

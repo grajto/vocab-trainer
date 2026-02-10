@@ -5,7 +5,6 @@ import { Sidebar } from './Sidebar'
 import { TopNav } from './TopNav'
 
 export function AppShell({
-  username,
   folders,
   children,
 }: {
@@ -17,7 +16,7 @@ export function AppShell({
 
   return (
     <div>
-      <TopNav username={username} onOpenSidebar={() => setOpen(true)} />
+      <TopNav />
       <div className="app-layout">
         <div className="hidden-mobile">
           <Sidebar folders={folders} />
