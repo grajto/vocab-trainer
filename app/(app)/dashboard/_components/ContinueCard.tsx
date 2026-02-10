@@ -21,13 +21,13 @@ export function ContinueCard({ item }: { item: ContinueItem }) {
       </div>
 
       <div className="h-2 w-full rounded-full bg-slate-100">
-        <div className="h-2 rounded-full bg-indigo-500" style={{ width: `${item.progressPercent}%` }} />
+        <div className="h-2 rounded-full bg-orange-400" style={{ width: `${item.progressPercent}%` }} />
       </div>
 
       <p className="mt-2 text-sm text-slate-500">{item.progressMeta}</p>
 
-      <div className="mt-3 flex items-center justify-between">
-        <Link href={item.resumeHref} className="inline-flex min-h-10 items-center rounded-full bg-indigo-600 px-4 text-sm font-semibold text-white hover:bg-indigo-700">
+      <div className="mt-4 flex items-center justify-between">
+        <Link href={item.resumeHref} className="inline-flex min-h-10 items-center rounded-full bg-orange-400 px-4 text-sm font-semibold text-white hover:bg-orange-500">
           Kontynuuj
         </Link>
         <span className="text-xs text-slate-400">{item.date}</span>

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { CalendarClock, BookOpen, FolderOpen } from 'lucide-react'
+import { ArrowRight, BookOpen, CalendarClock, FolderOpen, Sparkles } from 'lucide-react'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { getStudySettings, isDailyGoalMet } from '@/src/lib/userSettings'
@@ -152,6 +152,9 @@ export default async function DashboardPage() {
     ? `Do dokończenia masz ${jumpBackIn.length} sesji — zacznij od „${jumpBackIn[0].deckName}”.`
     : `Masz ${decks.docs.length} zestawów. Zaplanuj minimum ${Math.max(1, settings.minSessionsPerDay)} sesję.`
 
+  const remainingToGoal = Math.max(0, Math.max(1, settings.minSessionsPerDay) - sessionsToday.totalDocs)
+  const todayProgress = Math.min(100, Math.round((sessionsToday.totalDocs / Math.max(1, settings.minSessionsPerDay)) * 100))
+
   const last3Days = [2, 1, 0].map((offset) => {
     const d = new Date(now)
     d.setDate(now.getDate() - offset)
@@ -175,27 +178,70 @@ export default async function DashboardPage() {
           <StatCard label="Seria dni" value={`${streakDays} dni`} />
         </div>
 
-        <SimpleCard className="py-3">
-          <p className="text-xs font-semibold text-slate-500">Co powtórzyć dziś</p>
-          <p className="mt-1 text-sm font-medium text-slate-700">{recommendation}</p>
+        <SimpleCard className="overflow-hidden p-0">
+          <div className="grid gap-0 lg:grid-cols-[1.2fr_1fr]">
+            <div className="space-y-3 border-b border-slate-100 p-5 lg:border-b-0 lg:border-r">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-orange-500">
+                <Sparkles size={14} />
+                Co powtórzyć dziś
+              </div>
+              <p className="text-sm font-medium text-slate-700">{recommendation}</p>
+              <div>
+                <p className="mb-2 text-xs font-semibold text-slate-500">Postęp celu dziennego</p>
+                <div className="h-2 w-full rounded-full bg-slate-100">
+                  <div className="h-2 rounded-full bg-orange-400" style={{ width: `${todayProgress}%` }} />
+                </div>
+                <p className="mt-2 text-xs text-slate-500">Pozostało <strong>{remainingToGoal}</strong> sesji do dzisiejszego celu.</p>
+              </div>
+            </div>
+
+            <div className="flex flex-col justify-between gap-4 p-5">
+              <div className="flex flex-wrap gap-2 text-xs">
+                <span className="rounded-full bg-slate-100 px-2 py-1 font-medium text-slate-600">Tryb: tłumaczenie</span>
+                <span className="rounded-full bg-slate-100 px-2 py-1 font-medium text-slate-600">Limit: {Math.max(1, settings.minSessionsPerDay)} sesji</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Link href="/study" className="inline-flex min-h-10 items-center rounded-full bg-orange-400 px-4 text-sm font-semibold text-white hover:bg-orange-500">
+                  Rozpocznij sesję
+                </Link>
+                {jumpBackIn[0] ? (
+                  <Link href={jumpBackIn[0].resumeHref} className="inline-flex min-h-10 items-center rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                    Wznów ostatnią
+                  </Link>
+                ) : null}
+              </div>
+            </div>
+          </div>
         </SimpleCard>
       </section>
 
       <section className="space-y-3">
         <div className="flex items-end justify-between gap-3">
           <h2 className="text-2xl font-bold tracking-tight text-slate-900">Jump back in</h2>
-          <Link href="/study" className="text-sm font-semibold text-indigo-600 hover:text-indigo-700">Nowa sesja →</Link>
+          <Link href="/study" className="text-sm font-semibold text-orange-500 hover:text-orange-600">Nowa sesja →</Link>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-2">
-          {jumpBackIn.length === 0 ? (
-            <SimpleCard className="lg:col-span-2">
-              <p className="text-sm text-slate-500">Brak przerwanych sesji.</p>
-            </SimpleCard>
-          ) : (
-            jumpBackIn.slice(0, 4).map((item) => <ContinueCard key={item.resumeHref} item={item} />)
-          )}
-        </div>
+        {jumpBackIn.length === 0 ? (
+          <SimpleCard>
+            <p className="text-sm text-slate-500">Brak przerwanych sesji.</p>
+          </SimpleCard>
+        ) : (
+          <div className="relative">
+            <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {jumpBackIn.slice(0, 6).map((item) => (
+                <div key={item.resumeHref} className="min-w-[82%] snap-start lg:min-w-[64%]">
+                  <ContinueCard item={item} />
+                </div>
+              ))}
+            </div>
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-white to-transparent" />
+            <div className="mt-1 flex items-center justify-center gap-1.5">
+              {jumpBackIn.slice(0, 6).map((item, idx) => (
+                <span key={item.resumeHref} className={`h-1.5 w-1.5 rounded-full ${idx === 0 ? 'bg-orange-400' : 'bg-slate-300'}`} />
+              ))}
+            </div>
+          </div>
+        )}
       </section>
 
       <section className="space-y-3">
@@ -227,6 +273,21 @@ export default async function DashboardPage() {
             Twoja aktywność
           </h3>
 
+          <div className="mb-4 grid grid-cols-3 gap-2">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+              <p className="text-xs text-slate-500">Dziś</p>
+              <p className="text-lg font-semibold text-slate-800">{sessionsToday.totalDocs} sesji</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+              <p className="text-xs text-slate-500">Czas</p>
+              <p className="text-lg font-semibold text-slate-800">{timeTodayMinutes} min</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+              <p className="text-xs text-slate-500">Seria</p>
+              <p className="text-lg font-semibold text-slate-800">{streakDays} dni</p>
+            </div>
+          </div>
+
           <div className="grid grid-cols-3 gap-2">
             {last3Days.map((day) => (
               <div
@@ -247,9 +308,12 @@ export default async function DashboardPage() {
             Rozpocznij
           </h3>
 
+          <p className="mb-4 text-sm text-slate-600">Szybki start nauki i przejście do narzędzi tworzenia materiałów.</p>
+
           <div className="space-y-2">
-            <Link href="/study" className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-indigo-600 px-4 text-sm font-semibold text-white hover:bg-indigo-700">
+            <Link href="/study" className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-orange-400 px-4 text-sm font-semibold text-white hover:bg-orange-500">
               Ucz się
+              <ArrowRight size={15} />
             </Link>
             <Link href="/create" className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50">
               Kreator zestawów
