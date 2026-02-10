@@ -46,11 +46,13 @@ export default function LoginPage() {
         }
 
         // Translate common error messages to Polish
-        if (errorMessage.includes('too many failed login attempts') || 
-            errorMessage.includes('locked')) {
+        const errorLower = errorMessage.toLowerCase()
+        if (errorLower.includes('too many failed login attempts') || 
+            errorLower.includes('locked due to')) {
           errorMessage = 'To konto zostało zablokowane z powodu zbyt wielu nieudanych prób logowania. Skontaktuj się z administratorem, aby odblokować konto.'
-        } else if (errorMessage.includes('Invalid login credentials') ||
-                   errorMessage.includes('Invalid')) {
+        } else if (errorLower.includes('invalid login credentials')) {
+          errorMessage = 'Nieprawidłowy login lub hasło.'
+        } else if (errorLower.includes('invalid') && (errorLower.includes('username') || errorLower.includes('password') || errorLower.includes('email'))) {
           errorMessage = 'Nieprawidłowy login lub hasło.'
         }
 
