@@ -84,26 +84,6 @@ export const Users: CollectionConfig = {
           min: 0,
           max: 200,
         },
-        {
-          name: 'shuffleWords',
-          type: 'checkbox',
-          defaultValue: true,
-        },
-        {
-          name: 'soundEnabled',
-          type: 'checkbox',
-          defaultValue: true,
-        },
-        {
-          name: 'autoAdvance',
-          type: 'checkbox',
-          defaultValue: true,
-        },
-        {
-          name: 'darkMode',
-          type: 'checkbox',
-          defaultValue: false,
-        },
       ],
     },
   ],
