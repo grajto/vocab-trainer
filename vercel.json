@@ -1,0 +1,9 @@
+{
+  "$schema": "https://vercel.com/schemas/cron/1.0.0",
+  "crons": [
+    {
+      "path": "/api/warmup",
+      "schedule": "*/5 * * * *"
+    }
+  ]
+}
