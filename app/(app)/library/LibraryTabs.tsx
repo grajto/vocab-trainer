@@ -122,7 +122,20 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
 
       {tab === 'folders' && (
         <div className="space-y-3">
-          {showCreateFolder ? (
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Wszystkie foldery</p>
+            {!showCreateFolder && (
+              <button
+                onClick={() => setShowCreateFolder(true)}
+                className="rounded-full px-4 py-2 text-xs font-semibold"
+                style={{ border: '1px solid var(--border)', color: 'var(--text)' }}
+              >
+                Dodaj folder
+              </button>
+            )}
+          </div>
+
+          {showCreateFolder && (
             <form onSubmit={createFolder} className="flex gap-2 rounded-[var(--radius)] p-4" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
               <input
                 type="text"
@@ -140,32 +153,30 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
                 Anuluj
               </button>
             </form>
-          ) : (
-            <button onClick={() => setShowCreateFolder(true)} className="w-full rounded-[var(--radius)] p-4 text-sm hover:bg-[#f8fafc]" style={{ border: '1px dashed var(--border)', color: 'var(--muted)' }}>
-              + Nowy folder
-            </button>
           )}
 
-          {filteredFolders.map((f) => (
-            <Link
-              key={f.id}
-              href={`/folders/${f.id}`}
-              className="flex items-center gap-3 rounded-xl p-3 transition-colors hover:bg-[var(--hover-bg)]"
-              style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}
-            >
-              <IconSquare variant="muted" size={36}>
-                <FolderOpen size={18} />
-              </IconSquare>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
-                  {f.name}
-                </p>
-                <p className="text-xs" style={{ color: 'var(--muted)' }}>
-                  {f.deckCount} zestawów · {f.cardCount} słówek
-                </p>
-              </div>
-            </Link>
-          ))}
+          <div className="space-y-2">
+            {filteredFolders.map((f) => (
+              <Link
+                key={f.id}
+                href={`/folders/${f.id}`}
+                className="flex items-center gap-3 rounded-xl p-3 transition-colors hover:bg-[var(--hover-bg)]"
+                style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}
+              >
+                <IconSquare variant="muted" size={36}>
+                  <FolderOpen size={18} />
+                </IconSquare>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
+                    {f.name}
+                  </p>
+                  <p className="text-xs" style={{ color: 'var(--muted)' }}>
+                    {f.deckCount} zestawów · {f.cardCount} słówek
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       )}
     </div>
