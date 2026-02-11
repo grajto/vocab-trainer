@@ -148,10 +148,10 @@ export async function GET() {
         createdAt: n.createdAt,
       })),
       unreadCount,
-    })
+    }, { headers: { 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=300' } })
   } catch (error: unknown) {
     if (isMissingDbObjectError(error)) {
-      return NextResponse.json({ notifications: [], unreadCount: 0 })
+      return NextResponse.json({ notifications: [], unreadCount: 0 }, { headers: { 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=300' } })
     }
     console.error('Notifications error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

@@ -39,10 +39,10 @@ export async function GET() {
       limit: 1,
     })
 
-    return NextResponse.json(existing.docs[0] || defaultPrefs(user.id))
+    return NextResponse.json(existing.docs[0] || defaultPrefs(user.id), { headers: { 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=300' } })
   } catch (error: unknown) {
     if (isMissingDbObjectError(error)) {
-      return NextResponse.json(defaultPrefs(user.id))
+      return NextResponse.json(defaultPrefs(user.id), { headers: { 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=300' } })
     }
     console.error('User test preferences GET error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

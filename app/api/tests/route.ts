@@ -73,7 +73,7 @@ export async function GET(req: NextRequest) {
       enabledModes: Array.isArray(t.enabledModes) ? t.enabledModes.map((m: any) => m?.mode).filter(Boolean) : [],
     })),
     ranking,
-  })
+  }, { headers: { 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=300' } })
 }
 
 export async function POST(req: NextRequest) {

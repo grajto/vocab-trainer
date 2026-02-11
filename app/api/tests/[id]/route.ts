@@ -25,5 +25,5 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
       cardFront: typeof a.card === 'object' ? a.card.front : '',
       cardBack: typeof a.card === 'object' ? a.card.back : '',
     })),
-  })
+  }, { headers: { 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=300' } })
 }

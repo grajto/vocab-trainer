@@ -207,7 +207,7 @@ export async function GET(req: NextRequest) {
         startedAt: s.startedAt,
         completedCount: Number(s.completedCount || 0),
       })),
-    })
+    }, { headers: { 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=300' } })
   } catch (error) {
     console.error('Stats error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
