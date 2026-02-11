@@ -12,6 +12,13 @@ type GeneratedNotification = {
   sourceKey: string
 }
 
+
+function isMissingDbObjectError(error: unknown): boolean {
+  const candidate = error as { code?: string; cause?: { code?: string } }
+  const code = candidate?.cause?.code || candidate?.code
+  return code === '42P01' || code === '42703'
+}
+
 async function buildGenerated(userId: string | number) {
   const payload = await getPayload()
   const now = new Date()
@@ -135,30 +142,41 @@ export async function GET() {
       unreadCount,
     })
   } catch (error: unknown) {
+    if (isMissingDbObjectError(error)) {
+      return NextResponse.json({ notifications: [], unreadCount: 0 })
+    }
     console.error('Notifications error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
 export async function PATCH(req: NextRequest) {
-  const user = await getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const payload = await getPayload()
-  const body = await req.json()
-  const { id, markAllRead } = body as { id?: string; markAllRead?: boolean }
+  try {
+    const user = await getUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const payload = await getPayload()
+    const body = await req.json()
+    const { id, markAllRead } = body as { id?: string; markAllRead?: boolean }
 
-  if (markAllRead) {
-    const all = await payload.find({ collection: 'user_notifications', where: { owner: { equals: user.id }, read: { equals: false } }, limit: 200, depth: 0 })
-    for (const n of all.docs) {
-      await payload.update({ collection: 'user_notifications', id: n.id, data: { read: true, readAt: new Date().toISOString() } })
+    if (markAllRead) {
+      const all = await payload.find({ collection: 'user_notifications', where: { owner: { equals: user.id }, read: { equals: false } }, limit: 200, depth: 0 })
+      for (const n of all.docs) {
+        await payload.update({ collection: 'user_notifications', id: n.id, data: { read: true, readAt: new Date().toISOString() } })
+      }
+      return NextResponse.json({ ok: true })
     }
+
+    if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
+    const notification = await payload.findByID({ collection: 'user_notifications', id, depth: 0 })
+    if (String(notification.owner) !== String(user.id)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+    await payload.update({ collection: 'user_notifications', id, data: { read: true, readAt: new Date().toISOString() } })
     return NextResponse.json({ ok: true })
+  } catch (error: unknown) {
+    if (isMissingDbObjectError(error)) {
+      return NextResponse.json({ ok: true })
+    }
+    console.error('Notifications patch error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-
-  if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
-  const notification = await payload.findByID({ collection: 'user_notifications', id, depth: 0 })
-  if (String(notification.owner) !== String(user.id)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-
-  await payload.update({ collection: 'user_notifications', id, data: { read: true, readAt: new Date().toISOString() } })
-  return NextResponse.json({ ok: true })
 }

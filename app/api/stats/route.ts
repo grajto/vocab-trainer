@@ -12,6 +12,12 @@ function dateKey(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
+function isMissingDbObjectError(error: unknown): boolean {
+  const candidate = error as { code?: string; cause?: { code?: string } }
+  const code = candidate?.cause?.code || candidate?.code
+  return code === '42P01' || code === '42703'
+}
+
 export async function GET(req: NextRequest) {
   try {
     const user = await getUser()
@@ -77,9 +83,17 @@ export async function GET(req: NextRequest) {
     }
 
     const sessionIds = sessions.map((s) => s.id)
-    const sessionItems = sessionIds.length > 0
-      ? await payload.find({ collection: 'session-items', where: { session: { in: sessionIds } }, limit: 10000, depth: 0 })
-      : { docs: [] as Array<Record<string, unknown>> }
+    let sessionItems: { docs: Array<Record<string, unknown>> } = { docs: [] }
+    if (sessionIds.length > 0) {
+      try {
+        sessionItems = await payload.find({ collection: 'session-items', where: { session: { in: sessionIds } }, limit: 10000, depth: 0 })
+      } catch (error: unknown) {
+        if (!isMissingDbObjectError(error)) {
+          throw error
+        }
+        sessionItems = { docs: [] }
+      }
+    }
 
     const bySession = new Map<string, Array<Record<string, unknown>>>()
     for (const item of sessionItems.docs) {
