@@ -31,6 +31,8 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
   const [selectedCount, setSelectedCount] = useState<number | null>(null)
   const [showTestModal, setShowTestModal] = useState(false)
   const [testCount, setTestCount] = useState(20)
+  const [testVariant, setTestVariant] = useState<'tf' | 'abcd' | 'written'>('abcd')
+  const [testModes, setTestModes] = useState<StudyMode[]>(['abcd', 'translate'])
 
   async function handleStart() {
     if (!selectedMode || !selectedCount) return
@@ -202,6 +204,70 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
                 style={{ borderColor: 'var(--border)' }}
               />
             </label>
+            <div className="space-y-2">
+              <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Rodzaj pytań</p>
+              <div className="flex gap-2">
+                {[
+                  { id: 'abcd', label: 'ABCD' },
+                  { id: 'tf', label: 'Prawda/Fałsz' },
+                  { id: 'written', label: 'Pisemnie' },
+                ].map((opt) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => setTestVariant(opt.id as typeof testVariant)}
+                    className="flex-1 rounded-full px-3 py-2 text-xs font-semibold transition-colors"
+                    style={{
+                      border: '1px solid var(--border)',
+                      background: testVariant === opt.id ? 'var(--primary-soft)' : 'var(--surface)',
+                      color: testVariant === opt.id ? 'var(--primary)' : 'var(--text)',
+                    }}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Tryby w teście</p>
+              <div className="grid grid-cols-2 gap-2">
+                {['abcd', 'translate', 'sentence', 'describe', 'mixed'].map((m) => {
+                  const active = testModes.includes(m as StudyMode)
+                  return (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() =>
+                        setTestModes((prev) =>
+                          prev.includes(m as StudyMode)
+                            ? prev.filter((x) => x !== m)
+                            : [...prev, m as StudyMode]
+                        )
+                      }
+                      className="rounded-lg px-3 py-2 text-xs font-semibold transition-colors text-left"
+                      style={{
+                        border: '1px solid var(--border)',
+                        background: active ? 'var(--primary-soft)' : 'var(--surface)',
+                        color: active ? 'var(--primary)' : 'var(--text)',
+                      }}
+                    >
+                      {m === 'translate'
+                        ? 'Tłumaczenie'
+                        : m === 'sentence'
+                          ? 'Zdania'
+                          : m === 'describe'
+                            ? 'Opisz'
+                            : m === 'mixed'
+                              ? 'Mix'
+                              : 'ABCD'}
+                    </button>
+                  )
+                })}
+              </div>
+              <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                Możesz włączyć wiele typów; test wylosuje pytania z zaznaczonych trybów.
+              </p>
+            </div>
             <button
               type="button"
               onClick={async () => {
@@ -213,7 +279,12 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
-                    body: JSON.stringify({ deckId, mode: 'test', targetCount }),
+                    body: JSON.stringify({
+                      deckId,
+                      mode: 'test',
+                      targetCount,
+                      settings: { variant: testVariant, modes: testModes },
+                    }),
                   })
                   const data = await res.json()
                   if (res.ok && data.sessionId) {

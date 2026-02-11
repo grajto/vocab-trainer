@@ -107,23 +107,25 @@ export function AddCardForm({ deckId }: { deckId: string }) {
         <label className="space-y-1 text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
           Przód
           <input
-          type="text"
-          value={front}
-          onChange={(e) => setFront(e.target.value)}
-          placeholder="Wyrażenie źródłowe"
-          required={!bulk.trim()}
-            className="w-full border border-[var(--border)] rounded-[var(--radiusSm)] px-3 py-2 text-sm focus:border-[var(--primary)] focus:outline-none transition-colors"
+            type="text"
+            value={front}
+            onChange={(e) => setFront(e.target.value)}
+            placeholder="Wyrażenie źródłowe"
+            required={!bulk.trim()}
+            className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:border-[var(--primary)] transition-colors"
+            style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
           />
         </label>
         <label className="space-y-1 text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
           Tył
           <input
-          type="text"
-          value={back}
-          onChange={(e) => setBack(e.target.value)}
-          placeholder="Znaczenie"
-          required={!bulk.trim()}
-            className="w-full border border-[var(--border)] rounded-[var(--radiusSm)] px-3 py-2 text-sm focus:border-[var(--primary)] focus:outline-none transition-colors"
+            type="text"
+            value={back}
+            onChange={(e) => setBack(e.target.value)}
+            placeholder="Znaczenie"
+            required={!bulk.trim()}
+            className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:border-[var(--primary)] transition-colors"
+            style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
           />
         </label>
       </div>
@@ -134,8 +136,9 @@ export function AddCardForm({ deckId }: { deckId: string }) {
           value={bulk}
           onChange={(e) => setBulk(e.target.value)}
           placeholder="hello;witaj\nbook;książka"
-          rows={3}
-          className="w-full border border-[var(--border)] rounded-[var(--radiusSm)] px-3 py-2 text-sm focus:border-[var(--primary)] focus:outline-none resize-none transition-colors"
+          rows={4}
+          className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:border-[var(--primary)] resize-none transition-colors"
+          style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
         />
       </label>
 
