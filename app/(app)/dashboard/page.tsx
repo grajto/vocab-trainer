@@ -181,6 +181,7 @@ export default async function DashboardPage() {
         id: item.resumeHref.split('/').pop() || '',
         title: item.deckName,
         reason: item.progressPercent < 30 ? 'Wysoki % błędów' : `${item.progressPercent}% ukończone`,
+        progressPercent: item.progressPercent,
         mode: selectedMode,
         modeLabel: {
           abcd: 'ABCD',
@@ -281,10 +282,11 @@ export default async function DashboardPage() {
             <p className="text-sm text-center py-4" style={{ color: 'var(--text-muted)' }}>Wszystko aktualne! Możesz rozpocząć nową sesję.</p>
           </Card>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {recommendedDecks.map((item) => (
-              <Card key={item.id} compact>
-                <div className="space-y-3">
+              <div key={item.id} className="relative overflow-hidden rounded-[var(--radius)] p-5" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
+                <div className="absolute bottom-0 right-0 opacity-10 pointer-events-none" style={{ width: '110px', height: '110px', background: 'var(--primary)', borderRadius: '50% 0 0 0', transform: 'translate(20%, 20%)' }} />
+                <div className="relative z-10 space-y-3">
                   <div className="flex items-start justify-between gap-2">
                     <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>{item.title}</p>
                     <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ background: 'var(--primary-soft)', color: 'var(--primary)' }}>
@@ -292,15 +294,15 @@ export default async function DashboardPage() {
                     </span>
                   </div>
                   <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{item.reason}</p>
-                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>20 słówek • 🇬🇧 Angielski</p>
-                  <StartSessionButton 
+                  <ProgressBar value={Math.min(100, Math.max(10, item.progressPercent))} className="h-3" />
+                  <StartSessionButton
                     deckId={item.id}
                     mode={item.mode}
                     targetCount={20}
                     direction="en-pl"
                   />
                 </div>
-              </Card>
+              </div>
             ))}
           </div>
         )}

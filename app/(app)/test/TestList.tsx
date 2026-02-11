@@ -98,7 +98,7 @@ export function TestList({ decks, folders }: { decks: Item[]; folders: Item[] })
       })
       const data = await start.json()
       if (!start.ok) throw new Error(data.error || 'Failed to start')
-      sessionStorage.setItem(`session-${data.sessionId}`, JSON.stringify({ tasks: data.tasks, mode: 'test', testId }))
+      sessionStorage.setItem(`session-${data.sessionId}`, JSON.stringify({ tasks: data.tasks, mode: 'test', testId, returnDeckId: sourceType === 'set' ? deckId : '' }))
       router.push(`/session/${data.sessionId}`)
     } finally {
       setLoadingStart(false)

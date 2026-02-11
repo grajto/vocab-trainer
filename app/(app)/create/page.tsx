@@ -32,7 +32,7 @@ export default async function CreateDeckPage() {
 
   return (
     <PageContainer>
-      <PageHeader title="Kreator zestawów" description="Utwórz nowy zestaw słówek" icon={PlusCircle} />
+      <PageHeader title="Kreator zestawów" icon={PlusCircle} />
       
       <div className="rounded-xl border p-5 lg:p-6" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
         <DeckCreator folders={folderList} />

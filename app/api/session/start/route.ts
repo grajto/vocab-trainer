@@ -16,14 +16,14 @@ export async function POST(req: NextRequest) {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const body = await req.json()
-    const { deckId, folderId, mode, targetCount = 10, levels, direction, shuffle = true, requireCorrect = false, testId, enabledModes, randomAnswerOrder = true } = body
+    const { deckId, folderId, mode, targetCount = 10, levels, direction, shuffle = true, requireCorrect = false, testId, enabledModes, randomAnswerOrder = true, allowAll = false } = body
 
     const allowedModes = ['translate', 'sentence', 'abcd', 'mixed', 'test', 'describe'] as const
     type Mode = (typeof allowedModes)[number]
     const isMode = (value: unknown): value is Mode =>
       allowedModes.includes(value as Mode)
 
-    if ((!deckId && !folderId) || !isMode(mode)) {
+    if ((!deckId && !folderId && !allowAll) || !isMode(mode)) {
       return NextResponse.json({ error: 'deckId or folderId and mode are required' }, { status: 400 })
     }
 
@@ -64,6 +64,15 @@ export async function POST(req: NextRequest) {
         depth: 0,
       })
       deckIds = folderDecks.docs.map((d: any) => Number(d.id))
+    }
+    if (allowAll && !numericDeckId && !numericFolderId) {
+      const ownedDecks = await payload.find({
+        collection: 'decks',
+        where: { owner: { equals: user.id } },
+        limit: 500,
+        depth: 0,
+      })
+      deckIds = ownedDecks.docs.map((d: any) => Number(d.id))
     }
     if (deckIds.length === 0) {
       return NextResponse.json({ error: 'No decks found for selected resource' }, { status: 400 })
@@ -336,6 +345,7 @@ export async function POST(req: NextRequest) {
       tasks,
       totalCards: selectedCards.length,
       testId: linkedTestId,
+      deckId: deckIds[0] || null,
     })
   } catch (error: unknown) {
     console.error('Session start error:', error)

@@ -1,9 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { BarChart3, Bell, BookOpen, CalendarDays, ClipboardCheck, FolderOpen, Home, Plus, Settings, X } from 'lucide-react'
+import { useSound } from '@/src/lib/SoundProvider'
+import { BarChart3, Bell, BookOpen, CalendarDays, ClipboardCheck, FolderOpen, Home, PlayCircle, Plus, Settings, X } from 'lucide-react'
 import { SidebarSearch } from './SidebarSearch'
 
 interface FolderItem {
@@ -23,7 +24,10 @@ export function LeftSidebar({
   onClose?: () => void
 }) {
   const pathname = usePathname()
+  const router = useRouter()
+  const { unlock } = useSound()
   const [hasNewNotifications, setHasNewNotifications] = useState(false)
+  const [dailyLoading, setDailyLoading] = useState(false)
   const active = (href: string) => pathname === href || pathname.startsWith(`${href}/`)
 
   useEffect(() => {
@@ -45,6 +49,31 @@ export function LeftSidebar({
         : 'border-transparent text-[var(--text)] hover:border-[var(--border)] hover:bg-[#f8fafc]'
     }`
 
+
+  async function startDailySession() {
+    if (dailyLoading) return
+    setDailyLoading(true)
+    try {
+      unlock()
+      const res = await fetch('/api/session/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ mode: 'translate', targetCount: 20, shuffle: true, allowAll: true }),
+      })
+      const data = await res.json()
+      if (res.ok && data.sessionId) {
+        sessionStorage.setItem(`session-${data.sessionId}`, JSON.stringify({ tasks: data.tasks, mode: 'translate', returnDeckId: data.deckId ? String(data.deckId) : '' }))
+        router.push(`/session/${data.sessionId}`)
+        onClose?.()
+      }
+    } catch {
+      // ignore
+    } finally {
+      setDailyLoading(false)
+    }
+  }
+
   const nav = (
     <aside className="flex h-full flex-col overflow-y-auto border-r px-[var(--sidebar-pad)] py-[var(--sidebar-pad)]" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
       <div className="mb-1 flex items-center justify-between px-2 lg:hidden">
@@ -55,6 +84,16 @@ export function LeftSidebar({
       </div>
 
       <div className="space-y-5">
+        <button
+          type="button"
+          onClick={startDailySession}
+          disabled={dailyLoading}
+          className="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-[var(--radius)] px-4 text-sm font-semibold text-white transition-opacity disabled:opacity-60"
+          style={{ background: 'linear-gradient(135deg, var(--primary), #4f46e5)' }}
+        >
+          <PlayCircle size={18} />
+          {dailyLoading ? 'Uruchamianie…' : 'Codzienna sesja (20)'}
+        </button>
         <section className="space-y-2">
           <p className={groupTitle}>Główne</p>
           <div className="space-y-1">
@@ -79,7 +118,7 @@ export function LeftSidebar({
                 <span className="truncate">{f.name}</span>
               </Link>
             ))}
-            <Link href="/folders/new" onClick={onClose} className={itemClass(active('/folders'))}><Plus size={16} />Nowy folder</Link>
+            <Link href="/folders/new" onClick={onClose} className={itemClass(pathname === '/folders/new')}><Plus size={16} />Nowy folder</Link>
           </div>
         </section>
 

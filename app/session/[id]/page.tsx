@@ -71,6 +71,7 @@ export default function SessionPage() {
   const [sentenceStage, setSentenceStage] = useState<'translate' | 'sentence'>('translate')
   const [loading, setLoading] = useState(false)
   const [sessionDone, setSessionDone] = useState(false)
+  const [returnDeckId, setReturnDeckId] = useState('')
   const [aiInfo, setAiInfo] = useState<{ used: boolean; latencyMs: number } | null>(null)
   const [selectedOption, setSelectedOption] = useState<string | null>(null)
   const [testAnswers, setTestAnswers] = useState<Record<string, string>>({})
@@ -113,6 +114,7 @@ export default function SessionPage() {
       if (!Array.isArray(parsed)) parsed = []
       if (!Array.isArray(parsedStored)) {
         setSessionMode(parsedStored.mode || 'translate')
+        setReturnDeckId(String(parsedStored.returnDeckId || ''))
       }
       const shufflePref = localStorage.getItem('vocab-shuffle') === 'true'
       if (shufflePref) {
@@ -717,21 +719,20 @@ export default function SessionPage() {
     )
   }
 
+  useEffect(() => {
+    if (!sessionDone) return
+    const target = returnDeckId ? `/decks/${returnDeckId}` : '/decks'
+    const timer = setTimeout(() => router.replace(target), 200)
+    return () => clearTimeout(timer)
+  }, [sessionDone, returnDeckId, router])
+
   if (sessionDone) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
         <div className="text-center max-w-xs mx-4">
           <p className="text-xs uppercase tracking-widest mb-2" style={{ color: 'var(--muted)' }}>Session Complete</p>
           <p className="text-5xl font-bold tabular-nums mb-1" style={{ color: 'var(--primary)' }}>{accuracy}%</p>
-          <p className="text-sm mb-8" style={{ color: 'var(--muted)' }}>accuracy</p>
-          <div className="space-y-2">
-            <button onClick={() => router.push('/test')} className="block w-full text-white py-2.5 rounded-[var(--radiusSm)] text-sm font-medium transition-colors" style={{ background: 'var(--primary)' }}>
-              Zobacz w Testach
-            </button>
-            <button onClick={() => router.push('/decks')} className="block w-full py-2.5 rounded-[var(--radiusSm)] text-sm transition-colors" style={{ border: '1px solid var(--border)', color: 'var(--text)' }}>
-              Wróć do zestawu
-            </button>
-          </div>
+          <p className="text-sm" style={{ color: 'var(--muted)' }}>Przekierowanie do zestawu…</p>
         </div>
       </div>
     )

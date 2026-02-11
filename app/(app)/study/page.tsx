@@ -30,7 +30,7 @@ export default async function StudyPage() {
 
   return (
     <PageContainer>
-      <PageHeader title="Ucz się" description="Wybierz zestaw, tryb i długość sesji" icon={BookOpen} />
+      <PageHeader title="Ucz się" icon={BookOpen} />
 
       {decks.docs.length === 0 ? (
         <div className="rounded-xl py-12 text-center" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
