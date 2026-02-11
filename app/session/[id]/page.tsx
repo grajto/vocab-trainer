@@ -108,37 +108,65 @@ export default function SessionPage() {
   }, [])
 
   useEffect(() => {
-    try {
-      const stored = sessionStorage.getItem(`session-${sessionId}`)
-      if (!stored) {
-        setTasks([])
-        return
+    let ignore = false
+
+    async function loadSession() {
+      try {
+        const stored = sessionStorage.getItem(`session-${sessionId}`)
+        if (stored) {
+          const parsedStored = JSON.parse(stored)
+          let parsed: Task[] = Array.isArray(parsedStored) ? parsedStored : parsedStored.tasks
+          if (!Array.isArray(parsed)) parsed = []
+          if (!Array.isArray(parsedStored)) {
+            setSessionMode(parsedStored.mode || 'translate')
+            setReturnDeckId(String(parsedStored.returnDeckId || ''))
+          }
+          const shufflePref = localStorage.getItem('vocab-shuffle') === 'true'
+          if (shufflePref) {
+            // Fisher-Yates shuffle for uniform randomization
+            const arr = [...parsed]
+            for (let i = arr.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1))
+              ;[arr[i], arr[j]] = [arr[j], arr[i]]
+            }
+            parsed = arr
+          }
+          if (!ignore) setTasks(parsed)
+          return
+        }
+      } catch (error) {
+        console.error('Failed to load session tasks from storage:', error)
       }
 
-      const parsedStored = JSON.parse(stored)
-      let parsed: Task[] = Array.isArray(parsedStored) ? parsedStored : parsedStored.tasks
-      if (!Array.isArray(parsed)) parsed = []
-      if (!Array.isArray(parsedStored)) {
-        setSessionMode(parsedStored.mode || 'translate')
-        setReturnDeckId(String(parsedStored.returnDeckId || ''))
-      }
-      const shufflePref = localStorage.getItem('vocab-shuffle') === 'true'
-      if (shufflePref) {
-        // Fisher-Yates shuffle for uniform randomization
-        const arr = [...parsed]
-        for (let i = arr.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1))
-          ;[arr[i], arr[j]] = [arr[j], arr[i]]
+      try {
+        const res = await fetch(`/api/session/${sessionId}`, { credentials: 'include' })
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok) throw new Error(data.error || 'Failed to load session')
+
+        const fallbackTasks = Array.isArray(data.tasks) ? data.tasks : []
+        const payload = {
+          tasks: fallbackTasks,
+          mode: String(data.mode || 'translate'),
+          returnDeckId: String(data.returnDeckId || ''),
         }
-        parsed = arr
+        sessionStorage.setItem(`session-${sessionId}`, JSON.stringify(payload))
+
+        if (!ignore) {
+          setSessionMode(payload.mode)
+          setReturnDeckId(payload.returnDeckId)
+          setTasks(fallbackTasks)
+        }
+      } catch (error) {
+        console.error('Failed to load session fallback data:', error)
+        if (!ignore) setTasks([])
       }
-      setTasks(parsed)
-    } catch (error) {
-      console.error('Failed to load session tasks from storage:', error)
-      setTasks([])
-    } finally {
-      setTasksLoaded(true)
     }
+
+    loadSession().finally(() => {
+      if (!ignore) setTasksLoaded(true)
+    })
+
+    return () => { ignore = true }
   }, [sessionId])
 
   useEffect(() => {

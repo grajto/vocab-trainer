@@ -327,6 +327,26 @@ export async function POST(req: NextRequest) {
       tasks.sort(() => Math.random() - 0.5)
     }
 
+    await payload.update({
+      collection: 'sessions',
+      id: session.id,
+      data: {
+        settings: {
+          deckIds,
+          folderId: numericFolderId ?? null,
+          direction: selectedDirection,
+          levels: selectedLevels,
+          shuffle,
+          requireCorrect,
+          testId: linkedTestId,
+          enabledModes: Array.isArray(enabledModes) ? enabledModes : null,
+          randomAnswerOrder: Boolean(randomAnswerOrder),
+          tasks,
+          returnDeckId: deckIds[0] || null,
+        },
+      },
+    })
+
     // Create session items
     for (const task of tasks) {
       await payload.create({
