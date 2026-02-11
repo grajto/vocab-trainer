@@ -15,7 +15,7 @@ import { UserTestPreferences } from './collections/UserTestPreferences.ts'
 import { UserNotifications } from './collections/UserNotifications.ts'
 import { TestAnswers } from './collections/TestAnswers.ts'
 import { Tests } from './collections/Tests.ts'
-import { withNeonPooling } from '@/src/lib/db/neonConnection'
+import { withNeonPooling } from '../lib/db/neonConnection.ts'
 
 const serverURL =
   process.env.PAYLOAD_PUBLIC_SERVER_URL ||
