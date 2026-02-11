@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { Bell, Clock, AlertTriangle, BookOpen, Flame, MoreHorizontal } from 'lucide-react'
+import { PageHeader } from '../_components/ui/PageHeader'
 
 interface Notification {
   type: 'stale' | 'due' | 'goal' | 'hard'
@@ -36,11 +37,12 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--containerMax)' }}>
-      <div className="flex items-center gap-2">
-        <Bell className="h-5 w-5" style={{ color: 'var(--muted)' }} />
-        <h2 className="text-lg font-semibold" style={{ color: 'var(--text)' }}>Powiadomienia</h2>
-      </div>
+    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--containerMax)', paddingTop: '32px' }}>
+      <PageHeader
+        icon={Bell}
+        title="Powiadomienia"
+        subtitle="Przypomnienia i rekomendacje"
+      />
 
       {loading ? (
         <p className="text-sm" style={{ color: 'var(--gray400)' }}>Ładowanie powiadomień…</p>

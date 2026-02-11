@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Target, Clock, Languages, Shuffle, TrendingUp, Save, Check } from 'lucide-react'
+import { Settings as SettingsIcon, Target, Clock, Languages, Shuffle, TrendingUp, Save, Check } from 'lucide-react'
+import { PageHeader } from '../_components/ui/PageHeader'
 
 type Settings = {
   minSessionsPerDay: number
@@ -52,23 +53,19 @@ export default function SettingsPage() {
 
   if (!settings) {
     return (
-      <div className="settings-container">
-        <div className="settings-loading">Ładowanie ustawień…</div>
+      <div className="mx-auto w-full" style={{ maxWidth: 'var(--container-max)', paddingTop: '32px' }}>
+        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Ładowanie ustawień…</p>
       </div>
     )
   }
 
   return (
-    <div className="settings-container">
-      <div className="settings-header flex items-center gap-3">
-        <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg" style={{ background: 'var(--primary-soft)', color: 'var(--primary)' }}>
-          <Target size={20} />
-        </span>
-        <div>
-          <h1 className="settings-title">Ustawienia</h1>
-          <p className="settings-subtitle">Dostosuj swoją naukę do swoich potrzeb</p>
-        </div>
-      </div>
+    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--container-max)', paddingTop: '32px' }}>
+      <PageHeader
+        icon={SettingsIcon}
+        title="Ustawienia"
+        subtitle="Dostosuj swoją naukę do swoich potrzeb"
+      />
 
       {/* Daily Goals Section */}
       <section className="settings-section">

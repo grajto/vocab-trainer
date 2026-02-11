@@ -4,6 +4,7 @@ import { ClipboardCheck } from 'lucide-react'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { TestList } from './TestList'
+import { PageHeader } from '../_components/ui/PageHeader'
 
 export const dynamic = 'force-dynamic'
 
@@ -31,24 +32,12 @@ export default async function TestPage() {
   }
 
   return (
-    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--container-max)' }}>
-      {/* Header - matching folder page style */}
-      <div className="flex items-center gap-3">
-        <span
-          className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg"
-          style={{ background: 'var(--warning)', color: '#fff' }}
-        >
-          <ClipboardCheck size={20} />
-        </span>
-        <div>
-          <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>
-            Testy
-          </h1>
-          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-            Historia twoich testów i wyników
-          </p>
-        </div>
-      </div>
+    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--container-max)', paddingTop: '32px' }}>
+      <PageHeader
+        icon={ClipboardCheck}
+        title="Testy"
+        subtitle="Historia twoich testów i wyników"
+      />
 
       <TestList sessions={testSessions.docs} />
     </div>

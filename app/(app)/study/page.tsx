@@ -5,6 +5,7 @@ import { BookOpen } from 'lucide-react'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { StartSessionForm } from '@/app/(app)/learn/StartSessionForm'
+import { PageHeader } from '../_components/ui/PageHeader'
 
 export const dynamic = 'force-dynamic'
 
@@ -27,24 +28,12 @@ export default async function StudyPage() {
   }
 
   return (
-    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--container-max)' }}>
-      {/* Header - matching folder page style */}
-      <div className="flex items-center gap-3">
-        <span
-          className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg"
-          style={{ background: 'var(--primary-soft)', color: 'var(--primary)' }}
-        >
-          <BookOpen size={20} />
-        </span>
-        <div>
-          <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>
-            Ucz się
-          </h1>
-          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-            Wybierz zestaw, tryb i długość sesji
-          </p>
-        </div>
-      </div>
+    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--container-max)', paddingTop: '32px' }}>
+      <PageHeader
+        icon={BookOpen}
+        title="Ucz się"
+        subtitle="Wybierz zestaw, tryb i długość sesji"
+      />
 
       {decks.docs.length === 0 ? (
         <div className="rounded-xl py-12 text-center" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>

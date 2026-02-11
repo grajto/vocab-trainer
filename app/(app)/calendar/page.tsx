@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react'
+import { PageHeader } from '../_components/ui/PageHeader'
 
 type DayInfo = {
   date: string
@@ -49,30 +50,23 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--containerMax)' }}>
-      <div className="flex items-center justify-between pt-8">
-        <div className="flex items-center gap-3">
-          <span
-            className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg"
-            style={{ background: 'var(--primary-soft)', color: 'var(--primary)' }}
-          >
-            <CalendarIcon size={20} />
-          </span>
-          <div>
-            <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Kalendarz</h1>
-            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Śledź aktywność i streak</p>
+    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--containerMax)', paddingTop: '32px' }}>
+      <PageHeader
+        icon={CalendarIcon}
+        title="Kalendarz"
+        subtitle="Śledź aktywność i streak"
+        action={
+          <div className="flex items-center gap-2">
+            <button onClick={() => changeMonth(-1)} className="rounded-[var(--radiusSm)] p-2 hover:bg-[#f8fafc]" style={{ border: '1px solid var(--border)' }}>
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <span className="text-sm font-medium capitalize" style={{ color: 'var(--text)' }}>{monthName}</span>
+            <button onClick={() => changeMonth(1)} className="rounded-[var(--radiusSm)] p-2 hover:bg-[#f8fafc]" style={{ border: '1px solid var(--border)' }}>
+              <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <button onClick={() => changeMonth(-1)} className="rounded-[var(--radiusSm)] p-2 hover:bg-[#f8fafc]" style={{ border: '1px solid var(--border)' }}>
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <span className="text-sm font-medium capitalize" style={{ color: 'var(--text)' }}>{monthName}</span>
-          <button onClick={() => changeMonth(1)} className="rounded-[var(--radiusSm)] p-2 hover:bg-[#f8fafc]" style={{ border: '1px solid var(--border)' }}>
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
+        }
+      />
 
       <div className="grid grid-cols-7 gap-2 text-xs" style={{ color: 'var(--gray400)' }}>
         {['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'Sb', 'Nd'].map(day => (
