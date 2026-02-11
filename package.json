@@ -13,8 +13,10 @@
     "node": ">=24.11.1 <25"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.0.2",
     "@payloadcms/db-postgres": "^3.75.0",
     "@payloadcms/next": "^3.75.0",
+    "@tanstack/react-query": "^5.90.21",
     "lucide-react": "^0.563.0",
     "next": "16.1.6",
     "openai": "^6.18.0",

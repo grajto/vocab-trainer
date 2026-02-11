@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { SoundProvider } from "@/src/lib/SoundProvider";
+import { QueryProvider } from "./providers/QueryProvider";
 
 export const metadata: Metadata = {
   title: "Vocab Trainer",
@@ -15,9 +16,11 @@ export default function RootLayout({
   return (
     <html lang="pl">
       <body className="antialiased">
-        <SoundProvider>
-          {children}
-        </SoundProvider>
+        <QueryProvider>
+          <SoundProvider>
+            {children}
+          </SoundProvider>
+        </QueryProvider>
       </body>
     </html>
   );
