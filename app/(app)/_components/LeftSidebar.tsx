@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { BarChart3, Bell, BookOpen, CalendarDays, FolderOpen, Home, Plus, Settings, X } from 'lucide-react'
+import { SidebarSearch } from './SidebarSearch'
 
 interface FolderItem {
   id: string
@@ -72,6 +73,10 @@ export function LeftSidebar({
             <Link href="/study" onClick={onClose} className={itemClass(active('/study'))}><BookOpen size={16} />Ucz się</Link>
             <Link href="/create" onClick={onClose} className={itemClass(active('/create'))}><Plus size={16} />Kreator zestawów</Link>
           </div>
+        </section>
+
+        <section className="border-t pt-4" style={{ borderColor: 'var(--border)' }}>
+          <SidebarSearch />
         </section>
       </div>
     </aside>
