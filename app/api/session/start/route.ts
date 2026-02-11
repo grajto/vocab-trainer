@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const body = await req.json()
-    const { deckId, folderId, mode, targetCount = 10, levels, direction, shuffle = true, requireCorrect = false } = body
+    const { deckId, folderId, mode, targetCount = 10, levels, direction, shuffle = true, requireCorrect = false, testId, enabledModes, randomAnswerOrder = true } = body
 
     const allowedModes = ['translate', 'sentence', 'abcd', 'mixed', 'test', 'describe'] as const
     type Mode = (typeof allowedModes)[number]
@@ -39,6 +39,8 @@ export async function POST(req: NextRequest) {
     const count = Math.min(Math.max(Number(targetCount), 5), 35)
     const payload = await getPayload()
     const settings = getStudySettings(user as Record<string, unknown>)
+
+    let linkedTestId: string | number | null = testId || null
 
     // Get deck to check direction setting
     let deckDirection = 'front-to-back'
@@ -178,6 +180,26 @@ export async function POST(req: NextRequest) {
       }
     }
 
+
+    if (mode === 'test' && !linkedTestId) {
+      const createdTest = await payload.create({
+        collection: 'tests',
+        data: {
+          owner: user.id,
+          sourceType: numericDeckId ? 'set' : 'folder',
+          sourceDeck: numericDeckId || null,
+          sourceFolder: numericFolderId || null,
+          enabledModes: (Array.isArray(enabledModes) && enabledModes.length > 0 ? enabledModes : ['abcd', 'translate']).map((m: string) => ({ mode: m })),
+          questionCount: count,
+          randomQuestionOrder: Boolean(shuffle),
+          randomAnswerOrder: Boolean(randomAnswerOrder),
+          startedAt: new Date().toISOString(),
+          status: 'in_progress',
+        },
+      })
+      linkedTestId = createdTest.id
+    }
+
     // Create session
     const session = await payload.create({
       collection: 'sessions',
@@ -195,6 +217,9 @@ export async function POST(req: NextRequest) {
           levels: selectedLevels,
           shuffle,
           requireCorrect,
+          testId: linkedTestId,
+          enabledModes: Array.isArray(enabledModes) ? enabledModes : null,
+          randomAnswerOrder: Boolean(randomAnswerOrder),
         },
       },
     })
@@ -228,8 +253,10 @@ export async function POST(req: NextRequest) {
     for (const card of selectedCards) {
       let taskType: TaskType
       if (mode === 'test') {
-        const types: Array<'translate' | 'abcd'> = ['translate', 'abcd']
-        taskType = types[Math.floor(Math.random() * types.length)]
+        const types = (Array.isArray(enabledModes) && enabledModes.length > 0
+          ? enabledModes.filter((m: string) => ['translate', 'abcd', 'sentence', 'describe'].includes(m))
+          : ['translate', 'abcd']) as Array<'translate' | 'abcd' | 'sentence' | 'describe'>
+        taskType = types[Math.floor(Math.random() * types.length)] || 'translate'
       } else if (mode === 'mixed') {
         const types: MixedTaskType[] = ['translate', 'abcd', 'sentence']
         const weightedPool: MixedTaskType[] = [
@@ -264,15 +291,13 @@ export async function POST(req: NextRequest) {
         task.answer = card.back
       }
 
-      // For sentence mode: always provide PL meaning + EN required word
-      // front = EN word, back = PL meaning (regardless of direction setting)
+      // Sentence mode: stage 1 = translate EN->PL, stage 2 handled on client
       if (taskType === 'sentence') {
         task.promptPl = card.back
         task.requiredEn = card.front
-        // Override prompt to show PL meaning (big prompt)
-        task.prompt = card.back
-        // answer stays as the EN word for compatibility
-        task.answer = card.front
+        task.prompt = card.front
+        task.answer = card.back
+        task.expectedAnswer = card.back
       }
 
       if (taskType === 'abcd') {
@@ -280,9 +305,9 @@ export async function POST(req: NextRequest) {
         const shuffled = otherCards.sort(() => Math.random() - 0.5).slice(0, 3)
         const options = shuffled.map(c => dir === 'reverse' ? c.front : c.back)
         options.push(answer)
-        const shuffledOptions = options.sort(() => Math.random() - 0.5)
-        task.options = shuffledOptions
-        task.correctIndex = shuffledOptions.indexOf(answer)
+        const finalOptions = randomAnswerOrder ? options.sort(() => Math.random() - 0.5) : options
+        task.options = finalOptions
+        task.correctIndex = finalOptions.indexOf(answer)
         task.correctValue = answer
       }
 
@@ -310,6 +335,7 @@ export async function POST(req: NextRequest) {
       sessionId: session.id,
       tasks,
       totalCards: selectedCards.length,
+      testId: linkedTestId,
     })
   } catch (error: unknown) {
     console.error('Session start error:', error)

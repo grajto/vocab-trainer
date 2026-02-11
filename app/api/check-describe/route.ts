@@ -52,10 +52,21 @@ export async function POST(req: NextRequest) {
       const messages = [
         {
           role: 'system',
-          content: `Oceń opis słowa. Sprawdź: sens, zgodność znaczenia, brak lania wody.
-Zwróć WYŁĄCZNIE krótki JSON:
-{"ok":true/false,"issue_type":"meaning"|"spam"|"other","message_pl":string,"suggested_fix":string|null}
-Zasady: message_pl max 200 znaków, suggested_fix max 120 znaków. Jeśli ok=true: issue_type="other", message_pl="OK", suggested_fix=null.`,
+          content: `Tryb described: użytkownik MA OPISAĆ znaczenie słowa (definicja/opis), a nie ułożyć przypadkowe zdanie.
+
+Oceń opis słowa pod kątem:
+1) zgodności znaczenia,
+2) sensowności definicji/opisu,
+3) czy opis nie jest przypadkowym zdaniem bez definicji.
+
+Zwróć WYŁĄCZNIE JSON:
+{"ok":true/false,"issue_type":"meaning"|"not_definition"|"spam"|"other","message_pl":string,"suggested_fix":string|null}
+
+Zasady:
+- toleruj drobne błędy interpunkcji i stylu,
+- jeśli sens opisu jest poprawny -> ok=true,
+- message_pl max 200 znaków, suggested_fix max 120 znaków.
+- jeśli ok=true: issue_type="other", suggested_fix=null.`,
         },
         {
           role: 'user',

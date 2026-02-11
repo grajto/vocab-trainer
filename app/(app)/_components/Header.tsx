@@ -97,7 +97,7 @@ export function Header({ username }: { username: string }) {
               <Link href="/decks?create=true" onClick={() => setShowCreate(false)} className="block px-4 py-2.5 text-sm hover:bg-[var(--surface2)]" style={{ color: 'var(--text)' }}>
                 Nowy zestaw
               </Link>
-              <Link href="/library?tab=folders&create=true" onClick={() => setShowCreate(false)} className="block px-4 py-2.5 text-sm hover:bg-[var(--surface2)]" style={{ color: 'var(--text)' }}>
+              <Link href="/folders/new" onClick={() => setShowCreate(false)} className="block px-4 py-2.5 text-sm hover:bg-[var(--surface2)]" style={{ color: 'var(--text)' }}>
                 Nowy folder
               </Link>
               <Link href="/import" onClick={() => setShowCreate(false)} className="block px-4 py-2.5 text-sm hover:bg-[var(--surface2)]" style={{ color: 'var(--text)' }}>

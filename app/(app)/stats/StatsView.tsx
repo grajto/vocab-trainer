@@ -1,286 +1,209 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { BarChart3, TrendingUp, Calendar } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { BarChart3, Clock3, Filter, Layers, LineChart, TrendingUp } from 'lucide-react'
 
-interface DeckStat {
-  deckId: string
-  deckName: string
-  cardCount: number
-  dueCount: number
-  levelDistribution: Record<string, number>
-  percentLevel4: number
-}
+type FilterPreset = '7' | '30' | '90' | 'custom'
 
-interface FolderStat {
-  folderId: string
-  folderName: string
-  deckCount: number
-  totalCards: number
-  totalDue: number
-  avgMastery: number
-}
-
-interface HardestCard {
-  cardId: string
-  front: string
-  back: string
-  totalWrong: number
-  todayWrongCount: number
-  level: number
-  deckName: string
-  deckId: string
-}
-
-interface HistoryItem {
-  id: string
-  mode: string
-  deckName: string
-  targetCount: number
-  completedCount: number
-  accuracy: number
-  startedAt: string
-  endedAt: string | null
-  durationSeconds?: number
-}
-
-interface StatsData {
-  global: {
-    sessionsToday: number
-    sessionsThisWeek: number
-    minutesLast7Days: number
-    streakDays: number
-    avgAccuracy: number
-    levelDistribution?: Record<string, number>
+type StatsPayload = {
+  filters: {
+    decks: Array<{ id: string; name: string; folderId?: string }>
+    folders: Array<{ id: string; name: string }>
   }
-  sessionsByDay?: Array<{ date: string; count: number; minutes: number }>
-  problematicDecks?: Array<{ deckId: string; deckName: string; totalWrong: number }>
-  wordProblems?: Array<{ cardId: string; deckId: string; front: string; wrong: number; correct: number }>
-  deckStats: DeckStat[]
-  folderStats?: FolderStat[]
-  hardestCards?: HardestCard[]
-  history: HistoryItem[]
+  global: {
+    totalSessions: number
+    totalCorrect: number
+    totalWrong: number
+    accuracyPercent: number
+    avgSessionMinutes: number
+    levelDistribution: Record<string, number>
+  }
+  activity: Array<{ date: string; sessions: number; minutes: number }>
+  modeStats: Array<{ mode: string; count: number }>
+  selectedDeckStats: null | {
+    deckId: string
+    deckName: string
+    avgResponseTimeMs: number
+    avgSessionMinutes: number
+    sessionsCount: number
+    correctAnswers: number
+    totalAnswers: number
+    accuracyPercent: number
+    levelDistribution: Record<string, number>
+    hardestWords: Array<{ cardId: string; front: string; wrong: number; repeats: number }>
+    mostRepeatedWords: Array<{ cardId: string; front: string; wrong: number; repeats: number }>
+  }
+  sessions: Array<{ id: string; mode: string; deckId: string; deckName: string; startedAt: string; completedCount: number }>
 }
-
-const modeOptions = ['all', 'translate', 'abcd', 'sentence', 'describe', 'mixed', 'test'] as const
-type ModeFilter = (typeof modeOptions)[number]
 
 export function StatsView() {
-  const [stats, setStats] = useState<StatsData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [modeFilter, setModeFilter] = useState<ModeFilter>('all')
-  const [range, setRange] = useState<'7' | '30' | '365'>('7')
+  const [data, setData] = useState<StatsPayload | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  const [preset, setPreset] = useState<FilterPreset>('30')
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
+  const [deckId, setDeckId] = useState('')
+  const [folderId, setFolderId] = useState('')
+  const [mode, setMode] = useState('all')
+  const [level, setLevel] = useState('0')
+
+  const query = useMemo(() => {
+    const p = new URLSearchParams({ preset, deckId, folderId, mode, level })
+    if (preset === 'custom') {
+      if (from) p.set('from', from)
+      if (to) p.set('to', to)
+    }
+    return p.toString()
+  }, [preset, from, to, deckId, folderId, mode, level])
 
   useEffect(() => {
-    fetch('/api/stats', { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => setStats(data))
-      .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [])
+    let ignore = false
+    setLoading(true)
+    fetch(`/api/stats?${query}`, { credentials: 'include' })
+      .then((r) => r.json())
+      .then((json) => { if (!ignore) setData(json) })
+      .finally(() => { if (!ignore) setLoading(false) })
+    return () => { ignore = true }
+  }, [query])
 
-  if (loading) {
-    return (
-      <div className="py-12 text-center">
-        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Ładowanie statystyk…</p>
-      </div>
-    )
-  }
+  if (!data) return <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{loading ? 'Ładowanie statystyk…' : 'Brak danych.'}</p>
 
-  if (!stats) {
-    return (
-      <div className="py-12 text-center">
-        <p className="text-sm" style={{ color: 'var(--danger)' }}>Nie udało się załadować statystyk.</p>
-      </div>
-    )
-  }
-
-  const historyFiltered = stats.history.filter((h) => {
-    if (!h.startedAt) return false
-    const modeOk = modeFilter === 'all' || h.mode === modeFilter
-    const days = parseInt(range, 10)
-    const startDate = new Date()
-    startDate.setDate(startDate.getDate() - days)
-    const dateOk = new Date(h.startedAt) >= startDate
-    return modeOk && dateOk
-  })
-
-  const summary = historyFiltered.reduce(
-    (acc, item) => {
-      acc.sessions += 1
-      acc.questions += Number(item.completedCount || item.targetCount || 0)
-      if (item.durationSeconds) acc.minutes += Math.round(Number(item.durationSeconds) / 60)
-      return acc
-    },
-    { sessions: 0, questions: 0, minutes: 0 },
-  )
+  const cards = [
+    { label: 'Sesje', value: data.global.totalSessions, icon: BarChart3 },
+    { label: 'Skuteczność', value: `${data.global.accuracyPercent}%`, icon: TrendingUp },
+    { label: 'Śr. czas sesji', value: `${data.global.avgSessionMinutes} min`, icon: Clock3 },
+    { label: 'Poprawne odp.', value: data.global.totalCorrect, icon: Layers },
+  ]
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-2 rounded-full border px-3 py-1.5" style={{ borderColor: 'var(--border)' }}>
-          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Zakres</span>
-          <select
-            value={range}
-            onChange={(e) => setRange(e.target.value as typeof range)}
-            className="text-xs focus:outline-none bg-transparent"
-            style={{ color: 'var(--text)' }}
-          >
-            <option value="7">7 dni</option>
-            <option value="30">30 dni</option>
-            <option value="365">365 dni</option>
+      <div className="rounded-xl border p-4 space-y-3" style={{ borderColor: 'var(--border)' }}>
+        <div className="flex items-center gap-2"><Filter size={16} /><p className="text-sm font-semibold">Filtry</p></div>
+        <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-4">
+          <select value={preset} onChange={(e) => setPreset(e.target.value as FilterPreset)} className="rounded-lg border px-3 py-2 text-sm" style={{ borderColor: 'var(--border)' }}>
+            <option value="7">7 dni</option><option value="30">30 dni</option><option value="90">90 dni</option><option value="custom">Własny zakres</option>
           </select>
-        </div>
-        <div className="flex items-center gap-2 rounded-full border px-3 py-1.5" style={{ borderColor: 'var(--border)' }}>
-          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Tryb</span>
-          <select
-            value={modeFilter}
-            onChange={(e) => setModeFilter(e.target.value as typeof modeFilter)}
-            className="text-xs focus:outline-none bg-transparent"
-            style={{ color: 'var(--text)' }}
-          >
-            {modeOptions.map((mode) => (
-              <option key={mode} value={mode}>
-                {mode === 'all'
-                  ? 'Wszystkie'
-                  : mode === 'abcd'
-                    ? 'ABCD'
-                    : mode === 'describe'
-                      ? 'Opisz'
-                      : mode === 'mixed'
-                        ? 'Mix'
-                        : mode === 'test'
-                          ? 'Test'
-                          : mode === 'sentence'
-                            ? 'Zdania'
-                            : 'Tłumaczenie'}
-              </option>
-            ))}
+          {preset === 'custom' && (
+            <>
+              <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="rounded-lg border px-3 py-2 text-sm" style={{ borderColor: 'var(--border)' }} />
+              <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="rounded-lg border px-3 py-2 text-sm" style={{ borderColor: 'var(--border)' }} />
+            </>
+          )}
+          <select value={folderId} onChange={(e) => { setFolderId(e.target.value); setDeckId('') }} className="rounded-lg border px-3 py-2 text-sm" style={{ borderColor: 'var(--border)' }}>
+            <option value="">Wszystkie foldery</option>
+            {data.filters.folders.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
+          </select>
+          <select value={deckId} onChange={(e) => setDeckId(e.target.value)} className="rounded-lg border px-3 py-2 text-sm" style={{ borderColor: 'var(--border)' }}>
+            <option value="">Wszystkie zestawy</option>
+            {data.filters.decks.filter(d => !folderId || d.folderId === folderId).map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+          </select>
+          <select value={mode} onChange={(e) => setMode(e.target.value)} className="rounded-lg border px-3 py-2 text-sm" style={{ borderColor: 'var(--border)' }}>
+            <option value="all">Wszystkie tryby</option><option value="abcd">ABCD</option><option value="translate">Translated</option><option value="sentence">Sentence</option><option value="describe">Described</option>
+          </select>
+          <select value={level} onChange={(e) => setLevel(e.target.value)} className="rounded-lg border px-3 py-2 text-sm" style={{ borderColor: 'var(--border)' }}>
+            <option value="0">Wszystkie poziomy</option>
+            {[0,1,2,3,4,5].map((l) => <option key={l} value={String(l)}>Poziom {l}</option>)}
           </select>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {[
-          { icon: Calendar, value: stats.global.sessionsThisWeek, label: 'Sesje (7 dni)', color: 'var(--primary)' },
-          { icon: TrendingUp, value: `${stats.global.minutesLast7Days} min`, label: 'Czas (7 dni)', color: 'var(--text)' },
-          { icon: BarChart3, value: stats.global.streakDays, label: 'Seria dni', color: 'var(--primary)' },
-          { icon: TrendingUp, value: `${stats.global.avgAccuracy}%`, label: 'Śr. trafność', color: 'var(--text)' },
-        ].map((item, idx) => (
-          <div key={idx} className="rounded-xl border px-4 py-4 space-y-2" style={{ borderColor: 'var(--border)' }}>
-            <item.icon size={18} style={{ color: item.color }} />
-            <p className="text-2xl font-bold tabular-nums" style={{ color: item.color }}>
-              {item.value}
-            </p>
-            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-              {item.label}
-            </p>
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {cards.map((c) => (
+          <div key={c.label} className="rounded-xl border p-4" style={{ borderColor: 'var(--border)' }}>
+            <c.icon size={16} />
+            <p className="mt-2 text-xl font-bold">{c.value}</p>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{c.label}</p>
           </div>
         ))}
       </div>
 
-      {stats.sessionsByDay && stats.sessionsByDay.length > 0 && (
-        <div className="rounded-xl border p-5" style={{ borderColor: 'var(--border)' }}>
-          <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--text)' }}>
-            Kalendarz aktywności
-          </h3>
-          <div className="grid grid-cols-7 gap-2">
-            {stats.sessionsByDay.map((day, idx) => {
-              const color =
-                day.count >= 3 ? '#22c55e' : day.count > 0 ? '#f59e0b' : '#ef4444'
-              return (
-                <div
-                  key={`${day.date}-${idx}`}
-                  className="rounded-lg p-2 text-center"
-                  style={{ background: '#f8fafc', border: `1px solid ${color}` }}
-                >
-                  <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
-                    {day.date}
-                  </p>
-                  <p className="text-sm font-bold" style={{ color }}>
-                    {day.count}
-                  </p>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
-
       <div className="grid gap-4 lg:grid-cols-2">
-        <div className="rounded-xl border p-5 space-y-3" style={{ borderColor: 'var(--border)' }}>
-          <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
-            Problematyczne zestawy
-          </h3>
-          {stats.problematicDecks && stats.problematicDecks.length > 0 ? (
-            stats.problematicDecks.map((deck) => (
-              <div key={deck.deckId} className="flex items-center justify-between rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
-                <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
-                  {deck.deckName}
-                </span>
-                <span className="text-xs font-bold px-2 py-1 rounded-full" style={{ background: '#fee2e2', color: '#b91c1c' }}>
-                  {deck.totalWrong} bł.
-                </span>
-              </div>
-            ))
-          ) : (
-            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-              Brak danych o trudnościach.
-            </p>
-          )}
-        </div>
-
-        <div className="rounded-xl border p-5 space-y-3" style={{ borderColor: 'var(--border)' }}>
-          <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
-            Najtrudniejsze słowa
-          </h3>
-          {stats.wordProblems && stats.wordProblems.length > 0 ? (
-            stats.wordProblems.slice(0, 5).map((word) => (
-              <div key={word.cardId} className="flex items-center justify-between rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
-                <span className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>
-                  {word.front || 'Słówko'}
-                </span>
-                <span className="text-xs font-bold px-2 py-1 rounded-full" style={{ background: '#fef3c7', color: '#b45309' }}>
-                  {word.wrong} bł.
-                </span>
-              </div>
-            ))
-          ) : (
-            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-              Brak problematycznych słówek.
-            </p>
-          )}
-        </div>
-      </div>
-
-      <div className="rounded-xl border p-5 space-y-3" style={{ borderColor: 'var(--border)' }}>
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
-            Historia sesji
-          </h3>
-          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-            {summary.sessions} sesji · {summary.questions} pytań · {summary.minutes} min
-          </p>
-        </div>
-        {historyFiltered.length === 0 ? (
-          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            Brak sesji w wybranym filtrze.
-          </p>
-        ) : (
+        <div className="rounded-xl border p-4" style={{ borderColor: 'var(--border)' }}>
+          <p className="mb-3 text-sm font-semibold">Aktywność w czasie</p>
           <div className="space-y-2">
-            {historyFiltered.map((item) => (
-              <div key={item.id} className="grid grid-cols-4 items-center rounded-lg border px-3 py-2 text-xs" style={{ borderColor: 'var(--border)', color: 'var(--text)' }}>
-                <span className="font-semibold truncate">{item.deckName}</span>
-                <span>{item.mode}</span>
-                <span>{item.completedCount ?? item.targetCount} zadań</span>
-                <span className="text-right" style={{ color: 'var(--text-muted)' }}>
-                  {item.startedAt ? new Date(item.startedAt).toLocaleDateString('pl-PL') : '—'}
-                </span>
+            {data.activity.slice(-14).map((a) => (
+              <div key={a.date} className="flex items-center gap-2">
+                <span className="w-24 text-xs" style={{ color: 'var(--text-muted)' }}>{a.date}</span>
+                <div className="h-2 flex-1 rounded-full" style={{ background: 'var(--surface2)' }}><div className="h-2 rounded-full" style={{ width: `${Math.min(100, a.sessions * 12)}%`, background: 'var(--primary)' }} /></div>
+                <span className="w-8 text-right text-xs">{a.sessions}</span>
               </div>
             ))}
           </div>
-        )}
+        </div>
+
+        <div className="rounded-xl border p-4" style={{ borderColor: 'var(--border)' }}>
+          <p className="mb-3 text-sm font-semibold">Rozkład poziomów znajomości</p>
+          <div className="space-y-2">
+            {Object.entries(data.global.levelDistribution).map(([lvl, count]) => (
+              <div key={lvl} className="flex items-center gap-2">
+                <span className="w-16 text-xs">L{lvl}</span>
+                <div className="h-2 flex-1 rounded-full" style={{ background: 'var(--surface2)' }}><div className="h-2 rounded-full" style={{ width: `${Math.min(100, Number(count) * 4)}%`, background: '#22c55e' }} /></div>
+                <span className="w-8 text-right text-xs">{count}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
+
+      <div className="rounded-xl border p-4" style={{ borderColor: 'var(--border)' }}>
+        <p className="mb-3 text-sm font-semibold">Statystyki trybów</p>
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          {data.modeStats.map((m) => (
+            <div key={m.mode} className="rounded-lg border px-3 py-2 text-sm" style={{ borderColor: 'var(--border)' }}>
+              <p className="font-semibold">{m.mode}</p>
+              <p style={{ color: 'var(--text-muted)' }}>{m.count} sesji</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {data.selectedDeckStats ? (
+        <div className="rounded-xl border p-5 space-y-4" style={{ borderColor: 'var(--border)' }}>
+          <div className="flex items-center gap-2"><LineChart size={16} /><h3 className="text-base font-semibold">Szczegółowe statystyki: {data.selectedDeckStats.deckName}</h3></div>
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+            <Stat label="Śr. czas/słówko" value={`${Math.round(data.selectedDeckStats.avgResponseTimeMs / 1000)} s`} />
+            <Stat label="Śr. czas sesji" value={`${data.selectedDeckStats.avgSessionMinutes} min`} />
+            <Stat label="Liczba sesji" value={data.selectedDeckStats.sessionsCount} />
+            <Stat label="Poprawne odpowiedzi" value={data.selectedDeckStats.correctAnswers} />
+            <Stat label="Skuteczność" value={`${data.selectedDeckStats.accuracyPercent}%`} />
+            <Stat label="Liczba odpowiedzi" value={data.selectedDeckStats.totalAnswers} />
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            <div>
+              <p className="mb-2 text-sm font-semibold">Najtrudniejsze słówka</p>
+              <div className="space-y-1">
+                {data.selectedDeckStats.hardestWords.slice(0, 8).map((w) => <Row key={w.cardId} left={w.front} right={`${w.wrong} bł.`} />)}
+              </div>
+            </div>
+            <div>
+              <p className="mb-2 text-sm font-semibold">Najczęściej powtarzane słówka</p>
+              <div className="space-y-1">
+                {data.selectedDeckStats.mostRepeatedWords.slice(0, 8).map((w) => <Row key={w.cardId} left={w.front} right={`${w.repeats} razy`} />)}
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+function Stat({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
+      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{label}</p>
+      <p className="text-lg font-semibold">{value}</p>
+    </div>
+  )
+}
+
+function Row({ left, right }: { left: string; right: string }) {
+  return (
+    <div className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm" style={{ borderColor: 'var(--border)' }}>
+      <span className="truncate">{left}</span>
+      <span style={{ color: 'var(--text-muted)' }}>{right}</span>
     </div>
   )
 }

@@ -18,8 +18,8 @@ export async function POST(req: NextRequest) {
   const body = await req.json()
 
   const settings = {
-    minSessionsPerDay: Number(body.minSessionsPerDay ?? defaultStudySettings.minSessionsPerDay),
-    minMinutesPerDay: Number(body.minMinutesPerDay ?? defaultStudySettings.minMinutesPerDay),
+    minSessionsPerDay: Math.max(1, Number(body.minSessionsPerDay ?? defaultStudySettings.minSessionsPerDay)),
+    minMinutesPerDay: Math.max(5, Number(body.minMinutesPerDay ?? defaultStudySettings.minMinutesPerDay)),
     dailyGoalMode: body.dailyGoalMode ?? defaultStudySettings.dailyGoalMode,
     defaultDirection: body.defaultDirection ?? defaultStudySettings.defaultDirection,
     mixTranslate: Number(body.mixTranslate ?? defaultStudySettings.mixTranslate),
@@ -34,5 +34,6 @@ export async function POST(req: NextRequest) {
     data: { studySettings: settings },
   })
 
-  return NextResponse.json({ settings })
+  const merged = getStudySettings({ ...(user as Record<string, unknown>), studySettings: settings })
+  return NextResponse.json({ settings: merged })
 }

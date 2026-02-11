@@ -54,6 +54,8 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
       .then(res => res.json())
       .then(data => {
         if (data.settings?.defaultDirection) setDirection(data.settings.defaultDirection)
+        if (data.settings?.defaultStudyMode) setMode(data.settings.defaultStudyMode)
+        if (typeof data.settings?.shuffleWords === 'boolean') setShuffle(Boolean(data.settings.shuffleWords))
       })
       .catch(() => null)
 

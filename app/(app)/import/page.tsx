@@ -3,6 +3,9 @@ import { redirect } from 'next/navigation'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { ImportForm } from './ImportForm'
+import { PageContainer } from '../_components/PageContainer'
+import { PageHeader } from '../_components/PageHeader'
+import { Upload } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -25,11 +28,8 @@ export default async function ImportPage() {
   }
 
   return (
-    <div className="mx-auto w-full space-y-6" style={{ maxWidth: '640px' }}>
-      <div>
-        <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Import fiszek (CSV)</h1>
-        <p className="mt-1 text-sm" style={{ color: 'var(--muted)' }}>Wklej dane w formacie CSV, aby masowo dodać karty.</p>
-      </div>
+    <PageContainer maxWidth="640px">
+      <PageHeader title="Import fiszek (CSV)" description="Wklej dane w formacie CSV, aby masowo dodać karty" icon={Upload} />
 
       {decks.docs.length === 0 ? (
         <div className="rounded-lg py-12 text-center" style={{ border: '1px solid var(--border)' }}>
@@ -40,6 +40,6 @@ export default async function ImportPage() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         <ImportForm decks={decks.docs.map((d: any) => ({ id: String(d.id), name: d.name }))} />
       )}
-    </div>
+    </PageContainer>
   )
 }

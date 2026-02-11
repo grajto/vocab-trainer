@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { MoreVertical } from 'lucide-react'
 import { SimpleCard } from './SimpleCard'
+import { ProgressBar } from '../../_components/ui/ProgressBar'
 
 export type ContinueItem = {
   deckName: string
@@ -33,15 +34,7 @@ export function ContinueCard({ item }: { item: ContinueItem }) {
         </div>
 
         <div className="mb-3">
-          <div className="h-3 w-full overflow-hidden rounded-full" style={{ background: '#e9edf7' }}>
-            <div 
-              className="h-full rounded-full transition-all" 
-              style={{ 
-                width: `${item.progressPercent}%`,
-                background: 'linear-gradient(90deg, #22c55e 0%, #16a34a 100%)'
-              }} 
-            />
-          </div>
+          <ProgressBar value={item.progressPercent} className="h-3" />
           <p className="mt-2 text-xs font-semibold" style={{ color: 'var(--text)' }}>{item.progressMeta}</p>
         </div>
       </div>

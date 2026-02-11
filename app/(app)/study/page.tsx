@@ -5,6 +5,8 @@ import { BookOpen } from 'lucide-react'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { StartSessionForm } from '@/app/(app)/learn/StartSessionForm'
+import { PageHeader } from '../_components/PageHeader'
+import { PageContainer } from '../_components/PageContainer'
 
 export const dynamic = 'force-dynamic'
 
@@ -27,24 +29,8 @@ export default async function StudyPage() {
   }
 
   return (
-    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--container-max)' }}>
-      {/* Header - matching folder page style */}
-      <div className="flex items-center gap-3">
-        <span
-          className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg"
-          style={{ background: 'var(--primary-soft)', color: 'var(--primary)' }}
-        >
-          <BookOpen size={20} />
-        </span>
-        <div>
-          <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>
-            Ucz się
-          </h1>
-          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-            Wybierz zestaw, tryb i długość sesji
-          </p>
-        </div>
-      </div>
+    <PageContainer>
+      <PageHeader title="Ucz się" description="Wybierz zestaw, tryb i długość sesji" icon={BookOpen} />
 
       {decks.docs.length === 0 ? (
         <div className="rounded-xl py-12 text-center" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
@@ -52,11 +38,13 @@ export default async function StudyPage() {
           <Link href="/create" className="text-sm font-medium" style={{ color: 'var(--primary)' }}>Utwórz pierwszy zestaw</Link>
         </div>
       ) : (
-        <StartSessionForm
+        <div className="rounded-xl border p-5 lg:p-6" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+          <StartSessionForm
           decks={decks.docs.map((d: any) => ({ id: String(d.id), name: d.name }))}
           folders={folders.docs.map((f: any) => ({ id: String(f.id), name: f.name }))}
         />
+        </div>
       )}
-    </div>
+    </PageContainer>
   )
 }
