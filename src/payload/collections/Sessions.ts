@@ -26,6 +26,11 @@ export const Sessions: CollectionConfig = {
     { name: 'accuracy', type: 'number' },
     { name: 'startedAt', type: 'date' },
     { name: 'endedAt', type: 'date' },
+    { name: 'finishedAt', type: 'date' },
+    { name: 'totalQuestions', type: 'number', defaultValue: 0 },
+    { name: 'correctAnswers', type: 'number', defaultValue: 0 },
+    { name: 'wrongAnswers', type: 'number', defaultValue: 0 },
+    { name: 'durationSeconds', type: 'number', defaultValue: 0 },
     { name: 'settings', type: 'json' },
   ],
 }

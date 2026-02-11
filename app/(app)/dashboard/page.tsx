@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { AlertCircle, ArrowRight, BarChart3, BookOpen, Calendar, FolderOpen, Play } from 'lucide-react'
+import { AlertCircle, ArrowRight, BarChart3, BookOpen, Calendar, Clock, Flame, FolderOpen, Play } from 'lucide-react'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { getStudySettings, isDailyGoalMet } from '@/src/lib/userSettings'
@@ -231,43 +231,62 @@ export default async function DashboardPage() {
 
   return (
     <div className="mx-auto w-full space-y-8 px-4 py-6 lg:px-0" style={{ maxWidth: 'var(--container-max)' }}>
+      <div className="flex items-center gap-3 pt-1">
+        <IconSquare variant="primary" size={40}>
+          <BarChart3 size={20} />
+        </IconSquare>
+        <div>
+          <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>
+            Dashboard
+          </h1>
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+            Szybki podgląd Twojej nauki
+          </p>
+        </div>
+      </div>
       {/* Section A - Informacje (unified analytical card) */}
       <section>
-        <h2 className="section-heading mb-3" style={{ color: 'var(--gray600)', fontWeight: 600 }}>Informacje</h2>
-        <Card>
-          {/* A1: Three compact stats */}
-          <div className="grid grid-cols-3 gap-4 pb-5 border-b" style={{ borderColor: 'var(--border)' }}>
-            <div>
-              <p className="text-xs" style={{ color: 'var(--text-muted)', marginBottom: '4px' }}>Sesje dzisiaj</p>
-              <p className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{sessionsToday.totalDocs}</p>
+        <h2 className="section-heading mb-3 text-lg" style={{ color: 'var(--text)', fontWeight: 700 }}>Informacje</h2>
+          <Card>
+            {/* A1: Three compact stats */}
+            <div className="grid grid-cols-3 gap-4 pb-5 border-b" style={{ borderColor: 'var(--border)' }}>
+              {[
+                { label: 'Sesje dzisiaj', value: sessionsToday.totalDocs, icon: BarChart3 },
+                { label: 'Czas dzisiaj', value: `${timeTodayMinutes} min`, icon: Clock },
+                { label: 'Seria', value: `${streakDays} dni`, icon: Flame },
+              ].map((item, idx) => {
+                const Icon = item.icon
+                return (
+                  <div key={idx} className="flex items-center gap-3">
+                    <IconSquare variant="primary" size={36}>
+                      <Icon size={16} />
+                    </IconSquare>
+                    <div>
+                      <p className="text-xs" style={{ color: 'var(--text-muted)', marginBottom: '4px' }}>{item.label}</p>
+                      <p className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{item.value}</p>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
-            <div>
-              <p className="text-xs" style={{ color: 'var(--text-muted)', marginBottom: '4px' }}>Czas dzisiaj</p>
-              <p className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{timeTodayMinutes} min</p>
-            </div>
-            <div>
-              <p className="text-xs" style={{ color: 'var(--text-muted)', marginBottom: '4px' }}>Seria</p>
-              <p className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{streakDays} dni</p>
-            </div>
-          </div>
 
-          {/* A2: Goal + progress */}
-          <div className="py-5" style={{ borderColor: 'var(--border)' }}>
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Cel dzienny: {settings.minSessionsPerDay} sesji</p>
-              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Pozostało: {remainingToGoal}</p>
+            {/* A2: Goal + progress */}
+            <div className="py-5" style={{ borderColor: 'var(--border)' }}>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Cel dzienny: {settings.minSessionsPerDay} sesji</p>
+                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Pozostało: {remainingToGoal}</p>
+              </div>
+              <div className="h-4 w-full overflow-hidden rounded-full" style={{ background: '#e9edf7' }}>
+                <div className="h-full rounded-full" style={{ background: 'var(--success)', width: `${todayProgress}%` }} />
+              </div>
+              <p className="mt-2 text-xs" style={{ color: 'var(--text-muted)' }}>Do końca celu brakuje: {remainingToGoal} sesji</p>
             </div>
-            <div className="h-2 w-full overflow-hidden rounded-full" style={{ background: '#e9edf7' }}>
-              <div className="h-full rounded-full" style={{ background: 'var(--success)', width: `${todayProgress}%` }} />
-            </div>
-            <p className="mt-2 text-xs" style={{ color: 'var(--text-muted)' }}>Do końca celu brakuje: {remainingToGoal} sesji</p>
-          </div>
-        </Card>
-      </section>
+          </Card>
+        </section>
 
       {/* NEW Section - Co powtórzyć dziś */}
       <section>
-        <h2 className="section-heading mb-3" style={{ color: 'var(--gray600)', fontWeight: 600 }}>Co powtórzyć dziś</h2>
+        <h2 className="section-heading mb-3 text-lg" style={{ color: 'var(--text)', fontWeight: 700 }}>Co powtórzyć dziś</h2>
         {recommendedDecks.length === 0 ? (
           <Card compact>
             <p className="text-sm text-center py-4" style={{ color: 'var(--text-muted)' }}>Wszystko aktualne! Możesz rozpocząć nową sesję.</p>
@@ -315,7 +334,7 @@ export default async function DashboardPage() {
 
       {/* Section B - Jump back in */}
       <section>
-        <h2 className="section-heading mb-3" style={{ color: 'var(--gray600)', fontWeight: 600 }}>Jump back in</h2>
+        <h2 className="section-heading mb-3 text-lg" style={{ color: 'var(--text)', fontWeight: 700 }}>Jump back in</h2>
         {jumpBackIn.length === 0 ? (
           <Card compact>
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Brak przerwanych sesji.</p>
@@ -327,7 +346,7 @@ export default async function DashboardPage() {
 
       {/* Section C - Recents */}
       <section>
-        <h2 className="section-heading mb-3" style={{ color: 'var(--gray600)', fontWeight: 600 }}>Recents</h2>
+        <h2 className="section-heading mb-3 text-lg" style={{ color: 'var(--text)', fontWeight: 700 }}>Recents</h2>
         {recents.length === 0 ? (
           <Card compact>
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Brak ostatnich materiałów.</p>
@@ -363,87 +382,70 @@ export default async function DashboardPage() {
             Twoja aktywność
           </h3>
 
-          {/* Summary stats - Redesigned with better colors */}
           <div className="grid grid-cols-3 gap-3 mb-5">
-            <div className="rounded-xl p-3 text-center" style={{ background: 'linear-gradient(135deg, #eef0ff 0%, #e0e7ff 100%)', border: '1px solid #d0d9ff' }}>
-              <p className="text-lg font-bold" style={{ color: 'var(--primary)' }}>{sessionsToday.totalDocs}</p>
-              <p className="text-[10px] font-medium mt-0.5" style={{ color: 'var(--text-muted)' }}>Sesje dziś</p>
-            </div>
-            <div className="rounded-xl p-3 text-center" style={{ background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)', border: '1px solid #fcd34d' }}>
-              <p className="text-lg font-bold" style={{ color: '#d97706' }}>{streakDays}</p>
-              <p className="text-[10px] font-medium mt-0.5" style={{ color: 'var(--text-muted)' }}>Seria (dni)</p>
-            </div>
-            <div className="rounded-xl p-3 text-center" style={{ background: 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)', border: '1px solid #6ee7b7' }}>
-              <p className="text-lg font-bold" style={{ color: 'var(--success)' }}>{allSessionsYear.totalDocs}</p>
-              <p className="text-[10px] font-medium mt-0.5" style={{ color: 'var(--text-muted)' }}>Łącznie</p>
-            </div>
+            {[
+              { label: 'Sesje dziś', value: sessionsToday.totalDocs },
+              { label: 'Seria (dni)', value: streakDays },
+              { label: 'Łącznie', value: allSessionsYear.totalDocs },
+            ].map((item) => (
+              <div key={item.label} className="rounded-lg border p-3 text-center" style={{ borderColor: 'var(--border)' }}>
+                <p className="text-lg font-bold" style={{ color: 'var(--text)' }}>{item.value}</p>
+                <p className="text-[11px] font-medium mt-0.5" style={{ color: 'var(--text-muted)' }}>{item.label}</p>
+              </div>
+            ))}
           </div>
 
-          {/* Calendar heatmap - Redesigned */}
           <div className="mb-5">
             <p className="text-xs font-semibold mb-2.5" style={{ color: 'var(--text)' }}>Ostatnie 5 dni</p>
             <div className="grid grid-cols-5 gap-2">
               {last5Days.map((day) => {
-                const bgColor = day.met ? 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)' : 
-                                day.sessions > 0 ? 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)' : 
-                                'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)'
-                const borderColor = day.met ? '#6ee7b7' : day.sessions > 0 ? '#fcd34d' : '#cbd5e1'
-                const textColor = day.met ? '#059669' : day.sessions > 0 ? '#d97706' : 'var(--text-muted)'
-                
+                const stateColor = day.met ? '#22c55e' : day.sessions > 0 ? '#f97316' : '#ef4444'
+                const bgColor = day.met ? '#ecfdf3' : day.sessions > 0 ? '#fff7ed' : '#fef2f2'
+
                 return (
                   <div
                     key={day.label}
                     className="rounded-xl p-2.5 text-center transition-all hover:scale-105"
-                    style={{ background: bgColor, border: `1px solid ${borderColor}` }}
+                    style={{ background: bgColor, border: `1px solid ${stateColor}` }}
                   >
                     <p className="text-[10px] font-medium" style={{ color: 'var(--text-muted)' }}>{day.label}</p>
-                    <p className="mt-1 text-base font-bold" style={{ color: textColor }}>{day.sessions}</p>
+                    <p className="mt-1 text-base font-bold" style={{ color: stateColor }}>{day.sessions}</p>
                   </div>
                 )
               })}
             </div>
           </div>
 
-          {/* Performance stats - Redesigned */}
-          {hardestSets.length > 0 && (
-            <div className="space-y-3">
-              <div>
-                <div className="flex items-center gap-2 mb-2.5">
-                  <div className="w-1 h-4 rounded-full" style={{ background: 'var(--danger)' }} />
-                  <p className="text-xs font-bold" style={{ color: 'var(--text)' }}>Najtrudniejsze zestawy</p>
+          <div className="grid gap-3 lg:grid-cols-2">
+            <div className="space-y-2">
+              <p className="text-xs font-bold" style={{ color: 'var(--text)' }}>Obszary problemowe</p>
+              {hardestSets.slice(0, 3).map((set) => (
+                <div key={set.id} className="flex items-center justify-between rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
+                  <span className="text-xs font-semibold truncate" style={{ color: 'var(--text)' }}>{set.name}</span>
+                  <span className="text-[11px] font-bold px-2 py-1 rounded-full" style={{ background: '#fee2e2', color: '#b91c1c' }}>
+                    {set.accuracy}%
+                  </span>
                 </div>
-                <div className="space-y-2">
-                  {hardestSets.map((set) => (
-                    <div key={set.id} className="flex items-center justify-between p-3 rounded-xl transition-all hover:scale-[1.02]" style={{ background: 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)', border: '1px solid #fca5a5' }}>
-                      <p className="text-xs font-semibold truncate flex-1" style={{ color: 'var(--text)' }}>{set.name}</p>
-                      <span className="text-xs font-bold px-2.5 py-1 rounded-full shadow-sm" style={{ background: 'var(--danger)', color: '#fff' }}>
-                        {set.accuracy}%
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {easiestSets.length > 0 && (
-                <div>
-                  <div className="flex items-center gap-2 mb-2.5">
-                    <div className="w-1 h-4 rounded-full" style={{ background: 'var(--success)' }} />
-                    <p className="text-xs font-bold" style={{ color: 'var(--text)' }}>Najlepsze zestawy</p>
-                  </div>
-                  <div className="space-y-2">
-                    {easiestSets.map((set) => (
-                      <div key={set.id} className="flex items-center justify-between p-3 rounded-xl transition-all hover:scale-[1.02]" style={{ background: 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)', border: '1px solid #6ee7b7' }}>
-                        <p className="text-xs font-semibold truncate flex-1" style={{ color: 'var(--text)' }}>{set.name}</p>
-                        <span className="text-xs font-bold px-2.5 py-1 rounded-full shadow-sm" style={{ background: 'var(--success)', color: '#fff' }}>
-                          {set.accuracy}%
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+              ))}
+              {hardestSets.length === 0 && (
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Brak problematycznych zestawów.</p>
               )}
             </div>
-          )}
+            <div className="space-y-2">
+              <p className="text-xs font-bold" style={{ color: 'var(--text)' }}>Najlepsze zestawy</p>
+              {easiestSets.slice(0, 3).map((set) => (
+                <div key={set.id} className="flex items-center justify-between rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
+                  <span className="text-xs font-semibold truncate" style={{ color: 'var(--text)' }}>{set.name}</span>
+                  <span className="text-[11px] font-bold px-2 py-1 rounded-full" style={{ background: '#ecfdf3', color: '#15803d' }}>
+                    {set.accuracy}%
+                  </span>
+                </div>
+              ))}
+              {easiestSets.length === 0 && (
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Brak danych.</p>
+              )}
+            </div>
+          </div>
         </Card>
 
         {/* D2: Rozpocznij */}

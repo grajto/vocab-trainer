@@ -5,6 +5,7 @@ import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { FolderDeckList } from './FolderDeckList'
 import Link from 'next/link'
+import { FolderQuickModeButtons } from './FolderQuickModeButtons'
 
 export const dynamic = 'force-dynamic'
 
@@ -38,6 +39,7 @@ export default async function FolderPage({ params }: { params: Promise<{ id: str
 
   const cardsByDeck = new Map<string, number>()
   for (const card of cardResult.docs) cardsByDeck.set(String(card.deck), (cardsByDeck.get(String(card.deck)) || 0) + 1)
+  const totalCards = cardResult.totalDocs
 
   const deckItems = decks.docs.map((d: any) => ({
     id: String(d.id),
@@ -49,7 +51,7 @@ export default async function FolderPage({ params }: { params: Promise<{ id: str
   }))
 
   return (
-    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--container-max)' }}>
+    <div className="mx-auto w-full space-y-8" style={{ maxWidth: 'var(--container-max)' }}>
       {/* Folder header */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
@@ -77,6 +79,10 @@ export default async function FolderPage({ params }: { params: Promise<{ id: str
             <Plus size={14} /> Dodaj zestaw
           </Link>
         </div>
+      </div>
+
+      <div className="pt-1">
+        <FolderQuickModeButtons folderId={id} cardCount={totalCards} />
       </div>
 
       {/* Deck list with client-side filtering */}

@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { Menu } from 'lucide-react'
 import { LeftSidebar } from './LeftSidebar'
-import { TopHeader } from './TopHeader'
 
 export function AppShell({
   folders,
@@ -24,7 +24,17 @@ export function AppShell({
         <LeftSidebar folders={folders} mobile open={open} onClose={() => setOpen(false)} />
 
         <main className="min-w-0 px-4 pb-8 pt-4 lg:px-8" aria-label="Główna zawartość">
-          <TopHeader onMenuClick={() => setOpen(true)} />
+          <div className="mb-5 flex items-center gap-2 lg:hidden">
+            <button
+              type="button"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full hover:bg-[#f8fafc]"
+              style={{ color: 'var(--muted)' }}
+              onClick={() => setOpen(true)}
+              aria-label="Otwórz menu"
+            >
+              <Menu size={18} />
+            </button>
+          </div>
           {children}
         </main>
       </div>

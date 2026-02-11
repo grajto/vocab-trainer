@@ -3,7 +3,8 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { FolderOpen, Search } from 'lucide-react'
+import { BookOpen, FolderOpen, Search } from 'lucide-react'
+import { IconSquare } from '../_components/ui/IconSquare'
 
 interface Deck {
   id: string
@@ -56,13 +57,19 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
   }
 
   const tabClass = (active: boolean) =>
-    `border-b-2 pb-2 text-sm font-semibold ${active ? 'border-[var(--primary)]' : 'border-transparent hover:opacity-80'}`
+    `border-b-2 pb-2 text-sm font-semibold ${
+      active ? 'border-[var(--primary)] text-[var(--text)]' : 'border-transparent text-[var(--muted)] hover:opacity-80'
+    }`
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center gap-6 pb-2" style={{ borderBottom: '1px solid var(--border)' }}>
-        <button onClick={() => setTab('decks')} className={tabClass(tab === 'decks')} style={{ color: tab === 'decks' ? 'var(--text)' : 'var(--muted)' }}>Zestawy fiszek</button>
-        <button onClick={() => setTab('folders')} className={tabClass(tab === 'folders')} style={{ color: tab === 'folders' ? 'var(--text)' : 'var(--muted)' }}>Foldery</button>
+      <div className="flex flex-wrap items-center gap-6 pb-2">
+        <button onClick={() => setTab('decks')} className={tabClass(tab === 'decks')}>
+          Zestawy
+        </button>
+        <button onClick={() => setTab('folders')} className={tabClass(tab === 'folders')}>
+          Foldery
+        </button>
       </div>
 
       <div className="grid items-center gap-3 lg:grid-cols-[220px_minmax(0,1fr)]">
@@ -73,7 +80,7 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder={tab === 'decks' ? 'Wyszukaj fiszki' : 'Wyszukaj folder'}
+            placeholder={tab === 'decks' ? 'Wyszukaj zestaw' : 'Wyszukaj folder'}
             className="h-10 w-full rounded-full px-4 pr-12 text-sm focus:outline-none"
             style={{ border: '1px solid var(--border)', background: 'var(--surface2)', color: 'var(--text)' }}
           />
@@ -89,15 +96,23 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
               <p className="text-sm" style={{ color: 'var(--muted)' }}>Brak zestawów.</p>
             ) : (
               filteredDecks.map((d) => (
-                <Link key={d.id} href={`/decks/${d.id}`} className="flex items-center gap-3 rounded-[var(--radiusSm)] px-3 py-3 hover:bg-[#f8fafc]" style={{ background: 'var(--surface)' }}>
-                  <span className="inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-[8px]" style={{ background: 'var(--primaryBg)', color: 'var(--primary)' }}>
-                    <FolderOpen className="h-3 w-3" />
-                  </span>
+                <Link
+                  key={d.id}
+                  href={`/decks/${d.id}`}
+                  className="flex items-center gap-3 rounded-xl p-3 transition-colors hover:bg-[var(--hover-bg)]"
+                  style={{ border: '1px solid var(--border)' }}
+                >
+                  <IconSquare variant="primary" size={36}>
+                    <BookOpen size={18} />
+                  </IconSquare>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{d.name}</p>
-                    <p className="text-xs" style={{ color: 'var(--muted)' }}>Zestaw fiszek • {d.cardCount} pojęć</p>
+                    <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
+                      {d.name}
+                    </p>
+                    <p className="text-xs" style={{ color: 'var(--muted)' }}>
+                      Zestaw · {d.cardCount} słówek
+                    </p>
                   </div>
-                  <span style={{ color: 'var(--gray400)' }}>•••</span>
                 </Link>
               ))
             )}
@@ -107,7 +122,20 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
 
       {tab === 'folders' && (
         <div className="space-y-3">
-          {showCreateFolder ? (
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Wszystkie foldery</p>
+            {!showCreateFolder && (
+              <button
+                onClick={() => setShowCreateFolder(true)}
+                className="rounded-full px-4 py-2 text-xs font-semibold"
+                style={{ border: '1px solid var(--border)', color: 'var(--text)' }}
+              >
+                Dodaj folder
+              </button>
+            )}
+          </div>
+
+          {showCreateFolder && (
             <form onSubmit={createFolder} className="flex gap-2 rounded-[var(--radius)] p-4" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
               <input
                 type="text"
@@ -125,23 +153,30 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
                 Anuluj
               </button>
             </form>
-          ) : (
-            <button onClick={() => setShowCreateFolder(true)} className="w-full rounded-[var(--radius)] p-4 text-sm hover:bg-[#f8fafc]" style={{ border: '1px dashed var(--border)', color: 'var(--muted)' }}>
-              + Nowy folder
-            </button>
           )}
 
-          {filteredFolders.map((f) => (
-            <Link key={f.id} href={`/folders/${f.id}`} className="flex items-center gap-3 rounded-[var(--radiusSm)] px-4 py-3 hover:bg-[#f8fafc]" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
-              <span className="inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-[8px]" style={{ background: 'var(--primaryBg)', color: 'var(--primary)' }}>
-                <FolderOpen className="h-3 w-3" />
-              </span>
-              <div>
-                <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{f.name}</p>
-                <p className="text-xs" style={{ color: 'var(--muted)' }}>{f.deckCount} zestawów · {f.cardCount} pojęć</p>
-              </div>
-            </Link>
-          ))}
+          <div className="space-y-2">
+            {filteredFolders.map((f) => (
+              <Link
+                key={f.id}
+                href={`/folders/${f.id}`}
+                className="flex items-center gap-3 rounded-xl p-3 transition-colors hover:bg-[var(--hover-bg)]"
+                style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}
+              >
+                <IconSquare variant="muted" size={36}>
+                  <FolderOpen size={18} />
+                </IconSquare>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
+                    {f.name}
+                  </p>
+                  <p className="text-xs" style={{ color: 'var(--muted)' }}>
+                    {f.deckCount} zestawów · {f.cardCount} słówek
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       )}
     </div>

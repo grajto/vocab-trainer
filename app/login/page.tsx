@@ -19,7 +19,7 @@ export default function LoginPage() {
       const res = await fetch('/api/users/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(login.includes('@') ? { email: login, password } : { username: login, password }),
+        body: JSON.stringify({ username: login, password }),
         credentials: 'include',
       })
 
@@ -90,7 +90,7 @@ export default function LoginPage() {
         </div>
 
         <div className="space-y-1.5">
-          <label className="block text-sm" style={{ color: 'var(--text)' }}>Hasło</label>
+          <label className="block text-sm" style={{ color: 'var(--text)' }}>1Hasło</label>
           <input
             type="password"
             value={password}

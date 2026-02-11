@@ -34,6 +34,11 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [favorites, setFavorites] = useState<FavoritePreset[]>([])
+  const [showTestModal, setShowTestModal] = useState(false)
+  const [testCount, setTestCount] = useState(20)
+  const [testHistory, setTestHistory] = useState<Array<{ id: string; deck: string; deckId?: string; count: number; date: string }>>(
+    [],
+  )
   const router = useRouter()
   const { unlock } = useSound()
 
@@ -57,6 +62,13 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
       if (raw) setFavorites(JSON.parse(raw))
     } catch {
       setFavorites([])
+    }
+
+    try {
+      const savedTests = localStorage.getItem('test-history')
+      if (savedTests) setTestHistory(JSON.parse(savedTests))
+    } catch {
+      setTestHistory([])
     }
   }, [])
 
@@ -87,6 +99,48 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
     setMode(favorite.mode)
     setTargetCount(favorite.targetCount)
     setDirection(favorite.direction)
+  }
+
+  async function startTest() {
+    if (!deckId) return
+    setLoading(true)
+    setError('')
+    unlock()
+    try {
+      const res = await fetch('/api/session/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          deckId,
+          mode: 'test',
+          targetCount: testCount,
+        }),
+      })
+
+      const data = await res.json()
+      if (res.ok && data.sessionId) {
+        const entry = {
+          id: data.sessionId,
+          deck: selectedResourceName,
+          deckId,
+          count: testCount,
+          date: new Date().toISOString(),
+        }
+        const next = [entry, ...testHistory].slice(0, 5)
+        setTestHistory(next)
+        localStorage.setItem('test-history', JSON.stringify(next))
+        sessionStorage.setItem(`session-${data.sessionId}`, JSON.stringify({ tasks: data.tasks, mode: 'test' }))
+        router.push(`/session/${data.sessionId}`)
+      } else {
+        setError(data.error || 'Nie udało się uruchomić testu')
+      }
+    } catch {
+      setError('Network error')
+    } finally {
+      setLoading(false)
+      setShowTestModal(false)
+    }
   }
 
   async function handleStart(e: React.FormEvent) {
@@ -268,6 +322,100 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
           </div>
         )}
       </section>
+
+      {/* Test section */}
+      <section className="rounded-lg p-4" style={{ border: '1px solid var(--border)' }}>
+        <div className="mb-3 flex items-center justify-between">
+          <div>
+            <h4 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Test</h4>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Szybki sprawdzian z wybranego zestawu</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowTestModal(true)}
+            className="rounded-full px-3 py-1 text-xs font-semibold text-white"
+            style={{ background: 'var(--primary)' }}
+          >
+            Nowy test
+          </button>
+        </div>
+        {testHistory.length === 0 ? (
+          <p className="text-sm" style={{ color: 'var(--muted)' }}>Brak historii testów.</p>
+        ) : (
+          <div className="space-y-2">
+            {testHistory.map((item) => (
+              <div key={item.id} className="flex items-center justify-between rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{item.deck}</p>
+                  <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                    {item.count} pytań · {new Date(item.date).toLocaleDateString('pl-PL')}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!item.deckId) {
+                      setError('Brak zapisanego zestawu dla tego testu.')
+                      return
+                    }
+                    setDeckId(item.deckId)
+                    setTestCount(item.count)
+                    setShowTestModal(true)
+                  }}
+                  className="text-xs font-semibold"
+                  style={{ color: 'var(--primary)' }}
+                >
+                  Ponów
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {showTestModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
+          <div className="w-full max-w-md space-y-4 rounded-xl bg-white p-5 shadow-xl">
+            <div className="flex items-center justify-between">
+              <h5 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Konfiguracja testu</h5>
+              <button onClick={() => setShowTestModal(false)} className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                Zamknij
+              </button>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className={labelClass} style={{ color: 'var(--muted)' }}>Zestaw</label>
+                <select value={deckId} onChange={(e) => setDeckId(e.target.value)} className={selectClass} style={selectStyle}>
+                  {decks.map((d) => (
+                    <option key={d.id} value={d.id}>{d.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className={labelClass} style={{ color: 'var(--muted)' }}>Liczba pytań</label>
+                <input
+                  type="number"
+                  min={5}
+                  max={40}
+                  value={testCount}
+                  onChange={(e) => setTestCount(Number(e.target.value))}
+                  className={selectClass}
+                  style={selectStyle}
+                />
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={startTest}
+              disabled={loading}
+              className="h-10 w-full rounded-lg text-sm font-semibold text-white disabled:opacity-60"
+              style={{ background: 'var(--primary)' }}
+            >
+              {loading ? 'Uruchamianie…' : 'Start testu'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

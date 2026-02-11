@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react'
 
 type DayInfo = {
   date: string
@@ -50,10 +50,18 @@ export default function CalendarPage() {
 
   return (
     <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--containerMax)' }}>
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-[.875rem] font-semibold" style={{ color: 'var(--gray600)' }}>Kalendarz nauki</h2>
-          <p className="text-xs" style={{ color: 'var(--gray400)' }}>Śledź aktywność i streak</p>
+      <div className="flex items-center justify-between pt-8">
+        <div className="flex items-center gap-3">
+          <span
+            className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg"
+            style={{ background: 'var(--primary-soft)', color: 'var(--primary)' }}
+          >
+            <CalendarIcon size={20} />
+          </span>
+          <div>
+            <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Kalendarz</h1>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Śledź aktywność i streak</p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={() => changeMonth(-1)} className="rounded-[var(--radiusSm)] p-2 hover:bg-[#f8fafc]" style={{ border: '1px solid var(--border)' }}>

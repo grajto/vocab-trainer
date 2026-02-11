@@ -60,9 +60,14 @@ export default function SettingsPage() {
 
   return (
     <div className="settings-container">
-      <div className="settings-header">
-        <h1 className="settings-title">Ustawienia</h1>
-        <p className="settings-subtitle">Dostosuj swoją naukę do swoich potrzeb</p>
+      <div className="settings-header flex items-center gap-3">
+        <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg" style={{ background: 'var(--primary-soft)', color: 'var(--primary)' }}>
+          <Target size={20} />
+        </span>
+        <div>
+          <h1 className="settings-title">Ustawienia</h1>
+          <p className="settings-subtitle">Dostosuj swoją naukę do swoich potrzeb</p>
+        </div>
       </div>
 
       {/* Daily Goals Section */}
