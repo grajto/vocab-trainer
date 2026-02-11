@@ -6,6 +6,7 @@ import * as migration_20260209_100000_add_features from './20260209_100000_add_f
 import * as migration_20260210_090000_add_user_settings from './20260210_090000_add_user_settings.ts';
 import * as migration_20260210_120000_add_session_modes from './20260210_120000_add_session_modes.ts';
 import * as migration_20260211_120000_add_stats_tables from './20260211_120000_add_stats_tables.ts';
+import * as migration_20260211_130000_patch_sessions_columns from './20260211_130000_patch_sessions_columns.ts';
 
 export const migrations = [
   {
@@ -47,5 +48,10 @@ export const migrations = [
     up: migration_20260211_120000_add_stats_tables.up,
     down: migration_20260211_120000_add_stats_tables.down,
     name: '20260211_120000_add_stats_tables'
+  },
+  {
+    up: migration_20260211_130000_patch_sessions_columns.up,
+    down: migration_20260211_130000_patch_sessions_columns.down,
+    name: '20260211_130000_patch_sessions_columns'
   },
 ];
