@@ -15,6 +15,7 @@ import { UserTestPreferences } from './collections/UserTestPreferences.ts'
 import { UserNotifications } from './collections/UserNotifications.ts'
 import { TestAnswers } from './collections/TestAnswers.ts'
 import { Tests } from './collections/Tests.ts'
+import { withNeonPooling } from '@/src/lib/db/neonConnection'
 
 const serverURL =
   process.env.PAYLOAD_PUBLIC_SERVER_URL ||
@@ -29,7 +30,7 @@ export default buildConfig({
   collections: [Users, Folders, Decks, Cards, ReviewStates, Sessions, SessionItems, DailyAggregates, WordStats, UserTestPreferences, UserNotifications, Tests, TestAnswers],
   db: postgresAdapter({
     pool: {
-      connectionString: process.env.DATABASE_URL!,
+      connectionString: withNeonPooling(process.env.DATABASE_URL!),
     },
   }),
   typescript: {

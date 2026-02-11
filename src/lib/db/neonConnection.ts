@@ -1,25 +1,34 @@
 /**
- * Neon connection tuning notes for serverless runtimes.
+ * Normalize DATABASE_URL for Neon/serverless usage.
  *
- * This project currently uses Payload + @payloadcms/db-postgres.
- * Keep connection string flags set to minimize handshake overhead:
- * - pgbouncer=true
- * - sslmode=require (or verify-full)
- *
- * Example DATABASE_URL:
- * postgresql://...neon.../db?sslmode=require&pgbouncer=true&connect_timeout=5
+ * - Prefer `sslmode=verify-full` to avoid pg warning and keep strict TLS checks.
+ * - Ensure `pgbouncer=true` and `connect_timeout=5` for serverless handshakes.
  */
 
 export const neonConnectionHints = {
   pgbouncer: true,
   fetchConnectionCache: true,
   connectTimeoutSeconds: 5,
-}
+  sslmode: 'verify-full',
+} as const
 
 export function withNeonPooling(url: string): string {
   if (!url) return url
-  const hasQuery = url.includes('?')
-  const suffix = 'pgbouncer=true&connect_timeout=5'
-  if (url.includes('pgbouncer=')) return url
-  return `${url}${hasQuery ? '&' : '?'}${suffix}`
+
+  let parsed: URL
+  try {
+    parsed = new URL(url)
+  } catch {
+    return url
+  }
+
+  if (!parsed.searchParams.has('pgbouncer')) parsed.searchParams.set('pgbouncer', 'true')
+  if (!parsed.searchParams.has('connect_timeout')) parsed.searchParams.set('connect_timeout', '5')
+
+  const sslmode = parsed.searchParams.get('sslmode')
+  if (!sslmode || sslmode === 'require' || sslmode === 'prefer' || sslmode === 'verify-ca') {
+    parsed.searchParams.set('sslmode', 'verify-full')
+  }
+
+  return parsed.toString()
 }

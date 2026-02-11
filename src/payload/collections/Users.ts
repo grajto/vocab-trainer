@@ -46,6 +46,14 @@ export const Users: CollectionConfig = {
             { label: 'Hybrydowy', value: 'hybrid' },
           ],
         },
+
+        {
+          name: 'dailyGoalWords',
+          type: 'number',
+          defaultValue: 20,
+          min: 5,
+          max: 500,
+        },
         {
           name: 'defaultDirection',
           type: 'select',
@@ -54,6 +62,18 @@ export const Users: CollectionConfig = {
             { label: 'PL → EN', value: 'pl-en' },
             { label: 'EN → PL', value: 'en-pl' },
             { label: 'Oba', value: 'both' },
+          ],
+        },
+        {
+          name: 'defaultStudyMode',
+          type: 'select',
+          defaultValue: 'translate',
+          options: [
+            { label: 'Tłumaczenie', value: 'translate' },
+            { label: 'ABCD', value: 'abcd' },
+            { label: 'Sentence', value: 'sentence' },
+            { label: 'Describe', value: 'describe' },
+            { label: 'Mixed', value: 'mixed' },
           ],
         },
         {
@@ -83,6 +103,26 @@ export const Users: CollectionConfig = {
           defaultValue: 20,
           min: 0,
           max: 200,
+        },
+        {
+          name: 'shuffleWords',
+          type: 'checkbox',
+          defaultValue: true,
+        },
+        {
+          name: 'soundEnabled',
+          type: 'checkbox',
+          defaultValue: true,
+        },
+        {
+          name: 'autoAdvance',
+          type: 'checkbox',
+          defaultValue: true,
+        },
+        {
+          name: 'darkMode',
+          type: 'checkbox',
+          defaultValue: false,
         },
       ],
     },
