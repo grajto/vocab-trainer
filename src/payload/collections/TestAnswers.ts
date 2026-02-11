@@ -4,6 +4,7 @@ import { isAuthenticated, isOwner } from '../access/isOwner.ts'
 export const TestAnswers: CollectionConfig = {
   slug: 'test_answers',
   timestamps: true,
+  lockDocuments: false,
   access: {
     read: isOwner,
     create: isAuthenticated,

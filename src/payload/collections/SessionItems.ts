@@ -4,6 +4,7 @@ import { isAuthenticated } from '../access/isOwner.ts'
 export const SessionItems: CollectionConfig = {
   slug: 'session-items',
   timestamps: true,
+  lockDocuments: false,
   access: {
     read: isAuthenticated,
     create: isAuthenticated,
