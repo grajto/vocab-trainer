@@ -51,7 +51,7 @@ export default async function FolderPage({ params }: { params: Promise<{ id: str
   }))
 
   return (
-    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--container-max)' }}>
+    <div className="mx-auto w-full space-y-8" style={{ maxWidth: 'var(--container-max)' }}>
       {/* Folder header */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
@@ -81,7 +81,9 @@ export default async function FolderPage({ params }: { params: Promise<{ id: str
         </div>
       </div>
 
-      <FolderQuickModeButtons folderId={id} cardCount={totalCards} />
+      <div className="pt-1">
+        <FolderQuickModeButtons folderId={id} cardCount={totalCards} />
+      </div>
 
       {/* Deck list with client-side filtering */}
       <FolderDeckList decks={deckItems} />
