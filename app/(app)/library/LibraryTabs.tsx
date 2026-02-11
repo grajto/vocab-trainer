@@ -56,20 +56,31 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
     }
   }
 
-  const tabClass = (active: boolean) =>
-    `border-b-2 pb-2 text-sm font-semibold ${
-      active ? 'border-[var(--primary)] text-[var(--text)]' : 'border-transparent text-[var(--muted)] hover:opacity-80'
-    }`
-
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center gap-6 pb-2">
-        <button onClick={() => setTab('decks')} className={tabClass(tab === 'decks')}>
-          Zestawy
-        </button>
-        <button onClick={() => setTab('folders')} className={tabClass(tab === 'folders')}>
-          Foldery
-        </button>
+      <div className="relative">
+        <div className="flex items-center gap-6 border-b" style={{ borderColor: 'var(--border)' }}>
+          <button
+            onClick={() => setTab('decks')}
+            className="relative pb-3 text-sm font-semibold transition-colors -mb-px"
+            style={{
+              color: tab === 'decks' ? 'var(--primary)' : 'var(--text-muted)',
+              borderBottom: tab === 'decks' ? '3px solid var(--primary)' : '3px solid transparent',
+            }}
+          >
+            Zestawy
+          </button>
+          <button
+            onClick={() => setTab('folders')}
+            className="relative pb-3 text-sm font-semibold transition-colors -mb-px"
+            style={{
+              color: tab === 'folders' ? 'var(--primary)' : 'var(--text-muted)',
+              borderBottom: tab === 'folders' ? '3px solid var(--primary)' : '3px solid transparent',
+            }}
+          >
+            Foldery
+          </button>
+        </div>
       </div>
 
       <div className="grid items-center gap-3 lg:grid-cols-[220px_minmax(0,1fr)]">
@@ -110,7 +121,7 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
                       {d.name}
                     </p>
                     <p className="text-xs" style={{ color: 'var(--muted)' }}>
-                      Zestaw · {d.cardCount} słówek
+                      {d.cardCount} pojęć
                     </p>
                   </div>
                 </Link>
@@ -171,7 +182,7 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
                     {f.name}
                   </p>
                   <p className="text-xs" style={{ color: 'var(--muted)' }}>
-                    {f.deckCount} zestawów · {f.cardCount} słówek
+                    {f.deckCount} zestawów · {f.cardCount} pojęć
                   </p>
                 </div>
               </Link>

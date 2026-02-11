@@ -3,6 +3,9 @@ import { redirect } from 'next/navigation'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { LibraryTabs } from './LibraryTabs'
+import { Library, Plus } from 'lucide-react'
+import Link from 'next/link'
+import { PageHeader } from '../_components/ui/PageHeader'
 
 export const dynamic = 'force-dynamic'
 
@@ -74,19 +77,30 @@ export default async function LibraryPage() {
   }
 
   return (
-    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--containerMax)' }}>
-      <div className="flex items-center gap-3">
-        <span
-          className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg"
-          style={{ background: 'var(--primary-soft)', color: 'var(--primary)' }}
-        >
-          📚
-        </span>
-        <div>
-          <h1 className="text-xl font-bold tracking-tight" style={{ color: 'var(--text)' }}>Twoje zasoby</h1>
-          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Zestawy i foldery w jednym miejscu</p>
-        </div>
-      </div>
+    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--containerMax)', paddingTop: '32px' }}>
+      <PageHeader
+        icon={Library}
+        title="Twoje zasoby"
+        subtitle="Zestawy i foldery w jednym miejscu"
+        action={
+          <>
+            <Link
+              href="/folders?create=true"
+              className="inline-flex h-10 items-center gap-1.5 rounded-full px-4 text-sm font-medium transition-colors hover:opacity-90"
+              style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
+            >
+              <Plus size={16} /> Dodaj folder
+            </Link>
+            <Link
+              href="/create"
+              className="inline-flex h-10 items-center gap-1.5 rounded-full px-4 text-sm font-medium transition-colors hover:opacity-90"
+              style={{ background: 'var(--primary-soft)', color: 'var(--primary)' }}
+            >
+              <Plus size={16} /> Dodaj zestaw
+            </Link>
+          </>
+        }
+      />
 
       <LibraryTabs
         decks={decks.docs.map((d: any) => ({

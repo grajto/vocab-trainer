@@ -72,7 +72,7 @@ export function FolderQuickModeButtons({ folderId, cardCount }: { folderId: stri
         <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
           Szybki start (folder)
         </h3>
-        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{cardCount} słówek</p>
+        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{cardCount} pojęć</p>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
