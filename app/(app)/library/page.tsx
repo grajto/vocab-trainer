@@ -19,6 +19,7 @@ export default async function LibraryPage() {
   let folders: any = { docs: [] }
   let cards: any = { docs: [] }
   let reviewStates: any = { docs: [] }
+  let recentSessions: any = { docs: [] }
 
   try {
     const results = await Promise.all([
@@ -36,9 +37,19 @@ export default async function LibraryPage() {
         limit: 100,
         depth: 0,
       }),
+      // Fetch recent sessions to determine last used
+      payload.find({
+        collection: 'sessions',
+        where: { owner: { equals: user.id }, endedAt: { not_equals: null } },
+        sort: '-startedAt',
+        limit: 500,
+        depth: 0,
+      }),
     ])
     decks = results[0]
     folders = results[1]
+    recentSessions = results[2]
+    
     if (decks.docs.length > 0) {
       cards = await payload.find({
         collection: 'cards',
@@ -63,6 +74,15 @@ export default async function LibraryPage() {
   for (const card of cards.docs) {
     const deckId = String(card.deck)
     cardCountByDeck.set(deckId, (cardCountByDeck.get(deckId) || 0) + 1)
+  }
+
+  // Build map of last used timestamps for decks
+  const lastUsedByDeck = new Map<string, string>()
+  for (const session of recentSessions.docs) {
+    const deckId = String(session.deck)
+    if (!lastUsedByDeck.has(deckId) && session.startedAt) {
+      lastUsedByDeck.set(deckId, session.startedAt)
+    }
   }
 
   const level4ByDeck = new Map<string, number>()
@@ -109,6 +129,7 @@ export default async function LibraryPage() {
           cardCount: cardCountByDeck.get(String(d.id)) || 0,
           author: '',
           createdAt: new Date(d.createdAt || d.updatedAt || new Date()).toLocaleString('pl-PL', { month: 'long', year: 'numeric' }),
+          lastUsed: lastUsedByDeck.get(String(d.id)) || null,
         }))}
         folders={folders.docs.map((f: any) => {
           const folderDecks = decks.docs.filter((d: any) => String(d.folder) === String(f.id))

@@ -12,6 +12,7 @@ interface Deck {
   cardCount: number
   author: string
   createdAt: string
+  lastUsed?: string | null
 }
 
 interface Folder {
@@ -32,7 +33,15 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
   const [creating, setCreating] = useState(false)
   const router = useRouter()
 
-  const filteredDecks = decks.filter((d) => d.name.toLowerCase().includes(search.toLowerCase()))
+  const filteredDecks = decks
+    .filter((d) => d.name.toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) => {
+      // Sort by last used (most recent first), fallback to createdAt
+      const aTime = a.lastUsed || a.createdAt
+      const bTime = b.lastUsed || b.createdAt
+      return new Date(bTime).getTime() - new Date(aTime).getTime()
+    })
+  
   const filteredFolders = folders.filter((f) => f.name.toLowerCase().includes(search.toLowerCase()))
 
   async function createFolder(e: React.FormEvent) {
@@ -84,7 +93,9 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
       </div>
 
       <div className="grid items-center gap-3 lg:grid-cols-[220px_minmax(0,1fr)]">
-        <p className="text-sm" style={{ color: 'var(--muted)' }}>Ostatnie zestawy</p>
+        <p className="text-sm" style={{ color: 'var(--muted)' }}>
+          {tab === 'decks' ? 'Ostatnio używane zestawy' : 'Twoje foldery'}
+        </p>
         <div className="relative w-full lg:justify-self-end lg:max-w-[500px]">
           <Search className="absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: 'var(--gray400)' }} />
           <input
