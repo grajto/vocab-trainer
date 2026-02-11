@@ -38,6 +38,10 @@
   --nav-h: 64px;
   --btn-h: 40px;
   --gap: 16px;
+  --page-top-space: 24px;
+  --page-side-space: 16px;
+  --page-side-space-lg: 40px;
+  --sidebar-pad: 14px;
 
   /* Legacy aliases for compatibility */
   --surface2: var(--surface-muted);
@@ -1590,4 +1594,17 @@ button, input { font: inherit; }
 *:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
+}
+
+.app-main-shell {
+  padding-top: var(--page-top-space);
+  padding-left: var(--page-side-space);
+  padding-right: var(--page-side-space);
+}
+
+@media (min-width: 1024px) {
+  .app-main-shell {
+    padding-left: var(--page-side-space-lg);
+    padding-right: var(--page-side-space-lg);
+  }
 }

@@ -186,7 +186,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
         })
         const sessionData = await sessionRes.json()
         if (sessionRes.ok && sessionData.sessionId) {
-          sessionStorage.setItem(`session-${sessionData.sessionId}`, JSON.stringify(sessionData.tasks))
+          sessionStorage.setItem(`session-${sessionData.sessionId}`, JSON.stringify({ tasks: sessionData.tasks, mode: 'translate', returnDeckId: String(deckId) }))
           router.push(`/session/${sessionData.sessionId}`)
           return
         }

@@ -44,7 +44,7 @@ export function DeckStudyLauncher({ deckId, cardCount }: Props) {
 
       const data = await res.json()
       if (res.ok && data.sessionId) {
-        sessionStorage.setItem(`session-${data.sessionId}`, JSON.stringify(data.tasks))
+        sessionStorage.setItem(`session-${data.sessionId}`, JSON.stringify({ tasks: data.tasks, mode, returnDeckId: deckId }))
         router.push(`/session/${data.sessionId}`)
       } else {
         setError(data.error || 'Nie udało się uruchomić sesji')

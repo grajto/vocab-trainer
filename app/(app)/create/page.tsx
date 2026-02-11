@@ -3,6 +3,8 @@ import { PlusCircle } from 'lucide-react'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { DeckCreator } from './DeckCreator'
+import { PageHeader } from '../_components/PageHeader'
+import { PageContainer } from '../_components/PageContainer'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,26 +31,12 @@ export default async function CreateDeckPage() {
   const folderList = folders.docs.map((f: any) => ({ id: String(f.id), name: f.name }))
 
   return (
-    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--container-max)' }}>
-      {/* Header - matching folder page style */}
-      <div className="flex items-center gap-3">
-        <span
-          className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg"
-          style={{ background: 'var(--primary-soft)', color: 'var(--primary)' }}
-        >
-          <PlusCircle size={20} />
-        </span>
-        <div>
-          <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>
-            Kreator zestawów
-          </h1>
-          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-            Utwórz nowy zestaw słówek
-          </p>
-        </div>
-      </div>
+    <PageContainer>
+      <PageHeader title="Kreator zestawów" icon={PlusCircle} />
       
-      <DeckCreator folders={folderList} />
-    </div>
+      <div className="rounded-xl border p-5 lg:p-6" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+        <DeckCreator folders={folderList} />
+      </div>
+    </PageContainer>
   )
 }

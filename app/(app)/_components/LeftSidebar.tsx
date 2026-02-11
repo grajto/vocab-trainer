@@ -1,8 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { BarChart3, Bell, BookOpen, CalendarDays, FolderOpen, Home, Plus, Settings, X } from 'lucide-react'
+import { usePathname, useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { useSound } from '@/src/lib/SoundProvider'
+import { BarChart3, Bell, BookOpen, CalendarDays, ClipboardCheck, FolderOpen, Home, PlayCircle, Plus, Settings, X } from 'lucide-react'
 import { SidebarSearch } from './SidebarSearch'
 
 interface FolderItem {
@@ -22,7 +24,22 @@ export function LeftSidebar({
   onClose?: () => void
 }) {
   const pathname = usePathname()
+  const router = useRouter()
+  const { unlock } = useSound()
+  const [hasNewNotifications, setHasNewNotifications] = useState(false)
+  const [dailyLoading, setDailyLoading] = useState(false)
   const active = (href: string) => pathname === href || pathname.startsWith(`${href}/`)
+
+  useEffect(() => {
+    let ignore = false
+    fetch('/api/notifications', { credentials: 'include' })
+      .then((res) => res.json())
+      .then((data) => {
+        if (!ignore) setHasNewNotifications(Number(data.unreadCount || 0) > 0)
+      })
+      .catch(() => undefined)
+    return () => { ignore = true }
+  }, [pathname])
 
   const groupTitle = 'px-2 text-[13px] font-semibold'
   const itemClass = (isActive: boolean) =>
@@ -32,8 +49,33 @@ export function LeftSidebar({
         : 'border-transparent text-[var(--text)] hover:border-[var(--border)] hover:bg-[#f8fafc]'
     }`
 
+
+  async function startDailySession() {
+    if (dailyLoading) return
+    setDailyLoading(true)
+    try {
+      unlock()
+      const res = await fetch('/api/session/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ mode: 'translate', targetCount: 20, shuffle: true, allowAll: true }),
+      })
+      const data = await res.json()
+      if (res.ok && data.sessionId) {
+        sessionStorage.setItem(`session-${data.sessionId}`, JSON.stringify({ tasks: data.tasks, mode: 'translate', returnDeckId: data.deckId ? String(data.deckId) : '' }))
+        router.push(`/session/${data.sessionId}`)
+        onClose?.()
+      }
+    } catch {
+      // ignore
+    } finally {
+      setDailyLoading(false)
+    }
+  }
+
   const nav = (
-    <aside className="flex h-full flex-col overflow-y-auto border-r px-[10px] py-[10px]" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+    <aside className="flex h-full flex-col overflow-y-auto border-r px-[var(--sidebar-pad)] py-[var(--sidebar-pad)]" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
       <div className="mb-1 flex items-center justify-between px-2 lg:hidden">
         <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Menu</span>
         <button type="button" onClick={onClose} className="rounded-md p-1 hover:bg-[#f8fafc]" style={{ color: 'var(--muted)' }} aria-label="Zamknij menu">
@@ -42,6 +84,16 @@ export function LeftSidebar({
       </div>
 
       <div className="space-y-5">
+        <button
+          type="button"
+          onClick={startDailySession}
+          disabled={dailyLoading}
+          className="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-[var(--radius)] px-4 text-sm font-semibold text-white transition-opacity disabled:opacity-60"
+          style={{ background: 'linear-gradient(135deg, var(--primary), #4f46e5)' }}
+        >
+          <PlayCircle size={18} />
+          {dailyLoading ? 'Uruchamianie…' : 'Codzienna sesja (20)'}
+        </button>
         <section className="space-y-2">
           <p className={groupTitle}>Główne</p>
           <div className="space-y-1">
@@ -50,7 +102,10 @@ export function LeftSidebar({
             <Link href="/calendar" onClick={onClose} className={itemClass(active('/calendar'))}><CalendarDays size={16} />Kalendarz</Link>
             <Link href="/stats" onClick={onClose} className={itemClass(active('/stats'))}><BarChart3 size={16} />Statystyki</Link>
             <Link href="/settings" onClick={onClose} className={itemClass(active('/settings'))}><Settings size={16} />Ustawienia</Link>
-            <Link href="/notifications" onClick={onClose} className={itemClass(active('/notifications'))}><Bell size={16} />Powiadomienia</Link>
+            <Link href="/notifications" onClick={onClose} className={itemClass(active('/notifications'))}>
+              <Bell size={16} />
+              <span className="flex items-center gap-2">Powiadomienia{hasNewNotifications ? <span className="inline-block h-2 w-2 rounded-full" style={{ background: 'var(--danger)' }} /> : null}</span>
+            </Link>
           </div>
         </section>
 
@@ -63,7 +118,7 @@ export function LeftSidebar({
                 <span className="truncate">{f.name}</span>
               </Link>
             ))}
-            <Link href="/folders" onClick={onClose} className={itemClass(active('/folders'))}><Plus size={16} />Nowy folder</Link>
+            <Link href="/folders/new" onClick={onClose} className={itemClass(pathname === '/folders/new')}><Plus size={16} />Nowy folder</Link>
           </div>
         </section>
 
@@ -72,6 +127,7 @@ export function LeftSidebar({
           <div className="space-y-1">
             <Link href="/study" onClick={onClose} className={itemClass(active('/study'))}><BookOpen size={16} />Ucz się</Link>
             <Link href="/create" onClick={onClose} className={itemClass(active('/create'))}><Plus size={16} />Kreator zestawów</Link>
+            <Link href="/test" onClick={onClose} className={itemClass(active('/test'))}><ClipboardCheck size={16} />Testy</Link>
           </div>
         </section>
 

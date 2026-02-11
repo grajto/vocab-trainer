@@ -23,7 +23,7 @@ export function AppShell({
 
         <LeftSidebar folders={folders} mobile open={open} onClose={() => setOpen(false)} />
 
-        <main className="min-w-0 px-4 pb-8 pt-4 lg:px-8" aria-label="Główna zawartość">
+        <main className="app-main-shell min-w-0 pb-10" aria-label="Główna zawartość">
           <div className="mb-5 flex items-center gap-2 lg:hidden">
             <button
               type="button"
