@@ -13,6 +13,17 @@ export type ContinueItem = {
 export function ContinueCard({ item }: { item: ContinueItem }) {
   return (
     <SimpleCard className="relative overflow-hidden p-5 min-h-[180px] flex flex-col justify-between">
+      {/* Decorative shape in bottom right */}
+      <div 
+        className="absolute bottom-0 right-0 opacity-10 pointer-events-none"
+        style={{
+          width: '120px',
+          height: '120px',
+          background: 'var(--primary)',
+          borderRadius: '50% 0 0 0',
+          transform: 'translate(20%, 20%)'
+        }}
+      />
       <div className="relative z-10">
         <div className="mb-4 flex items-start justify-between gap-3">
           <h4 className="line-clamp-2 text-lg font-semibold tracking-tight leading-snug" style={{ color: 'var(--text)' }}>{item.deckName}</h4>

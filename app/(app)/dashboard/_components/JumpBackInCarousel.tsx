@@ -40,28 +40,14 @@ export function JumpBackInCarousel({ items }: { items: ContinueItem[] }) {
   }, [])
 
   return (
-    <div className="relative" style={{ 
-      background: 'linear-gradient(135deg, rgba(66, 85, 255, 0.03) 0%, rgba(124, 58, 237, 0.03) 100%)',
-      borderRadius: '16px',
-      padding: '24px 0'
-    }}>
-      {/* Decorative background pattern */}
-      <div 
-        className="absolute inset-0 opacity-5 pointer-events-none"
-        style={{
-          backgroundImage: `radial-gradient(circle at 20px 20px, var(--primary) 1px, transparent 0)`,
-          backgroundSize: '40px 40px',
-          borderRadius: '16px'
-        }}
-      />
-      
+    <div className="relative">
       {/* Left arrow - only show when scrolled */}
       {showLeftArrow && (
         <button
           type="button"
           onClick={() => slide('left')}
-          className="absolute left-4 top-1/2 z-20 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full shadow-lg transition-opacity"
-          style={{ border: '1px solid var(--border)', background: 'rgba(255, 255, 255, 0.95)', color: 'var(--text)' }}
+          className="absolute left-2 top-1/2 z-20 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full shadow-md transition-opacity"
+          style={{ border: '1px solid var(--border)', background: '#fff', color: 'var(--text)' }}
           aria-label="Przesuń w lewo"
         >
           <ChevronLeft size={20} />
@@ -72,14 +58,14 @@ export function JumpBackInCarousel({ items }: { items: ContinueItem[] }) {
       <button
         type="button"
         onClick={() => slide('right')}
-        className="absolute right-4 top-1/2 z-20 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full shadow-lg"
-        style={{ border: '1px solid var(--border)', background: 'rgba(255, 255, 255, 0.95)', color: 'var(--text)' }}
+        className="absolute right-2 top-1/2 z-20 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full shadow-md"
+        style={{ border: '1px solid var(--border)', background: '#fff', color: 'var(--text)' }}
         aria-label="Przesuń w prawo"
       >
         <ChevronRight size={20} />
       </button>
 
-      <div className="relative overflow-hidden px-4">
+      <div className="relative overflow-hidden">
         <div
           ref={railRef}
           onScroll={onScroll}
@@ -91,12 +77,6 @@ export function JumpBackInCarousel({ items }: { items: ContinueItem[] }) {
             </div>
           ))}
         </div>
-
-        {/* Fade gradient on right */}
-        <div
-          className="pointer-events-none absolute inset-y-0 right-0 w-24"
-          style={{ background: 'linear-gradient(to left, rgba(246, 247, 251, 1), rgba(246, 247, 251, 0))' }}
-        />
       </div>
 
       <div className="mt-3 flex items-center justify-center gap-1.5">
