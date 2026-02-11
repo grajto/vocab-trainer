@@ -174,11 +174,11 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
               </select>
             </div>
             <div>
-              <label className={labelClass} style={{ color: 'var(--muted)' }}>Kierunek</label>
+              <label className={labelClass} style={{ color: 'var(--muted)' }}>Odpowiedz w języku</label>
               <select value={direction} onChange={e => setDirection(e.target.value as typeof direction)} className={selectClass} style={selectStyle}>
-                <option value="pl-en">PL → EN</option>
-                <option value="en-pl">EN → PL</option>
-                <option value="both">Oba</option>
+                <option value="pl-en">🇵🇱 Polski</option>
+                <option value="en-pl">🇬🇧 Angielski</option>
+                <option value="both">🌍 Oba</option>
               </select>
             </div>
           </div>

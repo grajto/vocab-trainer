@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
-import { Bookmark, ChevronRight, MoreHorizontal, Pencil, Share2, Star, Volume2 } from 'lucide-react'
+import { BookOpen, ChevronRight, Edit, Plus } from 'lucide-react'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { AddCardForm } from './AddCardForm'
-import { DeckStudyLauncher } from './DeckStudyLauncher'
+import { FilterableCardsList } from './FilterableCardsList'
+import { QuickModeButtons } from './QuickModeButtons'
 
 export const dynamic = 'force-dynamic'
 
@@ -48,12 +49,10 @@ export default async function DeckDetailPage({ params }: { params: Promise<{ id:
     console.error('Deck detail data fetch error:', err)
   }
 
-  const firstCard = cards.docs[0]
-
   return (
-    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--containerMax)' }}>
+    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--container-max)' }}>
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--muted)' }}>
+      <nav className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-muted)' }}>
         <Link href={deck.folder ? `/folders/${deck.folder}` : '/library'} className="hover:underline">
           {folderName}
         </Link>
@@ -61,81 +60,43 @@ export default async function DeckDetailPage({ params }: { params: Promise<{ id:
         <span style={{ color: 'var(--text)' }}>{deck.name}</span>
       </nav>
 
-      {/* Title + actions */}
-      <div className="flex items-start justify-between gap-4">
-        <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{deck.name}</h1>
-        <div className="flex items-center gap-1.5">
-          <button type="button" className="inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition-colors hover:bg-[var(--hover-bg)]" style={{ border: '1px solid var(--border)', color: 'var(--muted)' }}>
-            <Bookmark size={14} /> Zapisz
-          </button>
-          <button type="button" className="inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition-colors hover:bg-[var(--hover-bg)]" style={{ border: '1px solid var(--border)', color: 'var(--muted)' }}>
-            <Share2 size={14} /> Udostępnij
-          </button>
-          <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-[var(--hover-bg)]" style={{ color: 'var(--gray400)' }}>
-            <MoreHorizontal size={18} />
-          </button>
+      {/* Deck header - matching folder page style */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3 min-w-0">
+          <span
+            className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg"
+            style={{ background: 'var(--primary-soft)', color: 'var(--primary)' }}
+          >
+            <BookOpen size={20} />
+          </span>
+          <div className="min-w-0">
+            <h1 className="truncate text-xl font-bold" style={{ color: 'var(--text)' }}>
+              {deck.name}
+            </h1>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+              {cards.totalDocs} pojęć
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/decks/${id}/edit`}
+            className="inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition-colors hover:opacity-90"
+            style={{ background: 'var(--surface-muted)', color: 'var(--text)' }}
+          >
+            <Edit size={14} /> Edytuj
+          </Link>
         </div>
       </div>
 
-      {/* Mode tiles + controls */}
-      <DeckStudyLauncher deckId={id} cardCount={cards.totalDocs} />
+      {/* Quick mode buttons - 6 modes */}
+      <QuickModeButtons deckId={id} cardCount={cards.totalDocs} />
 
-      {/* Flashcard preview */}
-      <section className="rounded-lg p-5" style={{ border: '1px solid var(--border)' }}>
-        <div className="mb-3 flex items-center justify-between">
-          <p className="text-xs font-medium" style={{ color: 'var(--muted)' }}>Podgląd fiszki</p>
-          <div className="flex items-center gap-3" style={{ color: 'var(--gray400)' }}>
-            <button type="button" className="hover:opacity-70"><Pencil size={14} /></button>
-            <button type="button" className="hover:opacity-70"><Volume2 size={14} /></button>
-            <button type="button" className="hover:opacity-70"><Star size={14} /></button>
-          </div>
-        </div>
-        <div
-          className="flex min-h-[200px] items-center justify-center rounded-lg p-8 text-center text-3xl font-semibold"
-          style={{ border: '1px solid var(--border)', color: 'var(--text)' }}
-        >
-          {firstCard ? firstCard.front : 'Brak kart w zestawie'}
-        </div>
-        <p className="mt-3 text-center text-xs font-medium" style={{ color: 'var(--muted)' }}>
-          {cards.totalDocs > 0 ? `1 / ${cards.totalDocs}` : '0 / 0'}
-        </p>
-      </section>
-
-      {/* Terms list */}
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
-          Pojęcia w tym zestawie ({cards.totalDocs})
-        </h2>
-
-        {cards.docs.length === 0 ? (
-          <p className="py-6 text-center text-sm" style={{ color: 'var(--muted)' }}>Brak kart. Dodaj pierwszą kartę poniżej.</p>
-        ) : (
-          <div className="space-y-1">
-            {cards.docs.map((card: any) => (
-              <div
-                key={card.id}
-                className="flex items-center gap-4 rounded-lg px-4 py-3"
-                style={{ border: '1px solid var(--border)' }}
-              >
-                <div className="grid flex-1 grid-cols-2 gap-4">
-                  <p className="text-sm" style={{ color: 'var(--text)' }}>{card.front}</p>
-                  <p className="text-sm" style={{ color: 'var(--muted)' }}>{card.back}</p>
-                </div>
-                <div className="flex items-center gap-2" style={{ color: 'var(--gray400)' }}>
-                  <button type="button" className="hover:opacity-70" aria-label="Ulubione"><Star size={14} /></button>
-                  <button type="button" className="hover:opacity-70" aria-label="Dźwięk"><Volume2 size={14} /></button>
-                  <button type="button" className="hover:opacity-70" aria-label="Edytuj"><Pencil size={14} /></button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
+      {/* Filterable cards list */}
+      <FilterableCardsList cards={cards.docs} deckId={id} />
 
       {/* Add card form */}
-      <section>
-        <AddCardForm deckId={id} />
-      </section>
+      <AddCardForm deckId={id} />
     </div>
   )
 }

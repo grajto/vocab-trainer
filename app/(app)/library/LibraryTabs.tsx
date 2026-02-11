@@ -83,22 +83,19 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
       {tab === 'decks' && (
         <div className="space-y-6">
           <section className="space-y-3">
-            <div className="flex items-center gap-3">
-              <h3 className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--gray600)' }}>W tym tygodniu</h3>
-              <div className="h-px flex-1" style={{ background: 'var(--border)' }} />
-            </div>
+            <h3 className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--gray600)' }}>W tym tygodniu</h3>
 
             {filteredDecks.length === 0 ? (
               <p className="text-sm" style={{ color: 'var(--muted)' }}>Brak zestawów.</p>
             ) : (
               filteredDecks.map((d) => (
-                <Link key={d.id} href={`/decks/${d.id}`} className="flex items-center gap-3 rounded-[var(--radiusSm)] px-3 py-3 hover:bg-[#f8fafc]" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
+                <Link key={d.id} href={`/decks/${d.id}`} className="flex items-center gap-3 rounded-[var(--radiusSm)] px-3 py-3 hover:bg-[#f8fafc]" style={{ background: 'var(--surface)' }}>
                   <span className="inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-[8px]" style={{ background: 'var(--primaryBg)', color: 'var(--primary)' }}>
                     <FolderOpen className="h-3 w-3" />
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{d.name}</p>
-                    <p className="text-xs" style={{ color: 'var(--muted)' }}>Zestaw fiszek • {d.cardCount} pojęć • {d.author}</p>
+                    <p className="text-xs" style={{ color: 'var(--muted)' }}>Zestaw fiszek • {d.cardCount} pojęć</p>
                   </div>
                   <span style={{ color: 'var(--gray400)' }}>•••</span>
                 </Link>

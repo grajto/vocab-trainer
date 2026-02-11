@@ -201,33 +201,30 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
   }
 
   return (
-    <div className="mx-auto p-4 lg:p-6 space-y-6" style={{ maxWidth: 'var(--containerMax)' }}>
-      <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold" style={{ color: 'var(--text)' }}>Kreator zestawów</h2>
-        <div className="flex gap-2">
-          <button
-            onClick={() => saveDeck(true)}
-            disabled={saving}
-            className="px-4 py-2 rounded-full text-sm font-semibold disabled:opacity-50 transition-colors"
-            style={{ background: 'var(--primaryBg)', color: 'var(--primary)', border: '1px solid transparent' }}
-          >
-            {saving ? 'Zapisywanie…' : 'Utwórz i ćwicz'}
-          </button>
-          <button
-            onClick={() => saveDeck(false)}
-            disabled={saving}
-            className="px-5 py-2 rounded-full text-sm font-semibold disabled:opacity-50 transition-colors"
-            style={{ background: 'var(--primary)', color: '#fff', border: '1px solid var(--primary)' }}
-          >
-            {saving ? 'Zapisywanie…' : 'Utwórz zestaw'}
-          </button>
-        </div>
+    <div className="space-y-6">
+      <div className="flex items-center justify-end gap-2">
+        <button
+          onClick={() => saveDeck(true)}
+          disabled={saving}
+          className="px-4 py-2 rounded-full text-sm font-semibold disabled:opacity-50 transition-colors"
+          style={{ background: 'var(--primary-soft)', color: 'var(--primary)', border: '1px solid transparent' }}
+        >
+          {saving ? 'Zapisywanie…' : 'Utwórz i ćwicz'}
+        </button>
+        <button
+          onClick={() => saveDeck(false)}
+          disabled={saving}
+          className="px-5 py-2 rounded-full text-sm font-semibold disabled:opacity-50 transition-colors"
+          style={{ background: 'var(--primary)', color: '#fff', border: '1px solid var(--primary)' }}
+        >
+          {saving ? 'Zapisywanie…' : 'Utwórz zestaw'}
+        </button>
       </div>
 
-      {error && <p className="text-sm rounded-[var(--radiusSm)] px-4 py-2" style={{ color: '#dc2626', background: '#fef2f2', border: '1px solid #fecaca' }}>{error}</p>}
+      {error && <p className="text-sm rounded-xl px-4 py-2" style={{ color: '#dc2626', background: '#fef2f2', border: '1px solid #fecaca' }}>{error}</p>}
 
       {/* Deck meta */}
-      <div className="rounded-[var(--radius)] p-5 space-y-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+      <div className="rounded-xl p-5 space-y-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
         <div>
           <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>Nazwa zestawu *</label>
           <input
@@ -255,16 +252,16 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
           </div>
 
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>Kierunek</label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>Odpowiedz w języku</label>
             <select
               value={direction}
               onChange={e => setKierunek(e.target.value as typeof direction)}
               className="w-full rounded-[var(--radiusSm)] px-3 py-2.5 text-sm focus:outline-none"
               style={{ border: '1px solid var(--border)', color: 'var(--text)', background: 'var(--surface)' }}
             >
-              <option value="front-to-back">Przód → Tył</option>
-              <option value="back-to-front">Tył → Przód</option>
-              <option value="both">Oba (losowo)</option>
+              <option value="front-to-back">🇵🇱 Polski</option>
+              <option value="back-to-front">🇬🇧 Angielski</option>
+              <option value="both">🌍 Oba (losowo)</option>
             </select>
           </div>
 

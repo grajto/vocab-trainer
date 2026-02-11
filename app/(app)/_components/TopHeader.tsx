@@ -10,6 +10,7 @@ interface SearchResult {
   id: string
   name: string
   meta?: string
+  deckId?: string
 }
 
 export function TopHeader({ onMenuClick }: { onMenuClick: () => void }) {
@@ -30,7 +31,11 @@ export function TopHeader({ onMenuClick }: { onMenuClick: () => void }) {
   }, [])
 
   useEffect(() => {
-    if (!q.trim()) { setResults([]); setShowResults(false); return }
+    if (!q.trim()) {
+      setResults([])
+      setShowResults(false)
+      return
+    }
     const timer = setTimeout(async () => {
       try {
         const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`, { credentials: 'include' })
@@ -39,10 +44,18 @@ export function TopHeader({ onMenuClick }: { onMenuClick: () => void }) {
           setResults(data.results || [])
           setShowResults(true)
         }
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     }, 250)
     return () => clearTimeout(timer)
   }, [q])
+
+  const groupedResults = {
+    decks: results.filter((r) => r.type === 'deck'),
+    folders: results.filter((r) => r.type === 'folder'),
+    cards: results.filter((r) => r.type === 'card'),
+  }
 
   return (
     <div className="mb-5 flex items-center gap-2 pt-1">
@@ -56,10 +69,10 @@ export function TopHeader({ onMenuClick }: { onMenuClick: () => void }) {
         <Menu size={18} />
       </button>
 
-      <div ref={wrapRef} className="relative mx-auto w-full max-w-[760px]">
+      <div ref={wrapRef} className="relative mx-auto w-full max-w-[860px]">
         <form
-          className="flex h-10 w-full items-center gap-2 rounded-full px-4"
-          style={{ border: '1px solid var(--border)', background: 'var(--surface2)' }}
+          className="flex h-11 w-full items-center gap-2 rounded-full px-4"
+          style={{ border: '1px solid var(--border)', background: 'var(--surface-muted)' }}
           onSubmit={(e) => {
             e.preventDefault()
             if (q.trim()) {
@@ -68,13 +81,13 @@ export function TopHeader({ onMenuClick }: { onMenuClick: () => void }) {
             }
           }}
         >
-          <Search size={18} style={{ color: 'var(--gray400)' }} />
+          <Search size={18} style={{ color: 'var(--text-muted)' }} />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             onFocus={() => results.length > 0 && setShowResults(true)}
             placeholder="Szukaj zestawów, folderów, słówek…"
-            className="w-full border-0 bg-transparent text-sm placeholder:text-[var(--gray400)] focus:outline-none"
+            className="w-full border-0 bg-transparent text-sm placeholder:text-[var(--text-soft)] focus:outline-none"
             style={{ color: 'var(--text)' }}
             aria-label="Szukaj"
           />
@@ -82,22 +95,93 @@ export function TopHeader({ onMenuClick }: { onMenuClick: () => void }) {
 
         {showResults && results.length > 0 && (
           <div
-            className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-[var(--radiusSm)]"
-            style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}
+            className="absolute left-0 right-0 top-full z-50 mt-2 max-h-[480px] overflow-y-auto"
+            style={{
+              border: '1px solid var(--border)',
+              background: 'var(--surface)',
+              borderRadius: 'var(--input-radius)',
+            }}
           >
-            {results.map(r => (
-              <Link
-                key={`${r.type}-${r.id}`}
-                href={r.type === 'deck' ? `/decks/${r.id}` : r.type === 'folder' ? `/folders/${r.id}` : `/decks/${r.id}`}
-                onClick={() => { setShowResults(false); setQ('') }}
-                className="flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-[var(--hover-bg)]"
-                style={{ color: 'var(--text)' }}
-              >
-                <span className="text-[10px] font-medium uppercase tracking-wide w-12" style={{ color: 'var(--gray400)' }}>{r.type}</span>
-                <span className="truncate">{r.name}</span>
-                {r.meta && <span className="ml-auto text-xs" style={{ color: 'var(--muted)' }}>{r.meta}</span>}
-              </Link>
-            ))}
+            {groupedResults.decks.length > 0 && (
+              <div>
+                <div
+                  className="px-4 py-2 text-xs font-semibold uppercase tracking-wide"
+                  style={{ color: 'var(--text-muted)', background: 'var(--surface-muted)' }}
+                >
+                  Zestawy
+                </div>
+                {groupedResults.decks.map((r) => (
+                  <Link
+                    key={`${r.type}-${r.id}`}
+                    href={`/decks/${r.id}`}
+                    onClick={() => {
+                      setShowResults(false)
+                      setQ('')
+                    }}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-[var(--hover-bg)]"
+                    style={{ color: 'var(--text)' }}
+                  >
+                    <span className="truncate font-medium">{r.name}</span>
+                  </Link>
+                ))}
+              </div>
+            )}
+
+            {groupedResults.folders.length > 0 && (
+              <div>
+                <div
+                  className="px-4 py-2 text-xs font-semibold uppercase tracking-wide"
+                  style={{ color: 'var(--text-muted)', background: 'var(--surface-muted)' }}
+                >
+                  Foldery
+                </div>
+                {groupedResults.folders.map((r) => (
+                  <Link
+                    key={`${r.type}-${r.id}`}
+                    href={`/folders/${r.id}`}
+                    onClick={() => {
+                      setShowResults(false)
+                      setQ('')
+                    }}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-[var(--hover-bg)]"
+                    style={{ color: 'var(--text)' }}
+                  >
+                    <span className="truncate font-medium">{r.name}</span>
+                  </Link>
+                ))}
+              </div>
+            )}
+
+            {groupedResults.cards.length > 0 && (
+              <div>
+                <div
+                  className="px-4 py-2 text-xs font-semibold uppercase tracking-wide"
+                  style={{ color: 'var(--text-muted)', background: 'var(--surface-muted)' }}
+                >
+                  Słówka
+                </div>
+                {groupedResults.cards.map((r) => (
+                  <Link
+                    key={`${r.type}-${r.id}`}
+                    href={`/decks/${r.deckId}?card=${r.id}`}
+                    onClick={() => {
+                      setShowResults(false)
+                      setQ('')
+                    }}
+                    className="flex flex-col gap-0.5 px-4 py-2.5 text-sm transition-colors hover:bg-[var(--hover-bg)]"
+                  >
+                    <span className="truncate font-medium" style={{ color: 'var(--text)' }}>
+                      {r.name}
+                    </span>
+                    {r.meta && (
+                      <span className="truncate text-xs" style={{ color: 'var(--text-muted)' }}>
+                        {r.meta}
+                      </span>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
