@@ -75,7 +75,7 @@ export async function getDueCards(params: DueCardParams): Promise<DueCardsResult
         owner: { equals: userId }, 
         folder: { equals: folderId } 
       },
-      limit: 500,
+      limit: 1000, // Increased from 500 to support larger folders
       depth: 0,
     })
     targetDeckIds = decksInFolder.docs.map((d: any) => Number(d.id)).filter(Boolean)
@@ -86,7 +86,7 @@ export async function getDueCards(params: DueCardParams): Promise<DueCardsResult
     const allDecks = await payload.find({
       collection: 'decks',
       where: { owner: { equals: userId } },
-      limit: 500,
+      limit: 1000, // Increased from 500 to support power users
       depth: 0,
     })
     targetDeckIds = allDecks.docs.map((d: any) => Number(d.id)).filter(Boolean)
@@ -120,7 +120,7 @@ export async function getDueCards(params: DueCardParams): Promise<DueCardsResult
         owner: { equals: userId },
         ...(includeDueOnly && { dueAt: { less_than_equal: now.toISOString() } })
       },
-      limit: 5000,
+      limit: 10000, // Increased from 5000 to support large collections
       depth: 0,
     }),
   ])

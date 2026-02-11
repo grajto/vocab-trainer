@@ -75,8 +75,8 @@ export function useCards(options: UseCardsOptions = {}): UseQueryResult<CardsRes
     queryKey,
     queryFn: () => fetchCards(options),
     enabled: options.enabled !== false,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
+    staleTime: 5 * 60 * 1000, // 5 minutes - data stays fresh
+    gcTime: 10 * 60 * 1000, // 10 minutes - cached data retention after becoming stale
   })
 }
 
