@@ -29,6 +29,8 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
   const [loading, setLoading] = useState(false)
   const [selectedMode, setSelectedMode] = useState<StudyMode | null>(null)
   const [selectedCount, setSelectedCount] = useState<number | null>(null)
+  const [showTestModal, setShowTestModal] = useState(false)
+  const [testCount, setTestCount] = useState(20)
 
   async function handleStart() {
     if (!selectedMode || !selectedCount) return
@@ -58,30 +60,9 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
   }
 
   async function handleModeSelect(mode: StudyMode) {
-    // Test mode bypasses card count selection
     if (mode === 'test') {
-      setLoading(true)
-      unlock()
-
-      try {
-        const targetCount = Math.min(cardCount, 20)
-        const res = await fetch('/api/session/start', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ deckId, mode, targetCount }),
-        })
-
-        const data = await res.json()
-        if (res.ok && data.sessionId) {
-          sessionStorage.setItem(`session-${data.sessionId}`, JSON.stringify(data.tasks))
-          router.push(`/session/${data.sessionId}`)
-        }
-      } catch (err) {
-        console.error('Failed to start session:', err)
-      } finally {
-        setLoading(false)
-      }
+      setSelectedMode('test')
+      setShowTestModal(true)
     } else {
       // For other modes, show card count selection
       setSelectedMode(mode)
@@ -199,6 +180,60 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
           >
             {loading ? 'Ładowanie...' : 'Rozpocznij'}
           </button>
+        </div>
+      )}
+
+      {showTestModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
+          <div className="w-full max-w-sm space-y-4 rounded-xl bg-white p-5" style={{ border: '1px solid var(--border)' }}>
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Ustawienia testu</p>
+              <button onClick={() => setShowTestModal(false)} className="text-xs" style={{ color: 'var(--text-muted)' }}>Zamknij</button>
+            </div>
+            <label className="space-y-1 text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
+              Liczba pytań
+              <input
+                type="number"
+                min={5}
+                max={35}
+                value={testCount}
+                onChange={(e) => setTestCount(Number(e.target.value))}
+                className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
+                style={{ borderColor: 'var(--border)' }}
+              />
+            </label>
+            <button
+              type="button"
+              onClick={async () => {
+                setLoading(true)
+                unlock()
+                try {
+                  const targetCount = Math.min(cardCount, testCount)
+                  const res = await fetch('/api/session/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ deckId, mode: 'test', targetCount }),
+                  })
+                  const data = await res.json()
+                  if (res.ok && data.sessionId) {
+                    sessionStorage.setItem(`session-${data.sessionId}`, JSON.stringify(data.tasks))
+                    router.push(`/session/${data.sessionId}`)
+                  }
+                } catch (err) {
+                  console.error('Failed to start test:', err)
+                } finally {
+                  setLoading(false)
+                  setShowTestModal(false)
+                }
+              }}
+              className="w-full rounded-full py-2 text-sm font-semibold text-white"
+              style={{ background: 'var(--primary)' }}
+              disabled={loading}
+            >
+              {loading ? 'Ładowanie…' : 'Start testu'}
+            </button>
+          </div>
         </div>
       )}
     </div>
