@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react'
+import { PageContainer } from '../_components/PageContainer'
+import { PageHeader } from '../_components/PageHeader'
 
 type DayInfo = {
   date: string
@@ -49,20 +51,9 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--containerMax)' }}>
-      <div className="flex items-center justify-between pt-8">
-        <div className="flex items-center gap-3">
-          <span
-            className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg"
-            style={{ background: 'var(--primary-soft)', color: 'var(--primary)' }}
-          >
-            <CalendarIcon size={20} />
-          </span>
-          <div>
-            <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Kalendarz</h1>
-            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Śledź aktywność i streak</p>
-          </div>
-        </div>
+    <PageContainer>
+      <div className="flex items-center justify-between gap-3">
+        <PageHeader title="Kalendarz" description="Śledź aktywność i streak" icon={CalendarIcon} />
         <div className="flex items-center gap-2">
           <button onClick={() => changeMonth(-1)} className="rounded-[var(--radiusSm)] p-2 hover:bg-[#f8fafc]" style={{ border: '1px solid var(--border)' }}>
             <ChevronLeft className="w-4 h-4" />
@@ -135,6 +126,6 @@ export default function CalendarPage() {
           <p className="text-sm" style={{ color: 'var(--gray400)' }}>Kliknij dzień, aby zobaczyć szczegóły.</p>
         )}
       </div>
-    </div>
+    </PageContainer>
   )
 }

@@ -4,6 +4,7 @@ import { FolderOpen, Plus } from 'lucide-react'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { FolderDeckList } from './FolderDeckList'
+import { PageContainer } from '../../_components/PageContainer'
 import Link from 'next/link'
 import { FolderQuickModeButtons } from './FolderQuickModeButtons'
 
@@ -51,7 +52,7 @@ export default async function FolderPage({ params }: { params: Promise<{ id: str
   }))
 
   return (
-    <div className="mx-auto w-full space-y-8" style={{ maxWidth: 'var(--container-max)' }}>
+    <PageContainer className="space-y-8">
       {/* Folder header */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
@@ -87,6 +88,6 @@ export default async function FolderPage({ params }: { params: Promise<{ id: str
 
       {/* Deck list with client-side filtering */}
       <FolderDeckList decks={deckItems} />
-    </div>
+    </PageContainer>
   )
 }

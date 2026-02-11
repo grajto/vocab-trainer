@@ -6,6 +6,7 @@ import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { StartSessionForm } from '@/app/(app)/learn/StartSessionForm'
 import { PageHeader } from '../_components/PageHeader'
+import { PageContainer } from '../_components/PageContainer'
 
 export const dynamic = 'force-dynamic'
 
@@ -28,7 +29,7 @@ export default async function StudyPage() {
   }
 
   return (
-    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--container-max)' }}>
+    <PageContainer>
       <PageHeader title="Ucz się" description="Wybierz zestaw, tryb i długość sesji" icon={BookOpen} />
 
       {decks.docs.length === 0 ? (
@@ -42,6 +43,6 @@ export default async function StudyPage() {
           folders={folders.docs.map((f: any) => ({ id: String(f.id), name: f.name }))}
         />
       )}
-    </div>
+    </PageContainer>
   )
 }

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { Bell, Clock, AlertTriangle, BookOpen, Flame, MoreHorizontal } from 'lucide-react'
 import { PageHeader } from '../_components/PageHeader'
+import { PageContainer } from '../_components/PageContainer'
 
 interface Notification {
   type: 'stale' | 'due' | 'goal' | 'hard'
@@ -37,7 +38,7 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--containerMax)' }}>
+    <PageContainer>
       <PageHeader title="Powiadomienia" description="Ważne informacje o Twojej nauce" icon={Bell} />
 
       {loading ? (
@@ -72,6 +73,6 @@ export default function NotificationsPage() {
           })}
         </div>
       )}
-    </div>
+    </PageContainer>
   )
 }

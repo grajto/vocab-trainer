@@ -46,7 +46,7 @@ export function LeftSidebar({
     }`
 
   const nav = (
-    <aside className="flex h-full flex-col overflow-y-auto border-r px-[10px] py-[10px]" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+    <aside className="flex h-full flex-col overflow-y-auto border-r px-[var(--sidebar-pad)] py-[var(--sidebar-pad)]" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
       <div className="mb-1 flex items-center justify-between px-2 lg:hidden">
         <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Menu</span>
         <button type="button" onClick={onClose} className="rounded-md p-1 hover:bg-[#f8fafc]" style={{ color: 'var(--muted)' }} aria-label="Zamknij menu">

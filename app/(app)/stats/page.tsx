@@ -3,6 +3,7 @@ import { BarChart3 } from 'lucide-react'
 import { getUser } from '@/src/lib/getUser'
 import { StatsView } from './StatsView'
 import { PageHeader } from '../_components/PageHeader'
+import { PageContainer } from '../_components/PageContainer'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,10 +12,10 @@ export default async function StatsPage() {
   if (!user) redirect('/login')
 
   return (
-    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--container-max)' }}>
+    <PageContainer>
       <PageHeader title="Statystyki" description="Twoje postępy w nauce" icon={BarChart3} />
 
       <StatsView />
-    </div>
+    </PageContainer>
   )
 }

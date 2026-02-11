@@ -4,6 +4,7 @@ import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { DeckCreator } from './DeckCreator'
 import { PageHeader } from '../_components/PageHeader'
+import { PageContainer } from '../_components/PageContainer'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,10 +31,10 @@ export default async function CreateDeckPage() {
   const folderList = folders.docs.map((f: any) => ({ id: String(f.id), name: f.name }))
 
   return (
-    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--container-max)' }}>
+    <PageContainer>
       <PageHeader title="Kreator zestawów" description="Utwórz nowy zestaw słówek" icon={PlusCircle} />
       
       <DeckCreator folders={folderList} />
-    </div>
+    </PageContainer>
   )
 }

@@ -5,6 +5,7 @@ import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { TestList } from './TestList'
 import { PageHeader } from '../_components/PageHeader'
+import { PageContainer } from '../_components/PageContainer'
 
 export const dynamic = 'force-dynamic'
 
@@ -32,10 +33,10 @@ export default async function TestPage() {
   }
 
   return (
-    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--container-max)' }}>
+    <PageContainer>
       <PageHeader title="Testy" description="Historia twoich testów i wyników" icon={ClipboardCheck} />
 
       <TestList sessions={testSessions.docs} />
-    </div>
+    </PageContainer>
   )
 }

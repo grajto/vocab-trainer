@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { FolderOpen } from 'lucide-react'
 import { redirect } from 'next/navigation'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
-import { LibraryTabs } from './LibraryTabs'
+import { PageContainer } from '../_components/PageContainer'
 import { PageHeader } from '../_components/PageHeader'
-import { FolderOpen } from 'lucide-react'
+import { LibraryTabs } from './LibraryTabs'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,6 +19,7 @@ export default async function LibraryPage() {
   let folders: any = { docs: [] }
   let cards: any = { docs: [] }
   let reviewStates: any = { docs: [] }
+  let sessions: any = { docs: [] }
 
   try {
     const results = await Promise.all([
@@ -31,13 +33,23 @@ export default async function LibraryPage() {
       payload.find({
         collection: 'folders',
         where: { owner: { equals: user.id } },
-        sort: 'name',
+        sort: '-updatedAt',
         limit: 100,
         depth: 0,
       }),
+      payload.find({
+        collection: 'sessions',
+        where: { owner: { equals: user.id } },
+        sort: '-startedAt',
+        limit: 50,
+        depth: 0,
+      }),
     ])
+
     decks = results[0]
     folders = results[1]
+    sessions = results[2]
+
     if (decks.docs.length > 0) {
       cards = await payload.find({
         collection: 'cards',
@@ -75,11 +87,30 @@ export default async function LibraryPage() {
     if (rs.level === 4) level4ByDeck.set(deckId, (level4ByDeck.get(deckId) || 0) + 1)
   }
 
+  const deckFolderMap = new Map<string, string>()
+  for (const deck of decks.docs) {
+    if (deck.folder) deckFolderMap.set(String(deck.id), String(deck.folder))
+  }
+
+  let recentDeckId: string | null = null
+  let recentFolderId: string | null = null
+
+  for (const session of sessions.docs) {
+    const sid = String(session.deck || '')
+    if (!sid) continue
+    if (!recentDeckId) recentDeckId = sid
+    const folderId = deckFolderMap.get(sid)
+    if (!recentFolderId && folderId) recentFolderId = folderId
+    if (recentDeckId && recentFolderId) break
+  }
+
   return (
-    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--containerMax)' }}>
+    <PageContainer>
       <PageHeader title="Twoje zasoby" description="Zestawy i foldery w jednym miejscu" icon={FolderOpen} />
 
       <LibraryTabs
+        recentDeckId={recentDeckId}
+        recentFolderId={recentFolderId}
         decks={decks.docs.map((d: any) => ({
           id: String(d.id),
           name: d.name,
@@ -107,6 +138,6 @@ export default async function LibraryPage() {
           }
         })}
       />
-    </div>
+    </PageContainer>
   )
 }

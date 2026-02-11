@@ -8,6 +8,7 @@ import { Card } from '@/app/(app)/_components/ui/Card'
 import { ListRow } from '@/app/(app)/_components/ui/ListRow'
 import { Button } from '@/app/(app)/_components/ui/Button'
 import { PageHeader } from '../_components/PageHeader'
+import { PageContainer } from '../_components/PageContainer'
 
 export const dynamic = 'force-dynamic'
 
@@ -38,7 +39,7 @@ export default async function FoldersPage() {
   for (const card of cards.docs) cardsByDeck.set(String(card.deck), (cardsByDeck.get(String(card.deck)) || 0) + 1)
 
   return (
-    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--container-max)' }}>
+    <PageContainer>
       <PageHeader title="Foldery" description="Organizuj zestawy w przejrzystych folderach" icon={FolderOpen} />
 
       <Card>
@@ -64,6 +65,6 @@ export default async function FoldersPage() {
           })}
         </div>
       </Card>
-    </div>
+    </PageContainer>
   )
 }

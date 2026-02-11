@@ -12,6 +12,8 @@ import { type ContinueItem } from './_components/ContinueCard'
 import { JumpBackInCarousel } from './_components/JumpBackInCarousel'
 import { StartSessionButton } from './_components/StartSessionButton'
 import { PageHeader } from '../_components/PageHeader'
+import { PageContainer } from '../_components/PageContainer'
+import { ProgressBar } from '../_components/ui/ProgressBar'
 
 export const dynamic = 'force-dynamic'
 
@@ -231,7 +233,7 @@ export default async function DashboardPage() {
   }))
 
   return (
-    <div className="mx-auto w-full space-y-8 px-4 py-6 lg:px-0" style={{ maxWidth: 'var(--container-max)' }}>
+    <PageContainer className="space-y-8 px-4 py-2 lg:px-0">
       <PageHeader title="Dashboard" description="Szybki podgląd Twojej nauki" icon={BarChart3} />
       {/* Section A - Informacje (unified analytical card) */}
       <section>
@@ -265,15 +267,7 @@ export default async function DashboardPage() {
                 <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Cel dzienny: {settings.minSessionsPerDay} sesji</p>
                 <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Pozostało: {remainingToGoal}</p>
               </div>
-              <div className="h-3 w-full overflow-hidden rounded-full" style={{ background: '#e9edf7' }}>
-                <div
-                  className="h-full rounded-full transition-all"
-                  style={{
-                    background: 'linear-gradient(90deg, #22c55e 0%, #16a34a 100%)',
-                    width: `${todayProgress}%`,
-                  }}
-                />
-              </div>
+              <ProgressBar value={todayProgress} className="h-3" />
               <p className="mt-2 text-xs" style={{ color: 'var(--text-muted)' }}>Do końca celu brakuje: {remainingToGoal} sesji</p>
             </div>
           </Card>
@@ -298,10 +292,7 @@ export default async function DashboardPage() {
                     </span>
                   </div>
                   <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{item.reason}</p>
-                  <div className="flex items-center justify-between text-xs" style={{ color: 'var(--text-muted)' }}>
-                    <span>20 słówek</span>
-                    <span>🇬🇧 Angielski</span>
-                  </div>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>20 słówek • 🇬🇧 Angielski</p>
                   <StartSessionButton 
                     deckId={item.id}
                     mode={item.mode}
@@ -474,6 +465,6 @@ export default async function DashboardPage() {
           </div>
         </Card>
       </section>
-    </div>
+    </PageContainer>
   )
 }
