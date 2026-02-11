@@ -4,11 +4,15 @@ import { SimpleCard } from './SimpleCard'
 import { ProgressBar } from '../../_components/ui/ProgressBar'
 
 export type ContinueItem = {
+  deckId?: string
   deckName: string
   progressPercent: number
   progressMeta: string
   resumeHref: string
   date: string
+  mode?: string
+  targetCount?: number
+  direction?: string
 }
 
 export function ContinueCard({ item }: { item: ContinueItem }) {

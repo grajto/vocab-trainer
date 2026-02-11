@@ -17,6 +17,19 @@ import { ProgressBar } from '../_components/ui/ProgressBar'
 
 export const dynamic = 'force-dynamic'
 
+
+type RecommendedDeck = {
+  id: string
+  title: string
+  reason: string
+  progressPercent: number
+  mode: string
+  modeLabel: string
+  targetCount: number
+  estimatedMinutes: number
+  direction: string
+}
+
 function getDayKey(date: Date) {
   return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
 }
@@ -110,22 +123,47 @@ export default async function DashboardPage() {
 
   const jumpBackIn: ContinueItem[] = []
   const recentDeckIds = new Set<string>()
+  const deckRecentMeta = new Map<string, { avgMinutes: number; mode: string; targetCount: number; direction: string; sessions: number }>()
 
   for (const s of recentSessions.docs) {
     const deck = deckMap.get(String(s.deck))
     if (!deck) continue
 
     const completed = Number(s.completedCount ?? 0)
-    const target = Number(s.targetCount ?? 0)
+    const target = Number(s.targetCount ?? 20)
     const progressPercent = target > 0 ? Math.min(100, Math.round((completed / target) * 100)) : 0
+
+    const startedAt = s.startedAt ? new Date(s.startedAt) : null
+    const endedAt = s.endedAt ? new Date(s.endedAt) : null
+    const minutes = startedAt && endedAt ? Math.max(1, Math.round((endedAt.getTime() - startedAt.getTime()) / 60000)) : Math.max(3, Math.round(target * 0.4))
+    const existingMeta = deckRecentMeta.get(String(s.deck))
+    if (!existingMeta) {
+      deckRecentMeta.set(String(s.deck), {
+        avgMinutes: minutes,
+        mode: String(s.mode || 'mixed'),
+        targetCount: target,
+        direction: String(s.direction || settings.defaultDirection),
+        sessions: 1,
+      })
+    } else {
+      existingMeta.sessions += 1
+      existingMeta.avgMinutes = Math.round((existingMeta.avgMinutes + minutes) / 2)
+      if (s.mode) existingMeta.mode = String(s.mode)
+      if (s.targetCount) existingMeta.targetCount = Number(s.targetCount)
+      if (s.direction) existingMeta.direction = String(s.direction)
+    }
 
     if ((s.endedAt === null || completed < target) && !jumpBackIn.find((item) => item.resumeHref.endsWith(String(s.id)))) {
       jumpBackIn.push({
+        deckId: String(deck.id),
         deckName: deck.name,
         progressPercent,
-        progressMeta: `${progressPercent}% of questions completed`,
+        progressMeta: `${progressPercent}% pytań ukończone`,
         resumeHref: `/session/${s.id}`,
         date: new Date(s.startedAt).toLocaleDateString('pl-PL'),
+        mode: String(s.mode || 'mixed'),
+        targetCount: target,
+        direction: String(s.direction || settings.defaultDirection),
       })
     }
 
@@ -168,30 +206,39 @@ export default async function DashboardPage() {
     }
   })
 
-  // Get hardest decks for recommendations with smart mode selection
-  const recommendedDecks = [...jumpBackIn]
-    .sort((a, b) => a.progressPercent - b.progressPercent)
-    .slice(0, 3)
-    .map((item, index) => {
-      // Smart mode selection based on progress and index
-      const modes = ['abcd', 'translate', 'sentence', 'describe', 'mixed'] as const
-      const selectedMode = modes[index % modes.length]
-      
+  const modeLabelMap: Record<string, string> = {
+    abcd: 'ABCD',
+    translate: 'Tłumaczenie',
+    sentence: 'Zdania',
+    describe: 'Opis',
+    mixed: 'Mix',
+  }
+
+  // Karty do sekcji "Co powtórzyć dziś" z konkretami sesji
+  const recommendedDecks: RecommendedDeck[] = decks.docs
+    .map((deck: any) => {
+      const deckId = String(deck.id)
+      const meta = deckRecentMeta.get(deckId)
+      const dueRatio = Number(deck.progress ?? 0)
+      const progressPercent = Math.max(8, Math.min(100, Math.round(100 - dueRatio)))
+      const mode = meta?.mode ?? settings.defaultStudyMode
+      const targetCount = Math.max(10, Math.min(60, Number(meta?.targetCount ?? 20)))
+      const estimatedMinutes = Math.max(5, Number(meta?.avgMinutes ?? Math.round(targetCount * 0.4)))
+
       return {
-        id: item.resumeHref.split('/').pop() || '',
-        title: item.deckName,
-        reason: item.progressPercent < 30 ? 'Wysoki % błędów' : `${item.progressPercent}% ukończone`,
-        progressPercent: item.progressPercent,
-        mode: selectedMode,
-        modeLabel: {
-          abcd: 'ABCD',
-          translate: 'Tłumaczenie',
-          sentence: 'Zdania',
-          describe: 'Opisz',
-          mixed: 'Mix'
-        }[selectedMode]
+        id: deckId,
+        title: deck.name,
+        reason: dueRatio > 40 ? 'Masz sporo zaległych kart' : 'Warto utrwalić materiał z ostatnich dni',
+        progressPercent,
+        mode,
+        modeLabel: modeLabelMap[mode] || 'Mix',
+        targetCount,
+        estimatedMinutes,
+        direction: meta?.direction ?? settings.defaultDirection,
       }
     })
+    .sort((a: RecommendedDeck, b: RecommendedDeck) => a.progressPercent - b.progressPercent)
+    .slice(0, 3)
 
   // Calculate deck performance stats from recent sessions
   const deckStats = new Map<string, { name: string; totalSessions: number; accuracy: number; lastUsed: Date }>()
@@ -294,12 +341,17 @@ export default async function DashboardPage() {
                     </span>
                   </div>
                   <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{item.reason}</p>
+                  <div className="grid grid-cols-2 gap-2 text-xs" style={{ color: 'var(--text-muted)' }}>
+                    <div className="rounded-lg px-2 py-1" style={{ background: 'var(--surface2)' }}>Długość: <span className="font-semibold" style={{ color: 'var(--text)' }}>{item.estimatedMinutes} min</span></div>
+                    <div className="rounded-lg px-2 py-1" style={{ background: 'var(--surface2)' }}>Kart: <span className="font-semibold" style={{ color: 'var(--text)' }}>{item.targetCount}</span></div>
+                  </div>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Tryb: <span className="font-semibold" style={{ color: 'var(--text)' }}>{item.modeLabel}</span> • Kierunek: <span className="font-semibold" style={{ color: 'var(--text)' }}>{item.direction}</span></p>
                   <ProgressBar value={Math.min(100, Math.max(10, item.progressPercent))} className="h-3" />
                   <StartSessionButton
                     deckId={item.id}
                     mode={item.mode}
-                    targetCount={20}
-                    direction="en-pl"
+                    targetCount={item.targetCount}
+                    direction={item.direction}
                   />
                 </div>
               </div>
