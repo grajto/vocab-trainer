@@ -6,7 +6,6 @@ import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { getStudySettings, isDailyGoalMet } from '@/src/lib/userSettings'
 import { IconSquare } from '../_components/ui/IconSquare'
-import { Chip } from '../_components/ui/Chip'
 import { Card } from '../_components/ui/Card'
 import { Button } from '../_components/ui/Button'
 import { type ContinueItem } from './_components/ContinueCard'
@@ -176,6 +175,46 @@ export default async function DashboardPage() {
       href: item.resumeHref,
     }))
 
+  // Calculate deck performance stats from recent sessions
+  const deckStats = new Map<string, { name: string; totalSessions: number; accuracy: number; lastUsed: Date }>()
+  for (const s of recentSessions.docs.slice(0, 15)) {
+    const deck = deckMap.get(String(s.deck))
+    if (!deck || !s.accuracy) continue
+    
+    const existing = deckStats.get(String(s.deck))
+    if (!existing) {
+      deckStats.set(String(s.deck), {
+        name: deck.name,
+        totalSessions: 1,
+        accuracy: Number(s.accuracy),
+        lastUsed: new Date(s.startedAt)
+      })
+    } else {
+      existing.totalSessions++
+      existing.accuracy = (existing.accuracy + Number(s.accuracy)) / 2
+      if (new Date(s.startedAt) > existing.lastUsed) {
+        existing.lastUsed = new Date(s.startedAt)
+      }
+    }
+  }
+
+  // Get hardest and easiest decks based on accuracy
+  const sortedDecks = Array.from(deckStats.entries())
+    .filter(([_, stats]) => stats.totalSessions >= 1)
+    .sort((a, b) => a[1].accuracy - b[1].accuracy)
+  
+  const hardestSets = sortedDecks.slice(0, 3).map(([id, stats]) => ({
+    name: stats.name,
+    accuracy: Math.round(stats.accuracy),
+    id
+  }))
+  
+  const easiestSets = sortedDecks.slice(-3).reverse().map(([id, stats]) => ({
+    name: stats.name,
+    accuracy: Math.round(stats.accuracy),
+    id
+  }))
+
   return (
     <div className="mx-auto w-full space-y-8 px-4 py-6 lg:px-0" style={{ maxWidth: 'var(--container-max)' }}>
       {/* Section A - Informacje (unified analytical card) */}
@@ -235,20 +274,11 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          {/* A4: Mode chip + quick start */}
+          {/* A4: Quick start button only */}
           <div className="pt-5">
-            <div className="flex flex-wrap items-center gap-3 mb-4">
-              <span className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>Tryb:</span>
-              <Chip>Tłumaczenie</Chip>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Link href="/study" className="flex-1">
-                <Button variant="primary" className="w-full">Rozpocznij sesję</Button>
-              </Link>
-              <Link href="/study">
-                <Button variant="secondary">Zmień tryb</Button>
-              </Link>
-            </div>
+            <Link href="/study" className="block">
+              <Button variant="primary" className="w-full">Rozpocznij sesję</Button>
+            </Link>
           </div>
         </Card>
       </section>
@@ -319,19 +349,57 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          {/* Calendar heatmap (simplified) */}
-          <div className="grid grid-cols-5 gap-2">
-            {last5Days.map((day) => (
-              <div
-                key={day.label}
-                className="rounded-lg p-2 text-center"
-                style={{ background: day.met ? '#eaf8ef' : 'var(--surface-muted)' }}
-              >
-                <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{day.label}</p>
-                <p className="mt-1 text-xs font-semibold" style={{ color: 'var(--text)' }}>{day.sessions}</p>
-              </div>
-            ))}
+          {/* Calendar heatmap */}
+          <div className="mb-4">
+            <p className="text-xs font-semibold mb-2" style={{ color: 'var(--text-muted)' }}>Ostatnie 5 dni</p>
+            <div className="grid grid-cols-5 gap-2">
+              {last5Days.map((day) => (
+                <div
+                  key={day.label}
+                  className="rounded-lg p-2 text-center transition-colors"
+                  style={{ background: day.met ? '#eaf8ef' : day.sessions > 0 ? '#fff8dd' : 'var(--surface-muted)' }}
+                >
+                  <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{day.label}</p>
+                  <p className="mt-1 text-xs font-semibold" style={{ color: 'var(--text)' }}>{day.sessions}</p>
+                </div>
+              ))}
+            </div>
           </div>
+
+          {/* Performance stats */}
+          {hardestSets.length > 0 && (
+            <div className="space-y-3">
+              <div className="pt-3 border-t" style={{ borderColor: 'var(--border)' }}>
+                <p className="text-xs font-semibold mb-2" style={{ color: 'var(--danger)' }}>⚠️ Najtrudniejsze zestawy</p>
+                <div className="space-y-1.5">
+                  {hardestSets.map((set) => (
+                    <div key={set.id} className="flex items-center justify-between p-2 rounded-lg" style={{ background: '#fee2e2' }}>
+                      <p className="text-xs font-medium truncate flex-1" style={{ color: 'var(--text)' }}>{set.name}</p>
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: 'var(--danger)', color: '#fff' }}>
+                        {set.accuracy}%
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {easiestSets.length > 0 && (
+                <div className="pt-3 border-t" style={{ borderColor: 'var(--border)' }}>
+                  <p className="text-xs font-semibold mb-2" style={{ color: 'var(--success)' }}>✓ Najlepsze zestawy</p>
+                  <div className="space-y-1.5">
+                    {easiestSets.map((set) => (
+                      <div key={set.id} className="flex items-center justify-between p-2 rounded-lg" style={{ background: '#eaf8ef' }}>
+                        <p className="text-xs font-medium truncate flex-1" style={{ color: 'var(--text)' }}>{set.name}</p>
+                        <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: 'var(--success)', color: '#fff' }}>
+                          {set.accuracy}%
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </Card>
 
         {/* D2: Rozpocznij */}
