@@ -1,16 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
-import { Grid3X3, Layers, ListChecks, MessageSquare, Rocket, Shapes } from 'lucide-react'
+import { Grid3X3, Layers, ListChecks, MessageSquare, Rocket, Shapes, X } from 'lucide-react'
 import { useSound } from '@/src/lib/SoundProvider'
 
-interface Props {
-  deckId: string
-  cardCount: number
-}
-
 type StudyMode = 'translate' | 'abcd' | 'sentence' | 'describe' | 'mixed' | 'test'
+type TestType = 'tf' | 'abcd' | 'matching' | 'written'
 
 const modes = [
   { id: 'abcd' as const, label: 'ABCD', icon: Grid3X3, color: 'var(--primary)' },
@@ -22,6 +19,12 @@ const modes = [
 ]
 
 const cardCountOptions = [10, 15, 20, 25, 30, 35]
+const PREF_KEY = 'test-prefs'
+
+interface Props {
+  deckId: string
+  cardCount: number
+}
 
 export function QuickModeButtons({ deckId, cardCount }: Props) {
   const router = useRouter()
@@ -29,26 +32,122 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
   const [loading, setLoading] = useState(false)
   const [selectedMode, setSelectedMode] = useState<StudyMode | null>(null)
   const [selectedCount, setSelectedCount] = useState<number | null>(null)
+
+  // Test modal state
   const [showTestModal, setShowTestModal] = useState(false)
   const [testCount, setTestCount] = useState(20)
-  const [testVariant, setTestVariant] = useState<'tf' | 'abcd' | 'written'>('abcd')
-  const [testModes, setTestModes] = useState<StudyMode[]>(['abcd', 'translate'])
+  const [testTypes, setTestTypes] = useState<TestType[]>(['abcd'])
+  const [starredOnly, setStarredOnly] = useState(false)
+  const [answerLang, setAnswerLang] = useState('auto')
+  const [allowTypos, setAllowTypos] = useState(true)
+  const [requireSingle, setRequireSingle] = useState(false)
+  const [minTypeHint, setMinTypeHint] = useState(false)
+  const [savingPrefs, setSavingPrefs] = useState(false)
+  const [loadingPrefs, setLoadingPrefs] = useState(true)
+  const triggerRef = useRef<HTMLButtonElement | null>(null)
+  const modalRef = useRef<HTMLDivElement | null>(null)
 
-  async function handleStart() {
-    if (!selectedMode || !selectedCount) return
-    
+  const clampedCount = useMemo(() => Math.min(Math.max(testCount, 5), Math.min(20, cardCount)), [testCount, cardCount])
+
+  useEffect(() => {
+    if (!showTestModal) return
+    document.body.style.overflow = 'hidden'
+    const prev = document.activeElement as HTMLElement | null
+    setTimeout(() => modalRef.current?.focus(), 0)
+    return () => {
+      document.body.style.overflow = ''
+      prev?.focus()
+    }
+  }, [showTestModal])
+
+  useEffect(() => {
+    // load from localStorage
+    try {
+      const raw = localStorage.getItem(PREF_KEY)
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        setTestCount(parsed.questionCount ?? 20)
+        setStarredOnly(!!parsed.starredOnly)
+        setTestTypes(parsed.enabledTypes?.length ? parsed.enabledTypes : ['abcd'])
+        setAnswerLang(parsed.answerLang ?? 'auto')
+        setAllowTypos(parsed.correction?.allowTypos ?? true)
+        setRequireSingle(parsed.correction?.requireSingle ?? false)
+      }
+    } catch {
+      /* ignore */
+    }
+
+    // load from API
+    const load = async () => {
+      try {
+        const res = await fetch('/api/user-test-preferences', { credentials: 'include' })
+        if (res.ok) {
+          const data = await res.json()
+          if (data) {
+            setTestCount(data.questionCount ?? 20)
+            setStarredOnly(!!data.starredOnly)
+            const enabled = Array.isArray(data.enabledTypes) && data.enabledTypes.length ? data.enabledTypes : ['abcd']
+            setTestTypes(enabled as TestType[])
+            const langs = Array.isArray(data.answerLanguages) && data.answerLanguages[0]?.lang
+              ? data.answerLanguages.map((l: any) => l.lang)
+              : data.answerLanguages ?? []
+            setAnswerLang(langs[0] || 'auto')
+            setAllowTypos(Boolean(data.correctionOptions?.allowTypos ?? true))
+            setRequireSingle(Boolean(data.correctionOptions?.requireSingle ?? false))
+          }
+        }
+      } catch {
+        /* ignore */
+      } finally {
+        setLoadingPrefs(false)
+      }
+    }
+    load()
+  }, [])
+
+  function persistLocal() {
+    const payload = {
+      questionCount: clampedCount,
+      starredOnly,
+      enabledTypes: testTypes,
+      answerLang,
+      correction: { allowTypos, requireSingle },
+    }
+    localStorage.setItem(PREF_KEY, JSON.stringify(payload))
+  }
+
+  async function persistRemote() {
+    setSavingPrefs(true)
+    try {
+      await fetch('/api/user-test-preferences', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          questionCount: clampedCount,
+          starredOnly,
+          enabledTypes: testTypes,
+          answerLanguages: [answerLang].filter(Boolean),
+          correctionOptions: { allowTypos, requireSingle },
+        }),
+      })
+    } catch {
+      /* ignore */
+    } finally {
+      setSavingPrefs(false)
+    }
+  }
+
+  async function startSession(mode: StudyMode, target: number, settings?: any) {
     setLoading(true)
     unlock()
-
     try {
-      const targetCount = Math.min(cardCount, selectedCount)
       const res = await fetch('/api/session/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ deckId, mode: selectedMode, targetCount }),
+        body: JSON.stringify({ deckId, mode, targetCount: target, settings }),
       })
-
       const data = await res.json()
       if (res.ok && data.sessionId) {
         sessionStorage.setItem(`session-${data.sessionId}`, JSON.stringify(data.tasks))
@@ -61,12 +160,18 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
     }
   }
 
-  async function handleModeSelect(mode: StudyMode) {
+  async function handleStart() {
+    if (!selectedMode || !selectedCount) return
+    const targetCount = Math.min(cardCount, selectedCount)
+    await startSession(selectedMode, targetCount)
+  }
+
+  function handleModeSelect(mode: StudyMode) {
     if (mode === 'test') {
       setSelectedMode('test')
       setShowTestModal(true)
+      setTimeout(() => modalRef.current?.focus(), 0)
     } else {
-      // For other modes, show card count selection
       setSelectedMode(mode)
       setSelectedCount(null)
     }
@@ -81,20 +186,47 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
     setSelectedCount(null)
   }
 
+  function toggleType(type: TestType, next: boolean) {
+    setTestTypes((prev) => {
+      let arr: TestType[] = prev
+      if (next && !prev.includes(type)) arr = [...prev, type]
+      if (!next) arr = prev.filter((t) => t !== type)
+      if (!arr.length) {
+        setMinTypeHint(true)
+        return ['abcd']
+      }
+      setMinTypeHint(false)
+      return arr
+    })
+  }
+
+  async function handleCreateTest() {
+    const poolEmpty = starredOnly && cardCount === 0
+    if (poolEmpty) return
+    const target = Math.min(cardCount, clampedCount)
+    const settings = {
+      types: testTypes,
+      starredOnly,
+      answerLang,
+      correction: { allowTypos, requireSingle },
+      questionCount: target,
+    }
+    persistLocal()
+    await persistRemote()
+    await startSession('test', target, settings)
+    setShowTestModal(false)
+    triggerRef.current?.focus()
+  }
+
   return (
     <div className="space-y-4 relative z-0">
-      {/* Mode selection */}
       <div>
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
             Wybierz tryb
           </h3>
           {selectedMode && selectedMode !== 'test' && (
-            <button
-              onClick={handleReset}
-              className="text-xs font-medium"
-              style={{ color: 'var(--primary)' }}
-            >
+            <button onClick={handleReset} className="text-xs font-medium" style={{ color: 'var(--primary)' }}>
               Zmień tryb
             </button>
           )}
@@ -104,10 +236,10 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
             const Icon = mode.icon
             const isTest = mode.highlight
             const isSelected = selectedMode === mode.id
-
             return (
               <button
                 key={mode.id}
+                ref={mode.id === 'test' ? triggerRef : undefined}
                 type="button"
                 onClick={() => handleModeSelect(mode.id)}
                 disabled={loading || cardCount === 0 || (selectedMode !== null && selectedMode !== mode.id)}
@@ -117,17 +249,11 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
                   border: `1px solid ${isTest ? 'var(--warning)' : isSelected ? 'var(--primary)' : 'var(--border)'}`,
                 }}
               >
-                <div
-                  className="flex h-10 w-10 items-center justify-center rounded-lg"
-                  style={{ background: isTest ? 'var(--warning)' : 'var(--primary-soft)' }}
-                >
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg" style={{ background: isTest ? 'var(--warning)' : 'var(--primary-soft)' }}>
                   <Icon size={20} style={{ color: isTest ? '#fff' : mode.color }} />
                 </div>
-                <span
-                  className="text-xs font-semibold"
-                  style={{ color: isTest ? 'var(--warning)' : 'var(--text)' }}
-                >
-                  {loading && selectedMode === mode.id ? 'Ładowanie...' : mode.label}
+                <span className="text-xs font-semibold" style={{ color: isTest ? 'var(--warning)' : 'var(--text)' }}>
+                  {loading && isSelected ? 'Ładowanie...' : mode.label}
                 </span>
               </button>
             )
@@ -135,7 +261,6 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
         </div>
       </div>
 
-      {/* Card count selection - shown after mode selection (except test) */}
       {selectedMode && selectedMode !== 'test' && (
         <div>
           <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--text)' }}>
@@ -145,7 +270,6 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
             {cardCountOptions.map((count) => {
               const isAvailable = count <= cardCount
               const isSelected = selectedCount === count
-
               return (
                 <button
                   key={count}
@@ -158,10 +282,7 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
                     border: `1px solid ${isSelected ? 'var(--primary)' : 'var(--border)'}`,
                   }}
                 >
-                  <span
-                    className="text-lg font-bold"
-                    style={{ color: isSelected ? 'var(--primary)' : 'var(--text)' }}
-                  >
+                  <span className="text-lg font-bold" style={{ color: isSelected ? 'var(--primary)' : 'var(--text)' }}>
                     {count}
                   </span>
                 </button>
@@ -171,7 +292,6 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
         </div>
       )}
 
-      {/* Start button - shown after both mode and count are selected */}
       {selectedMode && selectedMode !== 'test' && selectedCount && (
         <div>
           <button
@@ -185,127 +305,257 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
         </div>
       )}
 
-      {showTestModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-          <div className="w-full max-w-sm space-y-4 rounded-xl bg-white p-5" style={{ border: '1px solid var(--border)' }}>
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Ustawienia testu</p>
-              <button onClick={() => setShowTestModal(false)} className="text-xs" style={{ color: 'var(--text-muted)' }}>Zamknij</button>
-            </div>
-            <label className="space-y-1 text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
-              Liczba pytań
-              <input
-                type="number"
-                min={5}
-                max={35}
-                value={testCount}
-                onChange={(e) => setTestCount(Number(e.target.value))}
-                className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
-                style={{ borderColor: 'var(--border)' }}
-              />
-            </label>
-            <div className="space-y-2">
-              <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Rodzaj pytań</p>
-              <div className="flex gap-2">
-                {[
-                  { id: 'abcd', label: 'ABCD' },
-                  { id: 'tf', label: 'Prawda/Fałsz' },
-                  { id: 'written', label: 'Pisemnie' },
-                ].map((opt) => (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    onClick={() => setTestVariant(opt.id as typeof testVariant)}
-                    className="flex-1 rounded-full px-3 py-2 text-xs font-semibold transition-colors"
-                    style={{
-                      border: '1px solid var(--border)',
-                      background: testVariant === opt.id ? 'var(--primary-soft)' : 'var(--surface)',
-                      color: testVariant === opt.id ? 'var(--primary)' : 'var(--text)',
-                    }}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="space-y-2">
-              <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Tryby w teście</p>
-              <div className="grid grid-cols-2 gap-2">
-                {['abcd', 'translate', 'sentence', 'describe', 'mixed'].map((m) => {
-                  const active = testModes.includes(m as StudyMode)
-                  return (
-                    <button
-                      key={m}
-                      type="button"
-                      onClick={() =>
-                        setTestModes((prev) =>
-                          prev.includes(m as StudyMode)
-                            ? prev.filter((x) => x !== m)
-                            : [...prev, m as StudyMode]
-                        )
-                      }
-                      className="rounded-lg px-3 py-2 text-xs font-semibold transition-colors text-left"
-                      style={{
-                        border: '1px solid var(--border)',
-                        background: active ? 'var(--primary-soft)' : 'var(--surface)',
-                        color: active ? 'var(--primary)' : 'var(--text)',
-                      }}
-                    >
-                      {m === 'translate'
-                        ? 'Tłumaczenie'
-                        : m === 'sentence'
-                          ? 'Zdania'
-                          : m === 'describe'
-                            ? 'Opisz'
-                            : m === 'mixed'
-                              ? 'Mix'
-                              : 'ABCD'}
-                    </button>
-                  )
-                })}
-              </div>
-              <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
-                Możesz włączyć wiele typów; test wylosuje pytania z zaznaczonych trybów.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={async () => {
-                setLoading(true)
-                unlock()
-                try {
-                  const targetCount = Math.min(cardCount, testCount)
-                  const res = await fetch('/api/session/start', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({
-                      deckId,
-                      mode: 'test',
-                      targetCount,
-                      settings: { variant: testVariant, modes: testModes },
-                    }),
-                  })
-                  const data = await res.json()
-                  if (res.ok && data.sessionId) {
-                    sessionStorage.setItem(`session-${data.sessionId}`, JSON.stringify(data.tasks))
-                    router.push(`/session/${data.sessionId}`)
-                  }
-                } catch (err) {
-                  console.error('Failed to start test:', err)
-                } finally {
-                  setLoading(false)
+      {showTestModal &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[120] flex items-center justify-center"
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setShowTestModal(false)
+                triggerRef.current?.focus()
+              }
+            }}
+          >
+            <div className="absolute inset-0 bg-black/40" />
+            <div
+              ref={modalRef}
+              tabIndex={-1}
+              className="relative z-[130] w-full max-w-[640px] max-h-[85vh] overflow-hidden rounded-2xl border bg-white shadow-none"
+              style={{ borderColor: 'var(--border)' }}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') {
+                  e.stopPropagation()
                   setShowTestModal(false)
+                  triggerRef.current?.focus()
                 }
               }}
-              className="w-full rounded-full py-2 text-sm font-semibold text-white"
-              style={{ background: 'var(--primary)' }}
-              disabled={loading}
             >
-              {loading ? 'Ładowanie…' : 'Start testu'}
-            </button>
+              <div className="sticky top-0 flex items-center justify-between border-b px-5 py-4" style={{ borderColor: 'var(--border)' }}>
+                <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>
+                  Opcje
+                </p>
+                <button
+                  onClick={() => {
+                    setShowTestModal(false)
+                    triggerRef.current?.focus()
+                  }}
+                  className="h-9 w-9 rounded-full hover:bg-[var(--hover-bg)]"
+                  aria-label="Zamknij"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="max-h-[75vh] overflow-y-auto px-5 py-4 space-y-4">
+                <Section
+                  title="Pytania"
+                  items={[
+                    {
+                      label: 'Liczba pytań',
+                      control: (
+                        <NumberInput
+                          value={clampedCount}
+                          min={5}
+                          max={Math.min(20, cardCount)}
+                          onChange={setTestCount}
+                          note={`Dostępne: ${cardCount}`}
+                        />
+                      ),
+                    },
+                  ]}
+                />
+
+                <Section
+                  title="Zawartość"
+                  items={[
+                    {
+                      label: 'Ucz się wyłącznie pojęć oznaczonych gwiazdką',
+                      control: <Toggle checked={starredOnly} onChange={setStarredOnly} />,
+                    },
+                  ]}
+                  warning={starredOnly && cardCount === 0 ? 'Brak oznaczonych pojęć' : undefined}
+                />
+
+                <Section
+                  title="Typy pytań"
+                  hint={minTypeHint ? 'Minimum jeden typ musi być włączony. Włączono ABCD.' : undefined}
+                  items={[
+                    { label: 'Prawda/Fałsz', control: <Toggle checked={testTypes.includes('tf')} onChange={(v) => toggleType('tf', v)} /> },
+                    {
+                      label: 'Pytania wielokrotnego wyboru (ABCD)',
+                      control: <Toggle checked={testTypes.includes('abcd')} onChange={(v) => toggleType('abcd', v)} />,
+                    },
+                    { label: 'Dopasuj pytania do odpowiedzi', control: <Toggle checked={testTypes.includes('matching')} onChange={(v) => toggleType('matching', v)} /> },
+                    { label: 'Pytania pisemne', control: <Toggle checked={testTypes.includes('written')} onChange={(v) => toggleType('written', v)} /> },
+                  ]}
+                />
+
+                <Section
+                  title="Języki odpowiedzi"
+                  items={[
+                    {
+                      label: 'Preferuj odpowiedzi w',
+                      control: (
+                        <select
+                          value={answerLang}
+                          onChange={(e) => setAnswerLang(e.target.value)}
+                          className="h-9 rounded-lg border px-3 text-sm focus:outline-none"
+                          style={{ borderColor: 'var(--border)', color: 'var(--text)', background: 'var(--surface)' }}
+                        >
+                          <option value="auto">Auto</option>
+                          <option value="pl">Polski</option>
+                          <option value="en">Angielski</option>
+                          <option value="mix">Oba</option>
+                        </select>
+                      ),
+                    },
+                  ]}
+                />
+
+                <Section
+                  title="Opcje korekty"
+                  items={[
+                    {
+                      label: 'Wymagaj tylko 1 odpowiedzi',
+                      control: <Toggle checked={requireSingle} onChange={setRequireSingle} />,
+                    },
+                    {
+                      label: 'Pomijanie literówek',
+                      control: <Toggle checked={allowTypos} onChange={setAllowTypos} disabled={!testTypes.includes('written')} />,
+                      muted: !testTypes.includes('written'),
+                    },
+                  ]}
+                />
+              </div>
+
+              <div className="flex items-center justify-between border-t px-5 py-4" style={{ borderColor: 'var(--border)' }}>
+                <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                  Pamiętamy Twoje ustawienia
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowTestModal(false)}
+                    className="h-10 rounded-full px-4 text-sm font-semibold"
+                    style={{ border: '1px solid var(--border)', color: 'var(--text)' }}
+                  >
+                    Anuluj
+                  </button>
+                  <button
+                    type="button"
+                    disabled={loading || savingPrefs || !testTypes.length || (starredOnly && cardCount === 0)}
+                    className="h-10 rounded-full px-5 text-sm font-semibold text-white disabled:opacity-50"
+                    style={{ background: '#4255FF' }}
+                    onClick={handleCreateTest}
+                  >
+                    {loading ? 'Ładowanie…' : savingPrefs ? 'Zapisywanie…' : 'Stwórz nowy test'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
+    </div>
+  )
+}
+
+function Section({
+  title,
+  items,
+  warning,
+  hint,
+}: {
+  title: string
+  items: Array<{ label: string; control: React.ReactNode; muted?: boolean }>
+  warning?: string
+  hint?: string
+}) {
+  return (
+    <div className="rounded-xl border" style={{ borderColor: 'var(--border)' }}>
+      <div className="border-b px-4 py-3" style={{ borderColor: 'var(--border)' }}>
+        <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
+          {title}
+        </p>
+        {hint && (
+          <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+            {hint}
+          </p>
+        )}
+      </div>
+      <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
+        {items.map((item, idx) => (
+          <div key={idx} className="flex items-center justify-between px-4 py-3">
+            <span className="text-sm" style={{ color: item.muted ? 'var(--text-muted)' : 'var(--text)' }}>
+              {item.label}
+            </span>
+            {item.control}
           </div>
+        ))}
+      </div>
+      {warning && (
+        <div className="px-4 py-2 text-[12px]" style={{ color: '#b45309', background: '#fffbeb', borderTop: '1px solid var(--border)' }}>
+          {warning}
         </div>
+      )}
+    </div>
+  )
+}
+
+function Toggle({ checked, onChange, disabled }: { checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
+  return (
+    <button
+      type="button"
+      onClick={() => !disabled && onChange(!checked)}
+      disabled={disabled}
+      className={`relative h-8 w-14 rounded-full transition-colors ${disabled ? 'opacity-50' : ''}`}
+      style={{ background: checked ? 'var(--primary)' : 'var(--border)' }}
+      aria-pressed={checked}
+    >
+      <span
+        className="absolute left-1 top-1 h-6 w-6 rounded-full bg-white shadow transition-transform"
+        style={{ transform: checked ? 'translateX(24px)' : 'translateX(0px)' }}
+      />
+    </button>
+  )
+}
+
+function NumberInput({ value, min, max, onChange, note }: { value: number; min: number; max: number; onChange: (v: number) => void; note?: string }) {
+  return (
+    <div className="text-right">
+      <div className="inline-flex items-center gap-2 rounded-lg border px-2 py-1" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+        <button
+          type="button"
+          className="h-7 w-7 rounded-md text-sm font-semibold"
+          style={{ color: 'var(--text)' }}
+          onClick={() => onChange(Math.max(min, value - 1))}
+        >
+          –
+        </button>
+        <input
+          value={value}
+          min={min}
+          max={max}
+          onChange={(e) => onChange(Math.max(min, Math.min(max, Number(e.target.value) || min)))}
+          type="number"
+          className="w-16 border-0 bg-transparent text-center text-sm focus:outline-none"
+          style={{ color: 'var(--text)' }}
+        />
+        <button
+          type="button"
+          className="h-7 w-7 rounded-md text-sm font-semibold"
+          style={{ color: 'var(--text)' }}
+          onClick={() => onChange(Math.min(max, value + 1))}
+        >
+          +
+        </button>
+      </div>
+      {note && (
+        <p className="text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>
+          {note}
+        </p>
       )}
     </div>
   )
