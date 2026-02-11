@@ -84,19 +84,6 @@ export const Users: CollectionConfig = {
           min: 0,
           max: 200,
         },
-
-        {
-          name: 'defaultStudyMode',
-          type: 'select',
-          defaultValue: 'translate',
-          options: [
-            { label: 'Tłumaczenie', value: 'translate' },
-            { label: 'ABCD', value: 'abcd' },
-            { label: 'Zdania', value: 'sentence' },
-            { label: 'Opisz', value: 'describe' },
-            { label: 'Mix', value: 'mixed' },
-          ],
-        },
         {
           name: 'shuffleWords',
           type: 'checkbox',
