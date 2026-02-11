@@ -106,7 +106,7 @@ export function TestList({ decks, folders }: { decks: Item[]; folders: Item[] })
   }
 
   const countOptions = [10, 20, 30, 50]
-  const modeLabels: Record<string, string> = { abcd: 'ABCD', translate: 'translated', sentence: 'sentence', describe: 'described' }
+  const modeLabels: Record<string, string> = { abcd: 'ABCD', translate: 'Tłumaczenie', sentence: 'Zdanie', describe: 'Opis' }
 
   const testsVisible = useMemo(() => tests.slice(0, 20), [tests])
 
@@ -167,7 +167,7 @@ export function TestList({ decks, folders }: { decks: Item[]; folders: Item[] })
           <h3 className="mr-auto text-sm font-semibold">Wyniki</h3>
           <select value={range} onChange={(e) => setRange(e.target.value)} className="rounded-lg border px-2 py-1 text-xs" style={{ borderColor: 'var(--border)' }}><option value="7">7 dni</option><option value="30">30 dni</option><option value="90">90 dni</option></select>
           <select value={sourceFilter} onChange={(e) => setSourceFilter(e.target.value)} className="rounded-lg border px-2 py-1 text-xs" style={{ borderColor: 'var(--border)' }}><option value="all">Wszystkie źródła</option><option value="set">Zestawy</option><option value="folder">Foldery</option></select>
-          <select value={modeFilter} onChange={(e) => setModeFilter(e.target.value)} className="rounded-lg border px-2 py-1 text-xs" style={{ borderColor: 'var(--border)' }}><option value="all">Wszystkie tryby</option><option value="abcd">ABCD</option><option value="translate">translated</option><option value="sentence">sentence</option><option value="describe">described</option></select>
+          <select value={modeFilter} onChange={(e) => setModeFilter(e.target.value)} className="rounded-lg border px-2 py-1 text-xs" style={{ borderColor: 'var(--border)' }}><option value="all">Wszystkie tryby</option><option value="abcd">ABCD</option><option value="translate">Tłumaczenie</option><option value="sentence">Zdanie</option><option value="describe">Opis</option></select>
         </div>
         {loadingResults ? <p className="text-sm">Ładowanie…</p> : (
           <div className="space-y-2">
