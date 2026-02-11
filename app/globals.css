@@ -339,11 +339,11 @@ button, input { font: inherit; }
 }
 
 .section-heading {
-  font-size: 0.875rem;
-  line-height: 1.4285714286;
-  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1.4;
+  font-weight: 700;
   letter-spacing: normal;
-  color: var(--text);
+  color: #0f172a;
   margin: 0 0 var(--md) 0;
 }
 
