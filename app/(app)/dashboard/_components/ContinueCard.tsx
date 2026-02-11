@@ -12,7 +12,7 @@ export type ContinueItem = {
 
 export function ContinueCard({ item }: { item: ContinueItem }) {
   return (
-    <SimpleCard className="relative overflow-hidden p-5 min-h-[180px] flex flex-col justify-between">
+    <SimpleCard className="relative overflow-hidden p-5 min-h-[220px] flex flex-col justify-between">
       {/* Decorative shape in bottom right */}
       <div 
         className="absolute bottom-0 right-0 opacity-10 pointer-events-none"
@@ -33,9 +33,9 @@ export function ContinueCard({ item }: { item: ContinueItem }) {
         </div>
 
         <div className="mb-3">
-          <div className="h-3 w-full overflow-hidden rounded-full shadow-sm" style={{ background: '#e9edf7' }}>
+          <div className="h-3 w-full overflow-hidden rounded-full" style={{ background: '#e9edf7' }}>
             <div 
-              className="h-full rounded-full transition-all shadow-md" 
+              className="h-full rounded-full transition-all" 
               style={{ 
                 width: `${item.progressPercent}%`,
                 background: 'linear-gradient(90deg, #22c55e 0%, #16a34a 100%)'

@@ -58,6 +58,31 @@ export async function GET() {
       depth: 1,
     })
 
+    let wordStats = { docs: [] as any[] }
+    let dailyAggregates = { docs: [] as any[] }
+    try {
+      wordStats = await payload.find({
+        collection: 'word_stats',
+        where: { owner: { equals: user.id } },
+        limit: 200,
+        depth: 1,
+      })
+    } catch {
+      wordStats = { docs: [] }
+    }
+
+    try {
+      dailyAggregates = await payload.find({
+        collection: 'daily_aggregates',
+        where: { owner: { equals: user.id } },
+        sort: '-date',
+        limit: 60,
+        depth: 0,
+      })
+    } catch {
+      dailyAggregates = { docs: [] }
+    }
+
     const completedSessions = recentSessions.docs.filter(s => s.endedAt)
     const avgAccuracy = completedSessions.length > 0
       ? Math.round(completedSessions.reduce((sum, s) => sum + (s.accuracy || 0), 0) / completedSessions.length)
@@ -67,6 +92,9 @@ export async function GET() {
       if (!s.startedAt) return sum
       const start = new Date(s.startedAt)
       const end = s.endedAt ? new Date(s.endedAt) : now
+      if (typeof s.durationSeconds === 'number') {
+        return sum + Math.max(1, Math.round(Number(s.durationSeconds) / 60))
+      }
       return sum + Math.max(1, Math.round((end.getTime() - start.getTime()) / 60000))
     }, 0)
 
@@ -110,13 +138,26 @@ export async function GET() {
       d.setDate(d.getDate() - i)
       d.setHours(0, 0, 0, 0)
       const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
-      const daySessions = allSessions.docs.filter(s => {
+      const dayAggregate = dailyAggregates.docs.find((agg: any) => {
+        const aggDate = new Date(agg.date)
+        return `${aggDate.getFullYear()}-${aggDate.getMonth()}-${aggDate.getDate()}` === key
+      })
+      if (dayAggregate) {
+        sessionsByDay.push({
+          date: `${d.getDate()}.${d.getMonth() + 1}`,
+          count: Number(dayAggregate.sessions || 0),
+          minutes: Number(dayAggregate.minutes || 0),
+        })
+        continue
+      }
+      const daySessions = allSessions.docs.filter((s) => {
         if (!s.startedAt) return false
         const sd = new Date(s.startedAt)
         return `${sd.getFullYear()}-${sd.getMonth()}-${sd.getDate()}` === key
       })
       const minutes = daySessions.reduce((sum, s) => {
         if (!s.startedAt) return sum
+        if (typeof s.durationSeconds === 'number') return sum + Math.max(1, Math.round(Number(s.durationSeconds) / 60))
         const start = new Date(s.startedAt)
         const end = s.endedAt ? new Date(s.endedAt) : now
         return sum + Math.max(1, Math.round((end.getTime() - start.getTime()) / 60000))
@@ -292,7 +333,7 @@ export async function GET() {
       }
     }
 
-    const history = recentSessions.docs.map(s => ({
+    const history = recentSessions.docs.map((s) => ({
       id: s.id,
       mode: s.mode,
       deckName: typeof s.deck === 'object' && s.deck !== null ? (s.deck as { name?: string }).name : 'Unknown',
@@ -301,7 +342,21 @@ export async function GET() {
       accuracy: s.accuracy,
       startedAt: s.startedAt,
       endedAt: s.endedAt,
+      durationSeconds: s.durationSeconds,
     }))
+
+    // Support both camelCase and snake_case from potential legacy rows
+    const wordProblems = wordStats.docs
+      .map((w: any) => ({
+        cardId: String(w.card?.id || w.card),
+        deckId: String(w.deck?.id || w.deck),
+        front: typeof w.card === 'object' && w.card ? (w.card as any).front : '',
+        wrong: Number(w.totalWrong || w.total_wrong || 0),
+        correct: Number(w.totalCorrect || w.total_correct || 0),
+      }))
+      .filter((w: any) => w.wrong > 0)
+      .sort((a: any, b: any) => b.wrong - a.wrong)
+      .slice(0, 15)
 
     return NextResponse.json({
       global: {
@@ -318,6 +373,7 @@ export async function GET() {
       folderStats,
       hardestCards,
       history,
+      wordProblems,
     })
   } catch (error: unknown) {
     console.error('Stats error:', error)

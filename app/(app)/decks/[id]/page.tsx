@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
-import { BookOpen, ChevronRight, Edit, Plus } from 'lucide-react'
+import { BookOpen, Edit } from 'lucide-react'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { AddCardForm } from './AddCardForm'
@@ -51,17 +51,8 @@ export default async function DeckDetailPage({ params }: { params: Promise<{ id:
 
   return (
     <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--container-max)' }}>
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-muted)' }}>
-        <Link href={deck.folder ? `/folders/${deck.folder}` : '/library'} className="hover:underline">
-          {folderName}
-        </Link>
-        <ChevronRight size={12} />
-        <span style={{ color: 'var(--text)' }}>{deck.name}</span>
-      </nav>
-
       {/* Deck header - matching folder page style */}
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-4 pt-1">
         <div className="flex items-center gap-3 min-w-0">
           <span
             className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg"
@@ -81,8 +72,8 @@ export default async function DeckDetailPage({ params }: { params: Promise<{ id:
         <div className="flex items-center gap-2">
           <Link
             href={`/decks/${id}/edit`}
-            className="inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition-colors hover:opacity-90"
-            style={{ background: 'var(--surface-muted)', color: 'var(--text)' }}
+            className="inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-semibold transition-colors hover:opacity-90"
+            style={{ background: 'var(--primary)', color: '#fff' }}
           >
             <Edit size={14} /> Edytuj
           </Link>

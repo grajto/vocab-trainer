@@ -99,7 +99,7 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 relative z-0">
       {/* Mode selection */}
       <div>
         <div className="flex items-center justify-between mb-3">
