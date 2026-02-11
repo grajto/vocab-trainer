@@ -255,16 +255,16 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
           </div>
 
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>Kierunek</label>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>Odpowiedz w języku</label>
             <select
               value={direction}
               onChange={e => setKierunek(e.target.value as typeof direction)}
               className="w-full rounded-[var(--radiusSm)] px-3 py-2.5 text-sm focus:outline-none"
               style={{ border: '1px solid var(--border)', color: 'var(--text)', background: 'var(--surface)' }}
             >
-              <option value="front-to-back">Przód → Tył</option>
-              <option value="back-to-front">Tył → Przód</option>
-              <option value="both">Oba (losowo)</option>
+              <option value="front-to-back">🇵🇱 Polski</option>
+              <option value="back-to-front">🇬🇧 Angielski</option>
+              <option value="both">🌍 Oba (losowo)</option>
             </select>
           </div>
 
