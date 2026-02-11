@@ -44,6 +44,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       collection: 'decks',
       id,
       data,
+      overrideLock: true,
     })
 
     return NextResponse.json(updated)

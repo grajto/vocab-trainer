@@ -39,7 +39,7 @@ export function FolderQuickModeButtons({ folderId, cardCount }: { folderId: stri
       })
       const data = await res.json()
       if (res.ok && data.sessionId) {
-        sessionStorage.setItem(`session-${data.sessionId}`, JSON.stringify(data.tasks))
+        sessionStorage.setItem(`session-${data.sessionId}`, JSON.stringify({ tasks: data.tasks, mode, returnDeckId: '' }))
         router.push(`/session/${data.sessionId}`)
       }
     } catch (err) {

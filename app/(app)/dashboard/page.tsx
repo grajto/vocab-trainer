@@ -11,8 +11,24 @@ import { Button } from '../_components/ui/Button'
 import { type ContinueItem } from './_components/ContinueCard'
 import { JumpBackInCarousel } from './_components/JumpBackInCarousel'
 import { StartSessionButton } from './_components/StartSessionButton'
+import { PageHeader } from '../_components/PageHeader'
+import { PageContainer } from '../_components/PageContainer'
+import { ProgressBar } from '../_components/ui/ProgressBar'
 
 export const dynamic = 'force-dynamic'
+
+
+type RecommendedDeck = {
+  id: string
+  title: string
+  reason: string
+  progressPercent: number
+  mode: string
+  modeLabel: string
+  targetCount: number
+  estimatedMinutes: number
+  direction: string
+}
 
 function getDayKey(date: Date) {
   return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
@@ -107,22 +123,47 @@ export default async function DashboardPage() {
 
   const jumpBackIn: ContinueItem[] = []
   const recentDeckIds = new Set<string>()
+  const deckRecentMeta = new Map<string, { avgMinutes: number; mode: string; targetCount: number; direction: string; sessions: number }>()
 
   for (const s of recentSessions.docs) {
     const deck = deckMap.get(String(s.deck))
     if (!deck) continue
 
     const completed = Number(s.completedCount ?? 0)
-    const target = Number(s.targetCount ?? 0)
+    const target = Number(s.targetCount ?? 20)
     const progressPercent = target > 0 ? Math.min(100, Math.round((completed / target) * 100)) : 0
+
+    const startedAt = s.startedAt ? new Date(s.startedAt) : null
+    const endedAt = s.endedAt ? new Date(s.endedAt) : null
+    const minutes = startedAt && endedAt ? Math.max(1, Math.round((endedAt.getTime() - startedAt.getTime()) / 60000)) : Math.max(3, Math.round(target * 0.4))
+    const existingMeta = deckRecentMeta.get(String(s.deck))
+    if (!existingMeta) {
+      deckRecentMeta.set(String(s.deck), {
+        avgMinutes: minutes,
+        mode: String(s.mode || 'mixed'),
+        targetCount: target,
+        direction: String(s.direction || settings.defaultDirection),
+        sessions: 1,
+      })
+    } else {
+      existingMeta.sessions += 1
+      existingMeta.avgMinutes = Math.round((existingMeta.avgMinutes + minutes) / 2)
+      if (s.mode) existingMeta.mode = String(s.mode)
+      if (s.targetCount) existingMeta.targetCount = Number(s.targetCount)
+      if (s.direction) existingMeta.direction = String(s.direction)
+    }
 
     if ((s.endedAt === null || completed < target) && !jumpBackIn.find((item) => item.resumeHref.endsWith(String(s.id)))) {
       jumpBackIn.push({
+        deckId: String(deck.id),
         deckName: deck.name,
         progressPercent,
-        progressMeta: `${progressPercent}% of questions completed`,
+        progressMeta: `${progressPercent}% pytań ukończone`,
         resumeHref: `/session/${s.id}`,
         date: new Date(s.startedAt).toLocaleDateString('pl-PL'),
+        mode: String(s.mode || 'mixed'),
+        targetCount: target,
+        direction: String(s.direction || settings.defaultDirection),
       })
     }
 
@@ -165,29 +206,39 @@ export default async function DashboardPage() {
     }
   })
 
-  // Get hardest decks for recommendations with smart mode selection
-  const recommendedDecks = [...jumpBackIn]
-    .sort((a, b) => a.progressPercent - b.progressPercent)
-    .slice(0, 3)
-    .map((item, index) => {
-      // Smart mode selection based on progress and index
-      const modes = ['abcd', 'translate', 'sentence', 'describe', 'mixed'] as const
-      const selectedMode = modes[index % modes.length]
-      
+  const modeLabelMap: Record<string, string> = {
+    abcd: 'ABCD',
+    translate: 'Tłumaczenie',
+    sentence: 'Zdania',
+    describe: 'Opis',
+    mixed: 'Mix',
+  }
+
+  // Karty do sekcji "Co powtórzyć dziś" z konkretami sesji
+  const recommendedDecks: RecommendedDeck[] = decks.docs
+    .map((deck: any) => {
+      const deckId = String(deck.id)
+      const meta = deckRecentMeta.get(deckId)
+      const dueRatio = Number(deck.progress ?? 0)
+      const progressPercent = Math.max(8, Math.min(100, Math.round(100 - dueRatio)))
+      const mode = meta?.mode ?? settings.defaultStudyMode
+      const targetCount = Math.max(10, Math.min(60, Number(meta?.targetCount ?? 20)))
+      const estimatedMinutes = Math.max(5, Number(meta?.avgMinutes ?? Math.round(targetCount * 0.4)))
+
       return {
-        id: item.resumeHref.split('/').pop() || '',
-        title: item.deckName,
-        reason: item.progressPercent < 30 ? 'Wysoki % błędów' : `${item.progressPercent}% ukończone`,
-        mode: selectedMode,
-        modeLabel: {
-          abcd: 'ABCD',
-          translate: 'Tłumaczenie',
-          sentence: 'Zdania',
-          describe: 'Opisz',
-          mixed: 'Mix'
-        }[selectedMode]
+        id: deckId,
+        title: deck.name,
+        reason: dueRatio > 40 ? 'Masz sporo zaległych kart' : 'Warto utrwalić materiał z ostatnich dni',
+        progressPercent,
+        mode,
+        modeLabel: modeLabelMap[mode] || 'Mix',
+        targetCount,
+        estimatedMinutes,
+        direction: meta?.direction ?? settings.defaultDirection,
       }
     })
+    .sort((a: RecommendedDeck, b: RecommendedDeck) => a.progressPercent - b.progressPercent)
+    .slice(0, 3)
 
   // Calculate deck performance stats from recent sessions
   const deckStats = new Map<string, { name: string; totalSessions: number; accuracy: number; lastUsed: Date }>()
@@ -230,20 +281,8 @@ export default async function DashboardPage() {
   }))
 
   return (
-    <div className="mx-auto w-full space-y-8 px-4 py-6 lg:px-0" style={{ maxWidth: 'var(--container-max)' }}>
-      <div className="flex items-center gap-3 pt-1">
-        <IconSquare variant="primary" size={40}>
-          <BarChart3 size={20} />
-        </IconSquare>
-        <div>
-          <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>
-            Dashboard
-          </h1>
-          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-            Szybki podgląd Twojej nauki
-          </p>
-        </div>
-      </div>
+    <PageContainer className="space-y-8 px-4 py-2 lg:px-0">
+      <PageHeader title="Dashboard" description="Szybki podgląd Twojej nauki" icon={BarChart3} />
       {/* Section A - Informacje (unified analytical card) */}
       <section>
         <h2 className="section-heading mb-3 text-lg" style={{ color: 'var(--text)', fontWeight: 700 }}>Informacje</h2>
@@ -276,9 +315,7 @@ export default async function DashboardPage() {
                 <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Cel dzienny: {settings.minSessionsPerDay} sesji</p>
                 <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Pozostało: {remainingToGoal}</p>
               </div>
-              <div className="h-4 w-full overflow-hidden rounded-full" style={{ background: '#e9edf7' }}>
-                <div className="h-full rounded-full" style={{ background: 'var(--success)', width: `${todayProgress}%` }} />
-              </div>
+              <ProgressBar value={todayProgress} className="h-3" />
               <p className="mt-2 text-xs" style={{ color: 'var(--text-muted)' }}>Do końca celu brakuje: {remainingToGoal} sesji</p>
             </div>
           </Card>
@@ -292,41 +329,32 @@ export default async function DashboardPage() {
             <p className="text-sm text-center py-4" style={{ color: 'var(--text-muted)' }}>Wszystko aktualne! Możesz rozpocząć nową sesję.</p>
           </Card>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {recommendedDecks.map((item) => (
-              <Card key={item.id} compact>
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <IconSquare variant="primary" size={36}>
-                      <BookOpen size={18} />
-                    </IconSquare>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>{item.title}</p>
-                      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{item.reason}</p>
-                    </div>
+              <div key={item.id} className="relative overflow-hidden rounded-[var(--radius)] p-5" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
+                <div className="absolute bottom-0 right-0 opacity-10 pointer-events-none" style={{ width: '110px', height: '110px', background: 'var(--primary)', borderRadius: '50% 0 0 0', transform: 'translate(20%, 20%)' }} />
+                <div className="relative z-10 space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>{item.title}</p>
+                    <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ background: 'var(--primary-soft)', color: 'var(--primary)' }}>
+                      {item.modeLabel}
+                    </span>
                   </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-xs">
-                      <span style={{ color: 'var(--text-muted)' }}>Tryb:</span>
-                      <span className="font-medium" style={{ color: 'var(--primary)' }}>{item.modeLabel}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs">
-                      <span style={{ color: 'var(--text-muted)' }}>Słówka:</span>
-                      <span className="font-medium" style={{ color: 'var(--text)' }}>20</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs">
-                      <span style={{ color: 'var(--text-muted)' }}>Język:</span>
-                      <span className="font-medium" style={{ color: 'var(--text)' }}>🇬🇧 Angielski</span>
-                    </div>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{item.reason}</p>
+                  <div className="grid grid-cols-2 gap-2 text-xs" style={{ color: 'var(--text-muted)' }}>
+                    <div className="rounded-lg px-2 py-1" style={{ background: 'var(--surface2)' }}>Długość: <span className="font-semibold" style={{ color: 'var(--text)' }}>{item.estimatedMinutes} min</span></div>
+                    <div className="rounded-lg px-2 py-1" style={{ background: 'var(--surface2)' }}>Kart: <span className="font-semibold" style={{ color: 'var(--text)' }}>{item.targetCount}</span></div>
                   </div>
-                  <StartSessionButton 
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Tryb: <span className="font-semibold" style={{ color: 'var(--text)' }}>{item.modeLabel}</span> • Kierunek: <span className="font-semibold" style={{ color: 'var(--text)' }}>{item.direction}</span></p>
+                  <ProgressBar value={Math.min(100, Math.max(10, item.progressPercent))} className="h-3" />
+                  <StartSessionButton
                     deckId={item.id}
                     mode={item.mode}
-                    targetCount={20}
-                    direction="en-pl"
+                    targetCount={item.targetCount}
+                    direction={item.direction}
                   />
                 </div>
-              </Card>
+              </div>
             ))}
           </div>
         )}
@@ -491,6 +519,6 @@ export default async function DashboardPage() {
           </div>
         </Card>
       </section>
-    </div>
+    </PageContainer>
   )
 }

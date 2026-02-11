@@ -4,6 +4,7 @@ import { Pencil } from 'lucide-react'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { EditDeckForm } from '../EditDeckForm'
+import { PageContainer } from '../../../_components/PageContainer'
 
 export const dynamic = 'force-dynamic'
 
@@ -36,7 +37,7 @@ export default async function EditDeckPage({ params }: { params: Promise<{ id: s
   }
 
   return (
-    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--container-max)' }}>
+    <PageContainer>
       <div className="flex items-center gap-3 pt-1">
         <span
           className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg"
@@ -64,6 +65,6 @@ export default async function EditDeckPage({ params }: { params: Promise<{ id: s
         }}
         folders={folders.docs.map((f: any) => ({ id: String(f.id), name: f.name }))}
       />
-    </div>
+    </PageContainer>
   )
 }

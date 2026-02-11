@@ -117,7 +117,7 @@ function isClearlyBadForAutoPass(
   })
 }
 
-const SYSTEM_PROMPT = `You are an English teacher AI.
+const SYSTEM_PROMPT = `You are an English teacher AI for SENTENCE mode (user must write a meaningful sentence using the target word).
 
 Evaluate the user's sentence quality in a practical way.
 Return ONLY minified JSON:
@@ -131,7 +131,7 @@ Rules:
 - If ok=true: corrected MUST equal input sentence exactly.
 - If ok=false: corrected MUST be an empty string.
 - Ignore missing final dot and capitalization at sentence start.
-- Accept understandable grammar; do not fail for small style issues.
+- Accept understandable grammar; do not fail for small style issues, punctuation or tiny wording variants.
 - Point out exact mistakes (e.g. spelling: "greeen" -> "green").
 - Never write meta-comments like "task expects corrected".
 - Error types: grammar, usage, meaning, spelling, punctuation, style, other.

@@ -54,6 +54,8 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
       .then(res => res.json())
       .then(data => {
         if (data.settings?.defaultDirection) setDirection(data.settings.defaultDirection)
+        if (data.settings?.defaultStudyMode) setMode(data.settings.defaultStudyMode)
+        if (typeof data.settings?.shuffleWords === 'boolean') setShuffle(Boolean(data.settings.shuffleWords))
       })
       .catch(() => null)
 
@@ -130,7 +132,7 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
         const next = [entry, ...testHistory].slice(0, 5)
         setTestHistory(next)
         localStorage.setItem('test-history', JSON.stringify(next))
-        sessionStorage.setItem(`session-${data.sessionId}`, JSON.stringify({ tasks: data.tasks, mode: 'test' }))
+        sessionStorage.setItem(`session-${data.sessionId}`, JSON.stringify({ tasks: data.tasks, mode: 'test', returnDeckId: deckId }))
         router.push(`/session/${data.sessionId}`)
       } else {
         setError(data.error || 'Nie udało się uruchomić testu')
@@ -173,7 +175,7 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
 
       const data = await res.json()
       if (res.ok && data.sessionId) {
-        sessionStorage.setItem(`session-${data.sessionId}`, JSON.stringify({ tasks: data.tasks, mode }))
+        sessionStorage.setItem(`session-${data.sessionId}`, JSON.stringify({ tasks: data.tasks, mode, returnDeckId: resourceType === 'deck' ? deckId : '' }))
         router.push(`/session/${data.sessionId}`)
       } else {
         setError(data.error || 'Failed to start session')
@@ -191,7 +193,7 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
 
   return (
     <div className="space-y-4">
-      <form onSubmit={handleStart} className="space-y-6 rounded-lg p-6" style={{ border: '1px solid var(--border)' }}>
+      <form onSubmit={handleStart} className="space-y-5 rounded-xl p-5" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
         {/* Step 1: Source */}
         <fieldset className="space-y-3">
           <legend className="text-sm font-semibold" style={{ color: 'var(--text)' }}>1. Źródło</legend>
@@ -296,7 +298,7 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
       </form>
 
       {/* Favorites */}
-      <section className="rounded-lg p-4" style={{ border: '1px solid var(--border)' }}>
+      <section className="hidden rounded-lg p-4" style={{ border: '1px solid var(--border)' }}>
         <div className="mb-3 flex items-center justify-between">
           <h4 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Ulubione ustawienia</h4>
           <button type="button" onClick={saveFavorite} className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-colors hover:bg-[var(--primaryBg)]" style={{ color: 'var(--primary)' }}>
@@ -324,7 +326,7 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
       </section>
 
       {/* Test section */}
-      <section className="rounded-lg p-4" style={{ border: '1px solid var(--border)' }}>
+      <section className="hidden rounded-lg p-4" style={{ border: '1px solid var(--border)' }}>
         <div className="mb-3 flex items-center justify-between">
           <div>
             <h4 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Test</h4>

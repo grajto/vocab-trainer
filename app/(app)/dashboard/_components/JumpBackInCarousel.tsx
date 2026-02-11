@@ -7,7 +7,6 @@ import { ContinueCard, type ContinueItem } from './ContinueCard'
 export function JumpBackInCarousel({ items }: { items: ContinueItem[] }) {
   const railRef = useRef<HTMLDivElement | null>(null)
   const [active, setActive] = useState(0)
-  const [scrollLeft, setScrollLeft] = useState(0)
   const [showLeftArrow, setShowLeftArrow] = useState(false)
   const shownItems = useMemo(() => items.slice(0, 6), [items])
 
@@ -25,7 +24,6 @@ export function JumpBackInCarousel({ items }: { items: ContinueItem[] }) {
     if (max <= 0) return setActive(0)
     const ratio = el.scrollLeft / Math.max(1, el.scrollWidth - el.clientWidth)
     setActive(Math.min(max, Math.max(0, Math.round(ratio * max))))
-    setScrollLeft(el.scrollLeft)
     
     // Show left arrow only when scrolled to the right
     setShowLeftArrow(el.scrollLeft > 10)
@@ -72,7 +70,7 @@ export function JumpBackInCarousel({ items }: { items: ContinueItem[] }) {
           className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {shownItems.map((item) => (
-            <div key={item.resumeHref} className="snap-start" style={{ minWidth: 'calc((100% - 32px) / 2.5)' }}>
+            <div key={item.resumeHref} className="snap-start shrink-0 basis-full sm:basis-[48%] lg:basis-[38%]">
               <ContinueCard item={item} />
             </div>
           ))}

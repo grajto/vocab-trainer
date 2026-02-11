@@ -4,6 +4,7 @@ import { isAuthenticated } from '../access/isOwner.ts'
 export const SessionItems: CollectionConfig = {
   slug: 'session-items',
   timestamps: true,
+  lockDocuments: false,
   access: {
     read: isAuthenticated,
     create: isAuthenticated,
@@ -24,9 +25,5 @@ export const SessionItems: CollectionConfig = {
     { name: 'isCorrect', type: 'checkbox', defaultValue: false },
     { name: 'feedback', type: 'textarea' },
     { name: 'aiUsed', type: 'checkbox', defaultValue: false },
-    { name: 'attemptsCount', type: 'number', defaultValue: 1 },
-    { name: 'wasWrongBeforeCorrect', type: 'checkbox', defaultValue: false },
-    { name: 'usedHint', type: 'checkbox', defaultValue: false },
-    { name: 'userOverride', type: 'checkbox', defaultValue: false },
   ],
 }

@@ -7,6 +7,7 @@ import { AddCardForm } from './AddCardForm'
 import { FilterableCardsList } from './FilterableCardsList'
 import { QuickModeButtons } from './QuickModeButtons'
 import { DeckSettingsDialog } from './DeckSettingsDialog'
+import { PageContainer } from '../../_components/PageContainer'
 
 export const dynamic = 'force-dynamic'
 
@@ -63,7 +64,7 @@ export default async function DeckDetailPage({ params }: { params: Promise<{ id:
   }
 
   return (
-    <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--container-max)' }}>
+    <PageContainer>
       {/* Deck header - matching folder page style */}
       <div className="flex items-center justify-between gap-4 pt-1">
         <div className="flex items-center gap-3 min-w-0">
@@ -93,6 +94,6 @@ export default async function DeckDetailPage({ params }: { params: Promise<{ id:
 
       {/* Add card form */}
       <AddCardForm deckId={id} />
-    </div>
+    </PageContainer>
   )
 }
