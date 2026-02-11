@@ -34,6 +34,8 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
 
   const filteredDecks = decks.filter((d) => d.name.toLowerCase().includes(search.toLowerCase()))
   const filteredFolders = folders.filter((f) => f.name.toLowerCase().includes(search.toLowerCase()))
+  const recentDeck = decks[0]
+  const recentFolder = folders[0]
 
   async function createFolder(e: React.FormEvent) {
     e.preventDefault()
@@ -73,7 +75,7 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
       </div>
 
       <div className="grid items-center gap-3 lg:grid-cols-[220px_minmax(0,1fr)]">
-        <p className="text-sm" style={{ color: 'var(--muted)' }}>Ostatnie zestawy</p>
+        <p className="text-sm" style={{ color: 'var(--muted)' }}>{tab === 'decks' ? 'Ostatni zestaw' : 'Ostatni folder'}</p>
         <div className="relative w-full lg:justify-self-end lg:max-w-[500px]">
           <Search className="absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: 'var(--gray400)' }} />
           <input
@@ -89,6 +91,21 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
 
       {tab === 'decks' && (
         <div className="space-y-6">
+          {recentDeck ? (
+            <Link
+              href={`/decks/${recentDeck.id}`}
+              className="flex items-center gap-3 rounded-xl p-3 transition-colors hover:bg-[var(--hover-bg)]"
+              style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}
+            >
+              <IconSquare variant="primary" size={36}>
+                <BookOpen size={18} />
+              </IconSquare>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{recentDeck.name}</p>
+                <p className="text-xs" style={{ color: 'var(--muted)' }}>Ostatnio używany · {recentDeck.cardCount} słówek</p>
+              </div>
+            </Link>
+          ) : null}
           <section className="space-y-3">
             <h3 className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--gray600)' }}>W tym tygodniu</h3>
 
@@ -122,8 +139,28 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
 
       {tab === 'folders' && (
         <div className="space-y-3">
+          {recentFolder ? (
+            <Link
+              href={`/folders/${recentFolder.id}`}
+              className="flex items-center gap-3 rounded-xl p-3 transition-colors hover:bg-[var(--hover-bg)]"
+              style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}
+            >
+              <IconSquare variant="muted" size={36}>
+                <FolderOpen size={18} />
+              </IconSquare>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{recentFolder.name}</p>
+                <p className="text-xs" style={{ color: 'var(--muted)' }}>Ostatnio używany · {recentFolder.deckCount} zestawów</p>
+              </div>
+            </Link>
+          ) : null}
+
           <div className="flex items-center justify-between">
             <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Wszystkie foldery</p>
+            <div className="flex items-center gap-2">
+              <Link href="/create" className="rounded-full px-4 py-2 text-xs font-semibold" style={{ border: '1px solid var(--border)', color: 'var(--text)' }}>
+                Dodaj zestaw
+              </Link>
             {!showCreateFolder && (
               <button
                 onClick={() => setShowCreateFolder(true)}
@@ -133,6 +170,7 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
                 Dodaj folder
               </button>
             )}
+            </div>
           </div>
 
           {showCreateFolder && (

@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { LibraryTabs } from './LibraryTabs'
+import { PageHeader } from '../_components/PageHeader'
+import { FolderOpen } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -75,18 +77,7 @@ export default async function LibraryPage() {
 
   return (
     <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--containerMax)' }}>
-      <div className="flex items-center gap-3">
-        <span
-          className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg"
-          style={{ background: 'var(--primary-soft)', color: 'var(--primary)' }}
-        >
-          📚
-        </span>
-        <div>
-          <h1 className="text-xl font-bold tracking-tight" style={{ color: 'var(--text)' }}>Twoje zasoby</h1>
-          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Zestawy i foldery w jednym miejscu</p>
-        </div>
-      </div>
+      <PageHeader title="Twoje zasoby" description="Zestawy i foldery w jednym miejscu" icon={FolderOpen} />
 
       <LibraryTabs
         decks={decks.docs.map((d: any) => ({

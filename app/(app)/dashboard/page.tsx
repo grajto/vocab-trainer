@@ -11,6 +11,7 @@ import { Button } from '../_components/ui/Button'
 import { type ContinueItem } from './_components/ContinueCard'
 import { JumpBackInCarousel } from './_components/JumpBackInCarousel'
 import { StartSessionButton } from './_components/StartSessionButton'
+import { PageHeader } from '../_components/PageHeader'
 
 export const dynamic = 'force-dynamic'
 
@@ -231,19 +232,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="mx-auto w-full space-y-8 px-4 py-6 lg:px-0" style={{ maxWidth: 'var(--container-max)' }}>
-      <div className="flex items-center gap-3 pt-1">
-        <IconSquare variant="primary" size={40}>
-          <BarChart3 size={20} />
-        </IconSquare>
-        <div>
-          <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>
-            Dashboard
-          </h1>
-          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-            Szybki podgląd Twojej nauki
-          </p>
-        </div>
-      </div>
+      <PageHeader title="Dashboard" description="Szybki podgląd Twojej nauki" icon={BarChart3} />
       {/* Section A - Informacje (unified analytical card) */}
       <section>
         <h2 className="section-heading mb-3 text-lg" style={{ color: 'var(--text)', fontWeight: 700 }}>Informacje</h2>
@@ -276,8 +265,14 @@ export default async function DashboardPage() {
                 <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Cel dzienny: {settings.minSessionsPerDay} sesji</p>
                 <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Pozostało: {remainingToGoal}</p>
               </div>
-              <div className="h-4 w-full overflow-hidden rounded-full" style={{ background: '#e9edf7' }}>
-                <div className="h-full rounded-full" style={{ background: 'var(--success)', width: `${todayProgress}%` }} />
+              <div className="h-3 w-full overflow-hidden rounded-full" style={{ background: '#e9edf7' }}>
+                <div
+                  className="h-full rounded-full transition-all"
+                  style={{
+                    background: 'linear-gradient(90deg, #22c55e 0%, #16a34a 100%)',
+                    width: `${todayProgress}%`,
+                  }}
+                />
               </div>
               <p className="mt-2 text-xs" style={{ color: 'var(--text-muted)' }}>Do końca celu brakuje: {remainingToGoal} sesji</p>
             </div>
@@ -296,28 +291,16 @@ export default async function DashboardPage() {
             {recommendedDecks.map((item) => (
               <Card key={item.id} compact>
                 <div className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <IconSquare variant="primary" size={36}>
-                      <BookOpen size={18} />
-                    </IconSquare>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>{item.title}</p>
-                      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{item.reason}</p>
-                    </div>
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>{item.title}</p>
+                    <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ background: 'var(--primary-soft)', color: 'var(--primary)' }}>
+                      {item.modeLabel}
+                    </span>
                   </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-xs">
-                      <span style={{ color: 'var(--text-muted)' }}>Tryb:</span>
-                      <span className="font-medium" style={{ color: 'var(--primary)' }}>{item.modeLabel}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs">
-                      <span style={{ color: 'var(--text-muted)' }}>Słówka:</span>
-                      <span className="font-medium" style={{ color: 'var(--text)' }}>20</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs">
-                      <span style={{ color: 'var(--text-muted)' }}>Język:</span>
-                      <span className="font-medium" style={{ color: 'var(--text)' }}>🇬🇧 Angielski</span>
-                    </div>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{item.reason}</p>
+                  <div className="flex items-center justify-between text-xs" style={{ color: 'var(--text-muted)' }}>
+                    <span>20 słówek</span>
+                    <span>🇬🇧 Angielski</span>
                   </div>
                   <StartSessionButton 
                     deckId={item.id}
