@@ -12,6 +12,7 @@ import { SessionItems } from './collections/SessionItems.ts'
 import { DailyAggregates } from './collections/DailyAggregates.ts'
 import { WordStats } from './collections/WordStats.ts'
 import { UserTestPreferences } from './collections/UserTestPreferences.ts'
+import { UserNotifications } from './collections/UserNotifications.ts'
 
 const serverURL =
   process.env.PAYLOAD_PUBLIC_SERVER_URL ||
@@ -23,7 +24,7 @@ export default buildConfig({
   admin: {
     user: Users.slug,
   },
-  collections: [Users, Folders, Decks, Cards, ReviewStates, Sessions, SessionItems, DailyAggregates, WordStats, UserTestPreferences],
+  collections: [Users, Folders, Decks, Cards, ReviewStates, Sessions, SessionItems, DailyAggregates, WordStats, UserTestPreferences, UserNotifications],
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URL!,

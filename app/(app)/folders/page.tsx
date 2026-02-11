@@ -45,7 +45,7 @@ export default async function FoldersPage() {
       <Card>
         <div className="mb-4 flex items-center justify-between">
           <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Twoje foldery</p>
-          <Link href="/library?tab=folders&create=true"><Button><Plus size={16} />Nowy folder</Button></Link>
+          <Link href="/folders/new"><Button><Plus size={16} />Nowy folder</Button></Link>
         </div>
 
         <div className="list">

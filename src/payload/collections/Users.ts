@@ -84,6 +84,46 @@ export const Users: CollectionConfig = {
           min: 0,
           max: 200,
         },
+
+        {
+          name: 'dailyGoalWords',
+          type: 'number',
+          defaultValue: 20,
+          min: 5,
+          max: 500,
+        },
+        {
+          name: 'defaultStudyMode',
+          type: 'select',
+          defaultValue: 'translate',
+          options: [
+            { label: 'Tłumaczenie', value: 'translate' },
+            { label: 'ABCD', value: 'abcd' },
+            { label: 'Zdania', value: 'sentence' },
+            { label: 'Opisz', value: 'describe' },
+            { label: 'Mix', value: 'mixed' },
+          ],
+        },
+        {
+          name: 'shuffleWords',
+          type: 'checkbox',
+          defaultValue: true,
+        },
+        {
+          name: 'soundEnabled',
+          type: 'checkbox',
+          defaultValue: true,
+        },
+        {
+          name: 'autoAdvance',
+          type: 'checkbox',
+          defaultValue: true,
+        },
+        {
+          name: 'darkMode',
+          type: 'checkbox',
+          defaultValue: false,
+        },
       ],
     },
   ],

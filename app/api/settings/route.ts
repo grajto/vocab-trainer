@@ -18,14 +18,20 @@ export async function POST(req: NextRequest) {
   const body = await req.json()
 
   const settings = {
-    minSessionsPerDay: Number(body.minSessionsPerDay ?? defaultStudySettings.minSessionsPerDay),
-    minMinutesPerDay: Number(body.minMinutesPerDay ?? defaultStudySettings.minMinutesPerDay),
+    minSessionsPerDay: Math.max(1, Number(body.minSessionsPerDay ?? defaultStudySettings.minSessionsPerDay)),
+    minMinutesPerDay: Math.max(5, Number(body.minMinutesPerDay ?? defaultStudySettings.minMinutesPerDay)),
     dailyGoalMode: body.dailyGoalMode ?? defaultStudySettings.dailyGoalMode,
+    dailyGoalWords: Math.max(5, Number(body.dailyGoalWords ?? defaultStudySettings.dailyGoalWords)),
     defaultDirection: body.defaultDirection ?? defaultStudySettings.defaultDirection,
+    defaultStudyMode: body.defaultStudyMode ?? defaultStudySettings.defaultStudyMode,
     mixTranslate: Number(body.mixTranslate ?? defaultStudySettings.mixTranslate),
     mixAbcd: Number(body.mixAbcd ?? defaultStudySettings.mixAbcd),
     mixSentence: Number(body.mixSentence ?? defaultStudySettings.mixSentence),
     maxNewPerDay: Number(body.maxNewPerDay ?? defaultStudySettings.maxNewPerDay),
+    shuffleWords: Boolean(body.shuffleWords ?? defaultStudySettings.shuffleWords),
+    soundEnabled: Boolean(body.soundEnabled ?? defaultStudySettings.soundEnabled),
+    autoAdvance: Boolean(body.autoAdvance ?? defaultStudySettings.autoAdvance),
+    darkMode: Boolean(body.darkMode ?? defaultStudySettings.darkMode),
   }
 
   await payload.update({

@@ -38,10 +38,12 @@ export default async function StudyPage() {
           <Link href="/create" className="text-sm font-medium" style={{ color: 'var(--primary)' }}>Utwórz pierwszy zestaw</Link>
         </div>
       ) : (
-        <StartSessionForm
+        <div className="rounded-xl border p-5 lg:p-6" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+          <StartSessionForm
           decks={decks.docs.map((d: any) => ({ id: String(d.id), name: d.name }))}
           folders={folders.docs.map((f: any) => ({ id: String(f.id), name: f.name }))}
         />
+        </div>
       )}
     </PageContainer>
   )

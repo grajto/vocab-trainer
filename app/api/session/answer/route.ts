@@ -20,6 +20,8 @@ export async function POST(req: NextRequest) {
       isCorrect: clientIsCorrect, expectedAnswer,
       attemptsCount, wasWrongBeforeCorrect, usedHint, userOverride,
       aiUsed: clientAiUsed,
+      responseTimeMs,
+      streakAfterAnswer,
     } = body
 
     if (!sessionId || !cardId) {
@@ -111,6 +113,10 @@ export async function POST(req: NextRequest) {
         isCorrect,
         aiUsed: taskType === 'sentence' || taskType === 'describe' ? !!clientAiUsed : false,
         taskType: taskType || sessionItems.docs[0].taskType,
+        responseTimeMs: Number(responseTimeMs || 0),
+        streakAfterAnswer: Number(streakAfterAnswer || 0),
+        levelAfterAnswer: Number(updateData.level || rs.level || 0),
+        answeredAt: new Date().toISOString(),
       }
 
       // Save new fields if provided (gracefully handle missing columns)

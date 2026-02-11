@@ -28,5 +28,10 @@ export const SessionItems: CollectionConfig = {
     { name: 'wasWrongBeforeCorrect', type: 'checkbox', defaultValue: false },
     { name: 'usedHint', type: 'checkbox', defaultValue: false },
     { name: 'userOverride', type: 'checkbox', defaultValue: false },
+
+    { name: 'responseTimeMs', type: 'number', defaultValue: 0 },
+    { name: 'streakAfterAnswer', type: 'number', defaultValue: 0 },
+    { name: 'levelAfterAnswer', type: 'number' },
+    { name: 'answeredAt', type: 'date' },
   ],
 }

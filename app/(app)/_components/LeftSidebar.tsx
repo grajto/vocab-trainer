@@ -31,7 +31,7 @@ export function LeftSidebar({
     fetch('/api/notifications', { credentials: 'include' })
       .then((res) => res.json())
       .then((data) => {
-        if (!ignore) setHasNewNotifications((data.notifications || []).length > 0)
+        if (!ignore) setHasNewNotifications(Number(data.unreadCount || 0) > 0)
       })
       .catch(() => undefined)
     return () => { ignore = true }
@@ -79,7 +79,7 @@ export function LeftSidebar({
                 <span className="truncate">{f.name}</span>
               </Link>
             ))}
-            <Link href="/folders" onClick={onClose} className={itemClass(active('/folders'))}><Plus size={16} />Nowy folder</Link>
+            <Link href="/folders/new" onClick={onClose} className={itemClass(active('/folders'))}><Plus size={16} />Nowy folder</Link>
           </div>
         </section>
 

@@ -1,381 +1,200 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from '@/src/lib/getPayload'
 import { getUser } from '@/src/lib/getUser'
 
-export async function GET() {
+function toDateSafe(value?: string | null) {
+  if (!value) return null
+  const d = new Date(value)
+  return Number.isNaN(d.getTime()) ? null : d
+}
+
+function dateKey(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+export async function GET(req: NextRequest) {
   try {
     const user = await getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const payload = await getPayload()
+    const sp = req.nextUrl.searchParams
+
+    const preset = sp.get('preset') || '30' // 7|30|90|custom
+    const customFrom = toDateSafe(sp.get('from'))
+    const customTo = toDateSafe(sp.get('to'))
+    const deckId = sp.get('deckId') || ''
+    const folderId = sp.get('folderId') || ''
+    const mode = sp.get('mode') || 'all'
+    const level = Number(sp.get('level') || 0)
+
     const now = new Date()
+    const from = preset === 'custom'
+      ? (customFrom || new Date(now.getTime() - 30 * 86400000))
+      : new Date(now.getTime() - Number(preset) * 86400000)
+    const to = preset === 'custom' ? (customTo || now) : now
 
-    const todayStart = new Date(now)
-    todayStart.setHours(0, 0, 0, 0)
-    const weekStart = new Date(now)
-    weekStart.setDate(weekStart.getDate() - weekStart.getDay())
-    weekStart.setHours(0, 0, 0, 0)
-
-    const sessionsToday = await payload.find({
-      collection: 'sessions',
-      where: {
-        owner: { equals: user.id },
-        startedAt: { greater_than_equal: todayStart.toISOString() },
-      },
-      limit: 0,
-      depth: 0,
-    })
-
-    const sessionsThisWeek = await payload.find({
-      collection: 'sessions',
-      where: {
-        owner: { equals: user.id },
-        startedAt: { greater_than_equal: weekStart.toISOString() },
-      },
-      limit: 0,
-      depth: 0,
-    })
-
-    const last7DaysStart = new Date(now)
-    last7DaysStart.setDate(last7DaysStart.getDate() - 6)
-    last7DaysStart.setHours(0, 0, 0, 0)
-
-    const sessionsLast7Days = await payload.find({
-      collection: 'sessions',
-      where: {
-        owner: { equals: user.id },
-        startedAt: { greater_than_equal: last7DaysStart.toISOString() },
-      },
-      limit: 0,
-      depth: 0,
-    })
-
-    const recentSessions = await payload.find({
-      collection: 'sessions',
-      where: { owner: { equals: user.id } },
-      sort: '-startedAt',
-      limit: 20,
-      depth: 1,
-    })
-
-    let wordStats = { docs: [] as any[] }
-    let dailyAggregates = { docs: [] as any[] }
-    try {
-      wordStats = await payload.find({
-        collection: 'word_stats',
-        where: { owner: { equals: user.id } },
-        limit: 200,
-        depth: 1,
-      })
-    } catch {
-      wordStats = { docs: [] }
-    }
-
-    try {
-      dailyAggregates = await payload.find({
-        collection: 'daily_aggregates',
-        where: { owner: { equals: user.id } },
-        sort: '-date',
-        limit: 60,
-        depth: 0,
-      })
-    } catch {
-      dailyAggregates = { docs: [] }
-    }
-
-    const completedSessions = recentSessions.docs.filter(s => s.endedAt)
-    const avgAccuracy = completedSessions.length > 0
-      ? Math.round(completedSessions.reduce((sum, s) => sum + (s.accuracy || 0), 0) / completedSessions.length)
-      : 0
-
-    const minutesLast7Days = sessionsLast7Days.docs.reduce((sum, s) => {
-      if (!s.startedAt) return sum
-      const start = new Date(s.startedAt)
-      const end = s.endedAt ? new Date(s.endedAt) : now
-      if (typeof s.durationSeconds === 'number') {
-        return sum + Math.max(1, Math.round(Number(s.durationSeconds) / 60))
-      }
-      return sum + Math.max(1, Math.round((end.getTime() - start.getTime()) / 60000))
-    }, 0)
-
-    // Calculate streak
-    const yearAgo = new Date(now)
-    yearAgo.setFullYear(yearAgo.getFullYear() - 1)
-    const allSessions = await payload.find({
-      collection: 'sessions',
-      where: {
-        owner: { equals: user.id },
-        startedAt: { greater_than_equal: yearAgo.toISOString() },
-      },
-      limit: 0,
-      depth: 0,
-    })
-
-    const sessionDays = new Set<string>()
-    for (const s of allSessions.docs) {
-      if (s.startedAt) {
-        const d = new Date(s.startedAt)
-        sessionDays.add(`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`)
-      }
-    }
-
-    let streakDays = 0
-    const checkDate = new Date(now)
-    checkDate.setHours(0, 0, 0, 0)
-    for (let i = 0; i < 365; i++) {
-      const key = `${checkDate.getFullYear()}-${checkDate.getMonth()}-${checkDate.getDate()}`
-      if (sessionDays.has(key)) {
-        streakDays++
-        checkDate.setDate(checkDate.getDate() - 1)
-      } else {
-        break
-      }
-    }
-
-    const sessionsByDay: Array<{ date: string; count: number; minutes: number }> = []
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(now)
-      d.setDate(d.getDate() - i)
-      d.setHours(0, 0, 0, 0)
-      const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
-      const dayAggregate = dailyAggregates.docs.find((agg: any) => {
-        const aggDate = new Date(agg.date)
-        return `${aggDate.getFullYear()}-${aggDate.getMonth()}-${aggDate.getDate()}` === key
-      })
-      if (dayAggregate) {
-        sessionsByDay.push({
-          date: `${d.getDate()}.${d.getMonth() + 1}`,
-          count: Number(dayAggregate.sessions || 0),
-          minutes: Number(dayAggregate.minutes || 0),
-        })
-        continue
-      }
-      const daySessions = allSessions.docs.filter((s) => {
-        if (!s.startedAt) return false
-        const sd = new Date(s.startedAt)
-        return `${sd.getFullYear()}-${sd.getMonth()}-${sd.getDate()}` === key
-      })
-      const minutes = daySessions.reduce((sum, s) => {
-        if (!s.startedAt) return sum
-        if (typeof s.durationSeconds === 'number') return sum + Math.max(1, Math.round(Number(s.durationSeconds) / 60))
-        const start = new Date(s.startedAt)
-        const end = s.endedAt ? new Date(s.endedAt) : now
-        return sum + Math.max(1, Math.round((end.getTime() - start.getTime()) / 60000))
-      }, 0)
-      sessionsByDay.push({
-        date: `${d.getDate()}.${d.getMonth() + 1}`,
-        count: daySessions.length,
-        minutes,
-      })
-    }
-
-    // Per deck stats
-    const decks = await payload.find({
-      collection: 'decks',
-      where: { owner: { equals: user.id } },
-      limit: 100,
-      depth: 0,
-    })
-
-    const deckStats: Array<{
-      deckId: string | number
-      deckName: string
-      cardCount: number
-      dueCount: number
-      levelDistribution: Record<number, number>
-      percentLevel4: number
-    }> = []
-    const allHardestCards: Array<{
-      cardId: string | number
-      front: string
-      back: string
-      totalWrong: number
-      todayWrongCount: number
-      level: number
-      deckName: string
-      deckId: string | number
-    }> = []
-
-    for (const deck of decks.docs) {
-      const cards = await payload.find({
-        collection: 'cards',
-        where: { deck: { equals: deck.id }, owner: { equals: user.id } },
-        limit: 1000,
-        depth: 0,
-      })
-
-      if (cards.docs.length === 0) {
-        deckStats.push({
-          deckId: deck.id,
-          deckName: deck.name,
-          cardCount: 0,
-          dueCount: 0,
-          levelDistribution: { 1: 0, 2: 0, 3: 0, 4: 0 },
-          percentLevel4: 0,
-        })
-        continue
-      }
-
-      const reviewStates = await payload.find({
-        collection: 'review-states',
+    const [decks, folders, sessionsRaw, reviewStates, cards] = await Promise.all([
+      payload.find({ collection: 'decks', where: { owner: { equals: user.id } }, limit: 500, depth: 0 }),
+      payload.find({ collection: 'folders', where: { owner: { equals: user.id } }, limit: 200, depth: 0 }),
+      payload.find({
+        collection: 'sessions',
         where: {
           owner: { equals: user.id },
-          card: { in: cards.docs.map(c => c.id) },
+          startedAt: { greater_than_equal: from.toISOString() },
         },
+        sort: '-startedAt',
         limit: 1000,
         depth: 0,
+      }),
+      payload.find({ collection: 'review-states', where: { owner: { equals: user.id } }, limit: 5000, depth: 0 }),
+      payload.find({ collection: 'cards', where: { owner: { equals: user.id } }, limit: 5000, depth: 0 }),
+    ])
+
+    const deckMap = new Map(decks.docs.map((d) => [String(d.id), d]))
+    const cardMap = new Map(cards.docs.map((c) => [String(c.id), c]))
+    const rsByCard = new Map(reviewStates.docs.map((r) => [String(r.card), r]))
+
+    let sessions = sessionsRaw.docs.filter((s) => {
+      const sd = toDateSafe(s.startedAt)
+      if (!sd) return false
+      if (sd > to) return false
+      if (deckId && String(s.deck) !== String(deckId)) return false
+      if (folderId) {
+        const d = deckMap.get(String(s.deck))
+        if (!d || String(d.folder || '') !== String(folderId)) return false
+      }
+      if (mode !== 'all' && String(s.mode) !== mode) return false
+      return true
+    })
+
+    if (level > 0) {
+      sessions = sessions.filter((s) => {
+        const deckCards = cards.docs.filter((c) => String(c.deck) === String(s.deck))
+        if (deckCards.length === 0) return false
+        return deckCards.some((c) => Number(rsByCard.get(String(c.id))?.level || 0) === level)
       })
-
-      const rsMap = new Map<string, (typeof reviewStates.docs)[0]>()
-      for (const rs of reviewStates.docs) {
-        rsMap.set(String(rs.card), rs)
-      }
-
-      const dueCount = reviewStates.docs.filter(rs => new Date(rs.dueAt) <= now).length
-      const levelDist = { 1: 0, 2: 0, 3: 0, 4: 0 }
-      for (const rs of reviewStates.docs) {
-        const lvl = rs.level as 1 | 2 | 3 | 4
-        if (lvl >= 1 && lvl <= 4) levelDist[lvl]++
-      }
-      const total = reviewStates.docs.length
-      const percentLevel4 = total > 0 ? Math.round((levelDist[4] / total) * 100) : 0
-
-      deckStats.push({
-        deckId: deck.id,
-        deckName: deck.name,
-        cardCount: cards.totalDocs,
-        dueCount,
-        levelDistribution: levelDist,
-        percentLevel4,
-      })
-
-      // Collect hardest cards
-      for (const card of cards.docs) {
-        const rs = rsMap.get(String(card.id))
-        if (rs && (rs.totalWrong ?? 0) > 0) {
-          allHardestCards.push({
-            cardId: card.id,
-            front: card.front,
-            back: card.back,
-            totalWrong: rs.totalWrong ?? 0,
-            todayWrongCount: rs.todayWrongCount ?? 0,
-            level: rs.level,
-            deckName: deck.name,
-            deckId: deck.id,
-          })
-        }
-      }
     }
 
-    // Sort hardest cards by totalWrong descending, take top 20
-    allHardestCards.sort((a, b) => b.totalWrong - a.totalWrong)
-    const hardestCards = allHardestCards.slice(0, 20)
+    const sessionIds = sessions.map((s) => s.id)
+    const sessionItems = sessionIds.length > 0
+      ? await payload.find({ collection: 'session-items', where: { session: { in: sessionIds } }, limit: 10000, depth: 0 })
+      : { docs: [] as Array<Record<string, unknown>> }
 
-    const problematicDecks = Object.values(allHardestCards.reduce((acc, card) => {
-      const key = String(card.deckId)
-      if (!acc[key]) {
-        acc[key] = { deckId: String(card.deckId), deckName: card.deckName, totalWrong: 0 }
-      }
-      acc[key].totalWrong += card.totalWrong
-      return acc
-    }, {} as Record<string, { deckId: string; deckName: string; totalWrong: number }>))
-      .sort((a, b) => b.totalWrong - a.totalWrong)
-      .slice(0, 5)
-
-    // Per folder stats
-    let folderStats: Array<{
-      folderId: string | number
-      folderName: string
-      deckCount: number
-      totalCards: number
-      totalDue: number
-      avgMastery: number
-    }> = []
-
-    try {
-      const folders = await payload.find({
-        collection: 'folders',
-        where: { owner: { equals: user.id } },
-        limit: 100,
-        depth: 0,
-      })
-
-      folderStats = folders.docs.map(folder => {
-        const folderDecks = deckStats.filter(d => {
-          const matchDeck = decks.docs.find(dd => String(dd.id) === String(d.deckId))
-          return matchDeck && String((matchDeck as any).folder) === String(folder.id)
-        })
-
-        const totalCards = folderDecks.reduce((s, d) => s + d.cardCount, 0)
-        const totalDue = folderDecks.reduce((s, d) => s + d.dueCount, 0)
-        const avgMastery = folderDecks.length > 0
-          ? Math.round(folderDecks.reduce((s, d) => s + d.percentLevel4, 0) / folderDecks.length)
-          : 0
-
-        return {
-          folderId: folder.id,
-          folderName: folder.name,
-          deckCount: folderDecks.length,
-          totalCards,
-          totalDue,
-          avgMastery,
-        }
-      })
-    } catch {
-      // Folders may not exist yet
+    const bySession = new Map<string, Array<Record<string, unknown>>>()
+    for (const item of sessionItems.docs) {
+      const sid = String(item.session)
+      const arr = bySession.get(sid) || []
+      arr.push(item)
+      bySession.set(sid, arr)
     }
 
-    // Global level distribution
-    const globalLevelDist = { 1: 0, 2: 0, 3: 0, 4: 0 }
-    for (const d of deckStats) {
-      for (const lvl of [1, 2, 3, 4] as const) {
-        globalLevelDist[lvl] += d.levelDistribution[lvl] || 0
-      }
+    const totalSessions = sessions.length
+    const totalCorrect = sessions.reduce((acc, s) => acc + Number(s.correctAnswers || 0), 0)
+    const totalWrong = sessions.reduce((acc, s) => acc + Number(s.wrongAnswers || 0), 0)
+    const avgSessionMinutes = totalSessions > 0
+      ? Math.round(sessions.reduce((a, s) => a + Number(s.durationSeconds || 0), 0) / totalSessions / 60)
+      : 0
+
+    const activityMap = new Map<string, { sessions: number; minutes: number }>()
+    for (const s of sessions) {
+      const sd = toDateSafe(s.startedAt)
+      if (!sd) continue
+      const key = dateKey(sd)
+      const cur = activityMap.get(key) || { sessions: 0, minutes: 0 }
+      cur.sessions += 1
+      cur.minutes += Math.max(1, Math.round(Number(s.durationSeconds || 0) / 60))
+      activityMap.set(key, cur)
     }
 
-    const history = recentSessions.docs.map((s) => ({
-      id: s.id,
-      mode: s.mode,
-      deckName: typeof s.deck === 'object' && s.deck !== null ? (s.deck as { name?: string }).name : 'Unknown',
-      targetCount: s.targetCount,
-      completedCount: s.completedCount,
-      accuracy: s.accuracy,
-      startedAt: s.startedAt,
-      endedAt: s.endedAt,
-      durationSeconds: s.durationSeconds,
-    }))
+    const activity = Array.from(activityMap.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([date, v]) => ({ date, sessions: v.sessions, minutes: v.minutes }))
 
-    // Support both camelCase and snake_case from potential legacy rows
-    const wordProblems = wordStats.docs
-      .map((w: any) => ({
-        cardId: String(w.card?.id || w.card),
-        deckId: String(w.deck?.id || w.deck),
-        front: typeof w.card === 'object' && w.card ? (w.card as any).front : '',
-        wrong: Number(w.totalWrong || w.total_wrong || 0),
-        correct: Number(w.totalCorrect || w.total_correct || 0),
-      }))
-      .filter((w: any) => w.wrong > 0)
-      .sort((a: any, b: any) => b.wrong - a.wrong)
-      .slice(0, 15)
+    const modeStatsMap = new Map<string, number>()
+    for (const s of sessions) modeStatsMap.set(String(s.mode), (modeStatsMap.get(String(s.mode)) || 0) + 1)
+    const modeStats = Array.from(modeStatsMap.entries()).map(([modeName, count]) => ({ mode: modeName, count }))
+
+    const levelDistribution = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+    for (const rs of reviewStates.docs) {
+      const l = Number(rs.level || 0)
+      if (l >= 0 && l <= 5) levelDistribution[l as 0 | 1 | 2 | 3 | 4 | 5] += 1
+    }
+
+    let selectedDeckStats: Record<string, unknown> | null = null
+    if (deckId) {
+      const selectedSessions = sessions.filter((s) => String(s.deck) === String(deckId))
+      const selectedItems = selectedSessions.flatMap((s) => bySession.get(String(s.id)) || [])
+
+      const avgResponseTimeMs = selectedItems.length > 0
+        ? Math.round(selectedItems.reduce((a, i) => a + Number(i.responseTimeMs || 0), 0) / selectedItems.length)
+        : 0
+
+      const totalAnswers = selectedItems.length
+      const correctAnswers = selectedItems.filter((i) => Boolean(i.isCorrect)).length
+      const accuracyPercent = totalAnswers > 0 ? Math.round((correctAnswers / totalAnswers) * 100) : 0
+
+      const cardAgg = new Map<string, { front: string; wrong: number; repeats: number }>()
+      for (const i of selectedItems) {
+        const cid = String(i.card)
+        const c = cardMap.get(cid)
+        const item = cardAgg.get(cid) || { front: c?.front || 'Słówko', wrong: 0, repeats: 0 }
+        item.repeats += 1
+        if (!i.isCorrect) item.wrong += 1
+        cardAgg.set(cid, item)
+      }
+
+      const hardestWords = Array.from(cardAgg.entries()).map(([id, v]) => ({ cardId: id, ...v })).sort((a, b) => b.wrong - a.wrong).slice(0, 10)
+      const mostRepeatedWords = Array.from(cardAgg.entries()).map(([id, v]) => ({ cardId: id, ...v })).sort((a, b) => b.repeats - a.repeats).slice(0, 10)
+
+      const selectedDeckCards = cards.docs.filter((c) => String(c.deck) === String(deckId))
+      const selectedLevelDist = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+      for (const c of selectedDeckCards) {
+        const l = Number(rsByCard.get(String(c.id))?.level || 0)
+        if (l >= 0 && l <= 5) selectedLevelDist[l as 0 | 1 | 2 | 3 | 4 | 5] += 1
+      }
+
+      selectedDeckStats = {
+        deckId,
+        deckName: deckMap.get(String(deckId))?.name || 'Zestaw',
+        avgResponseTimeMs,
+        avgSessionMinutes: selectedSessions.length > 0 ? Math.round(selectedSessions.reduce((a, s) => a + Number(s.durationSeconds || 0), 0) / selectedSessions.length / 60) : 0,
+        sessionsCount: selectedSessions.length,
+        correctAnswers,
+        totalAnswers,
+        accuracyPercent,
+        levelDistribution: selectedLevelDist,
+        hardestWords,
+        mostRepeatedWords,
+      }
+    }
 
     return NextResponse.json({
-      global: {
-        sessionsToday: sessionsToday.totalDocs,
-        sessionsThisWeek: sessionsThisWeek.totalDocs,
-        minutesLast7Days,
-        streakDays,
-        avgAccuracy,
-        levelDistribution: globalLevelDist,
+      filters: {
+        decks: decks.docs.map((d) => ({ id: String(d.id), name: d.name, folderId: d.folder ? String(d.folder) : '' })),
+        folders: folders.docs.map((f) => ({ id: String(f.id), name: f.name })),
       },
-      sessionsByDay,
-      problematicDecks,
-      deckStats,
-      folderStats,
-      hardestCards,
-      history,
-      wordProblems,
+      global: {
+        totalSessions,
+        totalCorrect,
+        totalWrong,
+        accuracyPercent: totalCorrect + totalWrong > 0 ? Math.round((totalCorrect / (totalCorrect + totalWrong)) * 100) : 0,
+        avgSessionMinutes,
+        levelDistribution,
+      },
+      activity,
+      modeStats,
+      selectedDeckStats,
+      sessions: sessions.slice(0, 200).map((s) => ({
+        id: String(s.id),
+        mode: String(s.mode),
+        deckId: String(s.deck),
+        deckName: deckMap.get(String(s.deck))?.name || 'Zestaw',
+        startedAt: s.startedAt,
+        completedCount: Number(s.completedCount || 0),
+      })),
     })
-  } catch (error: unknown) {
+  } catch (error) {
     console.error('Stats error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
