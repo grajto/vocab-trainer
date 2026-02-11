@@ -202,25 +202,6 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-end gap-2">
-        <button
-          onClick={() => saveDeck(true)}
-          disabled={saving}
-          className="px-4 py-2 rounded-full text-sm font-semibold disabled:opacity-50 transition-colors"
-          style={{ background: 'var(--primary-soft)', color: 'var(--primary)', border: '1px solid transparent' }}
-        >
-          {saving ? 'Zapisywanie…' : 'Utwórz i ćwicz'}
-        </button>
-        <button
-          onClick={() => saveDeck(false)}
-          disabled={saving}
-          className="px-5 py-2 rounded-full text-sm font-semibold disabled:opacity-50 transition-colors"
-          style={{ background: 'var(--primary)', color: '#fff', border: '1px solid var(--primary)' }}
-        >
-          {saving ? 'Zapisywanie…' : 'Utwórz zestaw'}
-        </button>
-      </div>
-
       {error && <p className="text-sm rounded-xl px-4 py-2" style={{ color: '#dc2626', background: '#fef2f2', border: '1px solid #fecaca' }}>{error}</p>}
 
       {/* Deck meta */}
@@ -354,25 +335,25 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
 
       {/* Bottom actions */}
       <div className="flex items-center justify-between">
-        <button onClick={() => router.back()} className="text-sm transition-colors" style={{ color: 'var(--gray400)' }}>
-          Cancel
+        <button onClick={() => router.back()} className="text-sm transition-colors hover:opacity-70" style={{ color: 'var(--gray400)' }}>
+          Anuluj
         </button>
         <div className="flex gap-2">
           <button
             onClick={() => saveDeck(true)}
             disabled={saving}
-            className="px-5 py-2.5 rounded-full text-sm font-semibold disabled:opacity-50 transition-colors"
-            style={{ background: 'var(--primaryBg)', color: 'var(--primary)', border: '1px solid transparent' }}
+            className="px-5 py-2.5 rounded-full text-sm font-semibold disabled:opacity-50 transition-colors hover:opacity-90"
+            style={{ background: 'var(--primary-soft)', color: 'var(--primary)', border: '1px solid transparent' }}
           >
             {saving ? 'Zapisywanie…' : 'Utwórz i ćwicz'}
           </button>
           <button
             onClick={() => saveDeck(false)}
             disabled={saving}
-            className="px-6 py-2.5 rounded-full text-sm font-semibold disabled:opacity-50 transition-colors"
+            className="px-6 py-2.5 rounded-full text-sm font-semibold disabled:opacity-50 transition-colors hover:opacity-90"
             style={{ background: 'var(--primary)', color: '#fff', border: '1px solid var(--primary)' }}
           >
-            {saving ? 'Saving…' : `Create (${cards.filter(c => c.front && c.back).length} cards)`}
+            {saving ? 'Zapisywanie…' : 'Utwórz zestaw'}
           </button>
         </div>
       </div>
