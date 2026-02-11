@@ -40,7 +40,21 @@ export function JumpBackInCarousel({ items }: { items: ContinueItem[] }) {
   }, [])
 
   return (
-    <div className="relative">
+    <div className="relative" style={{ 
+      background: 'linear-gradient(135deg, rgba(66, 85, 255, 0.03) 0%, rgba(124, 58, 237, 0.03) 100%)',
+      borderRadius: '16px',
+      padding: '24px 0'
+    }}>
+      {/* Decorative background pattern */}
+      <div 
+        className="absolute inset-0 opacity-5 pointer-events-none"
+        style={{
+          backgroundImage: `radial-gradient(circle at 20px 20px, var(--primary) 1px, transparent 0)`,
+          backgroundSize: '40px 40px',
+          borderRadius: '16px'
+        }}
+      />
+      
       {/* Left arrow - only show when scrolled */}
       {showLeftArrow && (
         <button
@@ -65,14 +79,14 @@ export function JumpBackInCarousel({ items }: { items: ContinueItem[] }) {
         <ChevronRight size={20} />
       </button>
 
-      <div className="relative overflow-hidden">
+      <div className="relative overflow-hidden px-4">
         <div
           ref={railRef}
           onScroll={onScroll}
           className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {shownItems.map((item) => (
-            <div key={item.resumeHref} className="min-w-full snap-start lg:min-w-[85%]">
+            <div key={item.resumeHref} className="snap-start" style={{ minWidth: 'calc((100% - 32px) / 2.5)' }}>
               <ContinueCard item={item} />
             </div>
           ))}
@@ -81,7 +95,7 @@ export function JumpBackInCarousel({ items }: { items: ContinueItem[] }) {
         {/* Fade gradient on right */}
         <div
           className="pointer-events-none absolute inset-y-0 right-0 w-24"
-          style={{ background: 'linear-gradient(to left, var(--bg), rgba(255,255,255,0))' }}
+          style={{ background: 'linear-gradient(to left, rgba(246, 247, 251, 1), rgba(246, 247, 251, 0))' }}
         />
       </div>
 
@@ -89,7 +103,7 @@ export function JumpBackInCarousel({ items }: { items: ContinueItem[] }) {
         {shownItems.map((item, idx) => (
           <span
             key={item.resumeHref}
-            className="h-1.5 w-1.5 rounded-full transition-all"
+            className="h-2 w-2 rounded-full transition-all"
             style={{ background: idx === active ? 'var(--primary)' : 'var(--border)' }}
           />
         ))}

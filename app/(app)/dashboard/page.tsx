@@ -10,6 +10,7 @@ import { Card } from '../_components/ui/Card'
 import { Button } from '../_components/ui/Button'
 import { type ContinueItem } from './_components/ContinueCard'
 import { JumpBackInCarousel } from './_components/JumpBackInCarousel'
+import { StartSessionButton } from './_components/StartSessionButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -164,16 +165,29 @@ export default async function DashboardPage() {
     }
   })
 
-  // Get hardest decks for recommendations
-  const hardestDecks = [...jumpBackIn]
+  // Get hardest decks for recommendations with smart mode selection
+  const recommendedDecks = [...jumpBackIn]
     .sort((a, b) => a.progressPercent - b.progressPercent)
     .slice(0, 3)
-    .map((item) => ({
-      id: item.resumeHref,
-      title: item.deckName,
-      reason: item.progressPercent < 30 ? 'Wysoki % błędów' : `${item.progressPercent}% ukończone`,
-      href: item.resumeHref,
-    }))
+    .map((item, index) => {
+      // Smart mode selection based on progress and index
+      const modes = ['abcd', 'translate', 'sentence', 'describe', 'mixed'] as const
+      const selectedMode = modes[index % modes.length]
+      
+      return {
+        id: item.resumeHref.split('/').pop() || '',
+        title: item.deckName,
+        reason: item.progressPercent < 30 ? 'Wysoki % błędów' : `${item.progressPercent}% ukończone`,
+        mode: selectedMode,
+        modeLabel: {
+          abcd: 'ABCD',
+          translate: 'Tłumaczenie',
+          sentence: 'Zdania',
+          describe: 'Opisz',
+          mixed: 'Mix'
+        }[selectedMode]
+      }
+    })
 
   // Calculate deck performance stats from recent sessions
   const deckStats = new Map<string, { name: string; totalSessions: number; accuracy: number; lastUsed: Date }>()
@@ -238,7 +252,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* A2: Goal + progress */}
-          <div className="py-5 border-b" style={{ borderColor: 'var(--border)' }}>
+          <div className="py-5" style={{ borderColor: 'var(--border)' }}>
             <div className="flex items-center justify-between mb-3">
               <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Cel dzienny: {settings.minSessionsPerDay} sesji</p>
               <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Pozostało: {remainingToGoal}</p>
@@ -248,39 +262,55 @@ export default async function DashboardPage() {
             </div>
             <p className="mt-2 text-xs" style={{ color: 'var(--text-muted)' }}>Do końca celu brakuje: {remainingToGoal} sesji</p>
           </div>
+        </Card>
+      </section>
 
-          {/* A3: Co powtórzyć dziś */}
-          <div className="py-5 border-b" style={{ borderColor: 'var(--border)' }}>
-            <p className="text-sm font-semibold mb-3" style={{ color: 'var(--text)' }}>Co powtórzyć dziś</p>
-            <div className="space-y-2">
-              {hardestDecks.length === 0 ? (
-                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Wszystko aktualne! Możesz rozpocząć nową sesję.</p>
-              ) : (
-                hardestDecks.map((item) => (
-                  <div key={item.id} className="flex items-center gap-3">
-                    <IconSquare variant="muted" size={32}>
-                      <BookOpen size={16} />
+      {/* NEW Section - Co powtórzyć dziś */}
+      <section>
+        <h2 className="section-heading mb-3" style={{ color: 'var(--gray600)', fontWeight: 600 }}>Co powtórzyć dziś</h2>
+        {recommendedDecks.length === 0 ? (
+          <Card compact>
+            <p className="text-sm text-center py-4" style={{ color: 'var(--text-muted)' }}>Wszystko aktualne! Możesz rozpocząć nową sesję.</p>
+          </Card>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-3">
+            {recommendedDecks.map((item) => (
+              <Card key={item.id} compact>
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <IconSquare variant="primary" size={36}>
+                      <BookOpen size={18} />
                     </IconSquare>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>{item.title}</p>
+                      <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>{item.title}</p>
                       <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{item.reason}</p>
                     </div>
-                    <Link href={item.href} className="btn btn--secondary px-4 h-8 text-xs flex items-center justify-center">
-                      Start
-                    </Link>
                   </div>
-                ))
-              )}
-            </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-xs">
+                      <span style={{ color: 'var(--text-muted)' }}>Tryb:</span>
+                      <span className="font-medium" style={{ color: 'var(--primary)' }}>{item.modeLabel}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      <span style={{ color: 'var(--text-muted)' }}>Słówka:</span>
+                      <span className="font-medium" style={{ color: 'var(--text)' }}>20</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      <span style={{ color: 'var(--text-muted)' }}>Język:</span>
+                      <span className="font-medium" style={{ color: 'var(--text)' }}>🇬🇧 Angielski</span>
+                    </div>
+                  </div>
+                  <StartSessionButton 
+                    deckId={item.id}
+                    mode={item.mode}
+                    targetCount={20}
+                    direction="en-pl"
+                  />
+                </div>
+              </Card>
+            ))}
           </div>
-
-          {/* A4: Quick start button only */}
-          <div className="pt-5">
-            <Link href="/study" className="block">
-              <Button variant="primary" className="w-full">Rozpocznij sesję</Button>
-            </Link>
-          </div>
-        </Card>
+        )}
       </section>
 
       {/* Section B - Jump back in */}

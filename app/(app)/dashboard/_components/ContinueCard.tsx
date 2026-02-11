@@ -22,10 +22,16 @@ export function ContinueCard({ item }: { item: ContinueItem }) {
         </div>
 
         <div className="mb-3">
-          <div className="h-2 w-full overflow-hidden rounded-full" style={{ background: '#e9edf7' }}>
-            <div className="h-full rounded-full bg-[#22c55e] transition-all" style={{ width: `${item.progressPercent}%` }} />
+          <div className="h-3 w-full overflow-hidden rounded-full shadow-sm" style={{ background: '#e9edf7' }}>
+            <div 
+              className="h-full rounded-full transition-all shadow-md" 
+              style={{ 
+                width: `${item.progressPercent}%`,
+                background: 'linear-gradient(90deg, #22c55e 0%, #16a34a 100%)'
+              }} 
+            />
           </div>
-          <p className="mt-2 text-xs font-medium" style={{ color: 'var(--muted)' }}>{item.progressMeta}</p>
+          <p className="mt-2 text-xs font-semibold" style={{ color: 'var(--text)' }}>{item.progressMeta}</p>
         </div>
       </div>
 
