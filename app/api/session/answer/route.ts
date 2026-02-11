@@ -149,6 +149,8 @@ export async function POST(req: NextRequest) {
 
     // Update session completedCount and accuracy
     const session = await payload.findByID({ collection: 'sessions', id: sessionId, depth: 0 })
+    const rawTestId = (session.settings as Record<string, unknown> | undefined)?.testId
+    const linkedTestId = (typeof rawTestId === 'string' || typeof rawTestId === 'number') ? rawTestId : null
     const newCompleted = (session.completedCount ?? 0) + 1
 
     const allItems = await payload.find({
@@ -161,13 +163,58 @@ export async function POST(req: NextRequest) {
     const correctItems = answeredItems.filter(i => i.isCorrect)
     const accuracy = answeredItems.length > 0 ? Math.round((correctItems.length / answeredItems.length) * 100) : 0
 
+
+    if (session.mode === 'test' && linkedTestId) {
+      try {
+        await payload.create({
+          collection: 'test_answers',
+          data: {
+            owner: user.id,
+            test: linkedTestId,
+            card: cardId,
+            modeUsed: taskType || 'translate',
+            promptShown: sessionItems.docs[0]?.promptShown || '',
+            userAnswer: userAnswer || '',
+            isCorrect,
+            timeMs: Number(responseTimeMs || 0),
+            answeredAt: new Date().toISOString(),
+          },
+        })
+      } catch (err) {
+        console.error('Failed to store test answer:', err)
+      }
+    }
+
     const sessionUpdate: Record<string, unknown> = {
       completedCount: newCompleted,
       accuracy,
     }
 
     if (newCompleted >= session.targetCount) {
-      sessionUpdate.endedAt = new Date().toISOString()
+      const finishedAt = new Date().toISOString()
+      sessionUpdate.endedAt = finishedAt
+
+      if (session.mode === 'test' && linkedTestId) {
+        try {
+          const allTestAnswers = await payload.find({ collection: 'test_answers', where: { test: { equals: linkedTestId } }, limit: 10000, depth: 0 })
+          const total = allTestAnswers.totalDocs
+          const correct = allTestAnswers.docs.filter((a) => a.isCorrect).length
+          await payload.update({
+            collection: 'tests',
+            id: linkedTestId,
+            data: {
+              status: 'finished',
+              finishedAt,
+              durationMs: Math.max(0, new Date(finishedAt).getTime() - new Date(session.startedAt).getTime()),
+              scoreCorrect: correct,
+              scoreTotal: total,
+              scorePercent: total > 0 ? Math.round((correct / total) * 100) : 0,
+            },
+          })
+        } catch (err) {
+          console.error('Failed to finalize test:', err)
+        }
+      }
     }
 
     await payload.update({

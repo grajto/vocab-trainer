@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { checkAnswerWithTypo, generateHint, normalizeAnswer } from '@/src/lib/answerCheck'
 import { useSound } from '@/src/lib/SoundProvider'
+import { MoreVertical } from 'lucide-react'
 
 const FEEDBACK_DELAY_CORRECT = 200
 const FEEDBACK_DELAY_WRONG = 1500
@@ -42,6 +43,8 @@ function saveAnswerInBackground(data: {
   usedHint?: boolean
   userOverride?: boolean
   aiUsed?: boolean
+  responseTimeMs?: number
+  streakAfterAnswer?: number
 }) {
   fetch('/api/session/answer', {
     method: 'POST',
@@ -65,6 +68,7 @@ export default function SessionPage() {
   const [userAnswer, setUserAnswer] = useState('')
   const [feedback, setFeedback] = useState<{ correct: boolean; message: string } | null>(null)
   const [sentenceNeedsAcknowledge, setSentenceNeedsAcknowledge] = useState(false)
+  const [sentenceStage, setSentenceStage] = useState<'translate' | 'sentence'>('translate')
   const [loading, setLoading] = useState(false)
   const [sessionDone, setSessionDone] = useState(false)
   const [aiInfo, setAiInfo] = useState<{ used: boolean; latencyMs: number } | null>(null)
@@ -81,6 +85,7 @@ export default function SessionPage() {
 
   // Shuffle toggle (persisted in localStorage)
   const [shuffleEnabled, setShuffleEnabled] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   // Track per-card state (attempts, hints used)
   const taskStatesRef = useRef<Map<string, TaskState>>(new Map())
@@ -88,6 +93,8 @@ export default function SessionPage() {
   // Track accuracy locally
   const [correctCount, setCorrectCount] = useState(0)
   const [answeredCount, setAnsweredCount] = useState(0)
+  const [streak, setStreak] = useState(0)
+  const [questionStartedAt, setQuestionStartedAt] = useState(Date.now())
   const accuracy = answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0
 
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null)
@@ -129,6 +136,12 @@ export default function SessionPage() {
 
   const currentTask = tasks[currentIndex]
 
+  useEffect(() => {
+    setSentenceStage('translate')
+    setQuestionStartedAt(Date.now())
+  }, [currentIndex])
+
+
   async function handleStopSession() {
     try {
       await fetch('/api/session/stop', {
@@ -163,6 +176,7 @@ export default function SessionPage() {
         setSelectedOption(null)
         setSentenceNeedsAcknowledge(false)
         setCurrentIndex(prev => prev + 1)
+        setQuestionStartedAt(Date.now())
       }, delay)
     }
   }, [currentIndex, tasks.length])
@@ -203,10 +217,13 @@ export default function SessionPage() {
       state.wasWrongBefore = state.wasWrongBefore || state.attempts > 1
       setAnsweredCount(prev => prev + 1)
       setCorrectCount(prev => prev + 1)
+      setStreak(prev => prev + 1)
+      setStreak(prev => prev + 1)
       setFeedback({ correct: true, message: 'Correct' })
       playCorrect()
     } else {
       state.wasWrongBefore = true
+      setStreak(0)
       setFeedback({ correct: false, message: `Correct answer: ${expected}` })
       playWrong()
       requeueCard(currentTask)
@@ -223,6 +240,8 @@ export default function SessionPage() {
       wasWrongBeforeCorrect: state.wasWrongBefore,
       usedHint: state.usedHint,
       userOverride,
+      responseTimeMs: Date.now() - questionStartedAt,
+      streakAfterAnswer: correct ? streak + 1 : 0,
     })
 
     advanceToNext(correct ? FEEDBACK_DELAY_CORRECT : FEEDBACK_DELAY_WRONG)
@@ -246,10 +265,12 @@ export default function SessionPage() {
       state.wasWrongBefore = state.wasWrongBefore || state.attempts > 1
       setAnsweredCount(prev => prev + 1)
       setCorrectCount(prev => prev + 1)
+      setStreak(prev => prev + 1)
       setFeedback({ correct: true, message: 'Correct' })
       playCorrect()
     } else {
       state.wasWrongBefore = true
+      setStreak(0)
       setFeedback({ correct: false, message: `Correct answer: ${currentTask.answer}` })
       playWrong()
       requeueCard(currentTask)
@@ -265,6 +286,8 @@ export default function SessionPage() {
       attemptsCount: state.attempts,
       wasWrongBeforeCorrect: state.wasWrongBefore,
       usedHint: state.usedHint,
+      responseTimeMs: Date.now() - questionStartedAt,
+      streakAfterAnswer: correct ? streak + 1 : 0,
     })
 
     advanceToNext(correct ? FEEDBACK_DELAY_CORRECT : FEEDBACK_DELAY_WRONG)
@@ -276,6 +299,7 @@ export default function SessionPage() {
     state.attempts++
     setSelectedOption(null)
     state.wasWrongBefore = true
+    setStreak(0)
     setFeedback({ correct: false, message: `Correct answer: ${currentTask.answer}` })
     playWrong()
     requeueCard(currentTask)
@@ -391,6 +415,26 @@ export default function SessionPage() {
     const state = getTaskState(currentTask.cardId)
     state.attempts++
 
+    if (sentenceStage === 'translate') {
+      const expected = currentTask.expectedAnswer || currentTask.answer
+      const result = checkAnswerWithTypo(userAnswer, expected)
+      const correct = result === 'correct' || result === 'typo'
+      if (!correct) {
+        setStreak(0)
+        setFeedback({ correct: false, message: `Najpierw poprawnie przetłumacz słowo. Poprawna odpowiedź: ${expected}` })
+        playWrong()
+        return
+      }
+      setAnsweredCount(prev => prev + 1)
+      setCorrectCount(prev => prev + 1)
+      setStreak(prev => prev + 1)
+      setFeedback({ correct: true, message: 'Tłumaczenie poprawne. Teraz napisz zdanie z użyciem tego słowa.' })
+      setSentenceStage('sentence')
+      setUserAnswer('')
+      playCorrect()
+      return
+    }
+
     setLoading(true)
     try {
       const res = await fetch('/api/check-sentence', {
@@ -398,36 +442,28 @@ export default function SessionPage() {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          phrase: currentTask.requiredEn || currentTask.answer,
+          phrase: currentTask.requiredEn || currentTask.prompt,
           sentence: userAnswer,
-          promptPl: currentTask.promptPl || currentTask.prompt,
+          promptPl: currentTask.promptPl || currentTask.answer,
         }),
       })
       const data = await res.json().catch(() => ({}))
-      if (!res.ok) {
-        const message = data?.comment || data?.message_pl || data?.error || 'AI validation failed. Try again.'
-        setFeedback({ correct: false, message })
-        setSentenceNeedsAcknowledge(true)
-        playWrong()
-        requeueCard(currentTask)
-        return
-      }
       const correct = !!data.ok
-      setAiInfo({
-        used: !!data.ai_used,
-        latencyMs: Number(data.ai_latency_ms || 0),
-      })
+      setAiInfo({ used: !!data.ai_used, latencyMs: Number(data.ai_latency_ms || 0) })
 
       if (correct) {
         state.wasWrongBefore = state.wasWrongBefore || state.attempts > 1
         setAnsweredCount(prev => prev + 1)
         setCorrectCount(prev => prev + 1)
-        setFeedback({ correct: true, message: data.comment || data.message_pl || 'Correct.' })
+        setStreak(prev => prev + 1)
+        setStreak(prev => prev + 1)
+        setFeedback({ correct: true, message: data.comment || data.message_pl || 'Poprawne zdanie.' })
         setSentenceNeedsAcknowledge(false)
         playCorrect()
       } else {
         state.wasWrongBefore = true
-        const message = buildSentenceFeedbackMessage(data as Record<string, unknown>, currentTask.answer)
+        setStreak(0)
+        const message = buildSentenceFeedbackMessage(data as Record<string, unknown>, currentTask.requiredEn || currentTask.prompt)
         setFeedback({ correct: false, message })
         setSentenceNeedsAcknowledge(true)
         playWrong()
@@ -444,6 +480,8 @@ export default function SessionPage() {
         wasWrongBeforeCorrect: state.wasWrongBefore,
         usedHint: state.usedHint,
         aiUsed: data.ai_used ?? false,
+        responseTimeMs: Date.now() - questionStartedAt,
+        streakAfterAnswer: correct ? streak + 1 : 0,
       })
 
       if (correct) {
@@ -451,6 +489,7 @@ export default function SessionPage() {
       }
     } catch {
       state.wasWrongBefore = true
+      setStreak(0)
       setFeedback({ correct: false, message: 'Network error – try again' })
       setSentenceNeedsAcknowledge(true)
       playWrong()
@@ -498,10 +537,12 @@ export default function SessionPage() {
         state.wasWrongBefore = state.wasWrongBefore || state.attempts > 1
         setAnsweredCount(prev => prev + 1)
         setCorrectCount(prev => prev + 1)
+        setStreak(prev => prev + 1)
         setFeedback({ correct: true, message: data.message_pl || 'OK' })
         playCorrect()
       } else {
         state.wasWrongBefore = true
+        setStreak(0)
         const msg = data.suggested_fix
           ? `${data.message_pl || 'Incorrect'}\nSuggested: ${data.suggested_fix}`
           : (data.message_pl || 'Spróbuj opisać inaczej')
@@ -520,6 +561,8 @@ export default function SessionPage() {
         wasWrongBeforeCorrect: state.wasWrongBefore,
         usedHint: state.usedHint,
         aiUsed: data.ai_used ?? false,
+        responseTimeMs: Date.now() - questionStartedAt,
+        streakAfterAnswer: correct ? streak + 1 : 0,
       })
 
       advanceToNext(correct ? FEEDBACK_DELAY_CORRECT_SLOW : FEEDBACK_DELAY_WRONG_SLOW)
@@ -682,11 +725,11 @@ export default function SessionPage() {
           <p className="text-5xl font-bold tabular-nums mb-1" style={{ color: 'var(--primary)' }}>{accuracy}%</p>
           <p className="text-sm mb-8" style={{ color: 'var(--muted)' }}>accuracy</p>
           <div className="space-y-2">
-            <button onClick={() => router.push('/study')} className="block w-full text-white py-2.5 rounded-[var(--radiusSm)] text-sm font-medium transition-colors" style={{ background: 'var(--primary)' }}>
-              Nowa sesja
+            <button onClick={() => router.push('/test')} className="block w-full text-white py-2.5 rounded-[var(--radiusSm)] text-sm font-medium transition-colors" style={{ background: 'var(--primary)' }}>
+              Zobacz w Testach
             </button>
-            <button onClick={() => router.push('/')} className="block w-full py-2.5 rounded-[var(--radiusSm)] text-sm transition-colors" style={{ border: '1px solid var(--border)', color: 'var(--text)' }}>
-              Dashboard
+            <button onClick={() => router.push('/decks')} className="block w-full py-2.5 rounded-[var(--radiusSm)] text-sm transition-colors" style={{ border: '1px solid var(--border)', color: 'var(--text)' }}>
+              Wróć do zestawu
             </button>
           </div>
         </div>
@@ -706,37 +749,31 @@ export default function SessionPage() {
             <span className="text-xs tabular-nums whitespace-nowrap" style={{ color: 'var(--muted)' }}>
               {currentIndex + 1} / {tasks.length}
             </span>
-            <div className="flex-1 h-1.5 rounded-full" style={{ background: 'var(--surface2)' }}>
+            <div className="flex-1 h-2.5 rounded-full" style={{ background: 'var(--surface2)' }}>
               <div
-                className="h-1.5 rounded-full transition-all duration-300"
-                style={{ width: `${progress}%`, background: '#22c55e' }}
+                className="h-2.5 rounded-full transition-all duration-300"
+                style={{ width: `${progress}%`, background: streak >= 3 ? '#d4af37' : '#22c55e', height: '10px' }}
               />
             </div>
             <span className="text-xs tabular-nums" style={{ color: 'var(--muted)' }}>{accuracy}%</span>
+            <div className="relative">
             <button
-              onClick={toggleShuffle}
-              className="text-xs transition-colors"
-              style={{ color: shuffleEnabled ? 'var(--primary)' : 'var(--gray400)' }}
-              title={shuffleEnabled ? 'Shuffle ON' : 'Shuffle OFF'}
-            >
-              🔀
-            </button>
-            <button
-              onClick={toggleSound}
+              onClick={() => setMenuOpen(prev => !prev)}
               className="text-xs transition-colors"
               style={{ color: 'var(--muted)' }}
-              title={soundEnabled ? 'Sound ON' : 'Sound OFF'}
+              title="Opcje"
             >
-              {soundEnabled ? '🔊' : '🔇'}
+              <MoreVertical size={16} />
             </button>
-            <button
-              onClick={handleStopSession}
-              className="text-xs transition-colors hover:opacity-70"
-              style={{ color: 'var(--muted)' }}
-              title="Przerwij sesję"
-            >
-              Przerwij sesję
-            </button>
+            {menuOpen ? (
+              <div className="absolute right-0 top-7 z-20 w-52 rounded-lg border p-2 text-xs" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+                <button onClick={toggleSound} className="block w-full rounded px-2 py-1 text-left hover:bg-[var(--hover-bg)]">Dźwięk: {soundEnabled ? 'włączony' : 'wyłączony'}</button>
+                <button onClick={toggleShuffle} className="block w-full rounded px-2 py-1 text-left hover:bg-[var(--hover-bg)]">Mieszanie: {shuffleEnabled ? 'włączone' : 'wyłączone'}</button>
+                <p className="px-2 py-1" style={{ color: 'var(--muted)' }}>Informacja o mieszaniu i voice ukryta w menu</p>
+                <button onClick={handleStopSession} className="block w-full rounded px-2 py-1 text-left hover:bg-[var(--hover-bg)]" style={{ color: 'var(--danger)' }}>Zakończ sesję/test</button>
+              </div>
+            ) : null}
+            </div>
           </div>
         </div>
       </div>
@@ -928,7 +965,7 @@ export default function SessionPage() {
                   {/* Required EN word as pill/chip */}
                   <div className="flex justify-center">
                     <span className="inline-block font-semibold px-5 py-2 rounded-full text-base tracking-wide" style={{ background: 'var(--primaryBg)', color: 'var(--primary)' }}>
-                      {currentTask.requiredEn || currentTask.answer}
+                      {sentenceStage === 'translate' ? currentTask.prompt : (currentTask.promptPl || currentTask.answer)}
                     </span>
                   </div>
 
@@ -945,7 +982,7 @@ export default function SessionPage() {
                         }
                       }
                     }}
-                    placeholder="Write one sentence…"
+                    placeholder={sentenceStage === 'translate' ? 'Najpierw wpisz tłumaczenie…' : 'Napisz zdanie z użyciem tego słowa…'}
                     autoFocus
                     rows={3}
                     className="w-full rounded-[var(--radiusSm)] px-4 py-3 text-sm focus:outline-none resize-none transition-colors"
@@ -976,10 +1013,10 @@ export default function SessionPage() {
                       className="flex-1 text-white py-3 rounded-[var(--radiusSm)] text-sm font-medium disabled:opacity-40 transition-colors"
                       style={{ background: 'var(--primary)' }}
                     >
-                      {loading ? 'Checking…' : sentenceNeedsAcknowledge ? 'Go to next card' : 'Check'}
+                      {loading ? 'Checking…' : sentenceNeedsAcknowledge ? 'Go to next card' : sentenceStage === 'translate' ? 'Sprawdź tłumaczenie' : 'Sprawdź zdanie'}
                     </button>
                   </div>
-                  <p className="text-xs text-center" style={{ color: 'var(--muted)' }}>{sentenceNeedsAcknowledge ? 'Press Enter to continue to the next card' : 'Ctrl+Enter to submit'}</p>
+                  <p className="text-xs text-center" style={{ color: 'var(--muted)' }}>{sentenceStage === 'translate' ? 'Etap 1/2: tłumaczenie' : 'Etap 2/2: napisz zdanie'}</p>
                 </div>
               )}
 
