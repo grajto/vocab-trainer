@@ -1,32 +1,34 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { redirect } from 'next/navigation'
-import { PlusCircle } from 'lucide-react'
+import { ClipboardCheck } from 'lucide-react'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
-import { DeckCreator } from './DeckCreator'
+import { TestList } from './TestList'
 
 export const dynamic = 'force-dynamic'
 
-export default async function CreateDeckPage() {
+export default async function TestPage() {
   const user = await getUser()
   if (!user) redirect('/login')
 
   const payload = await getPayload()
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let folders: any = { docs: [] }
+  
+  // Get user's test sessions (mode='test')
+  let testSessions: any = { docs: [] }
   try {
-    folders = await payload.find({
-      collection: 'folders',
-      where: { owner: { equals: user.id } },
-      sort: 'name',
-      limit: 100,
-      depth: 0,
+    testSessions = await payload.find({
+      collection: 'sessions',
+      where: {
+        owner: { equals: user.id },
+        mode: { equals: 'test' }
+      },
+      sort: '-startedAt',
+      limit: 50,
+      depth: 1,
     })
   } catch (err) {
-    console.error('Create page data fetch error:', err)
+    console.error('Test page data fetch error:', err)
   }
-
-  const folderList = folders.docs.map((f: any) => ({ id: String(f.id), name: f.name }))
 
   return (
     <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--container-max)' }}>
@@ -34,21 +36,21 @@ export default async function CreateDeckPage() {
       <div className="flex items-center gap-3">
         <span
           className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg"
-          style={{ background: 'var(--primary-soft)', color: 'var(--primary)' }}
+          style={{ background: 'var(--warning)', color: '#fff' }}
         >
-          <PlusCircle size={20} />
+          <ClipboardCheck size={20} />
         </span>
         <div>
           <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>
-            Kreator zestawów
+            Testy
           </h1>
           <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-            Utwórz nowy zestaw fiszek
+            Historia twoich testów i wyników
           </p>
         </div>
       </div>
-      
-      <DeckCreator folders={folderList} />
+
+      <TestList sessions={testSessions.docs} />
     </div>
   )
 }
