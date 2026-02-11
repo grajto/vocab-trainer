@@ -32,6 +32,7 @@ export async function POST(req: NextRequest) {
     collection: 'users',
     id: user.id,
     data: { studySettings: settings },
+    overrideLock: true,
   })
 
   const merged = getStudySettings({ ...(user as Record<string, unknown>), studySettings: settings })

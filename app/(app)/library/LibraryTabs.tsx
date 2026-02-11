@@ -128,7 +128,10 @@ export function LibraryTabs({
           ) : null}
 
           <section className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--gray600)' }}>Wszystkie zestawy</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--gray600)' }}>Wszystkie zestawy</h3>
+              <Link href="/create" className={actionBtnClass} style={actionBtnStyle}>Dodaj zestaw</Link>
+            </div>
             {filteredDecks.length === 0 ? (
               <p className="text-sm" style={{ color: 'var(--muted)' }}>Brak zestawów.</p>
             ) : (
@@ -170,7 +173,6 @@ export function LibraryTabs({
           <div className="flex items-center justify-between">
             <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Wszystkie foldery</p>
             <div className="flex items-center gap-2">
-              <Link href="/create" className={actionBtnClass} style={actionBtnStyle}>Dodaj zestaw</Link>
               {!showCreateFolder && (
                 <button onClick={() => setShowCreateFolder(true)} className={actionBtnClass} style={actionBtnStyle}>
                   Dodaj folder
