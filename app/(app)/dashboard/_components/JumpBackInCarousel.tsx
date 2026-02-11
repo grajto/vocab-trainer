@@ -72,7 +72,7 @@ export function JumpBackInCarousel({ items }: { items: ContinueItem[] }) {
           className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {shownItems.map((item) => (
-            <div key={item.resumeHref} className="snap-start w-[calc(100%-16px)] sm:w-[calc((100%-32px)/2.5)] flex-shrink-0">
+            <div key={item.resumeHref} className="snap-start w-[calc(100%_-_16px)] sm:w-[calc((100%_-_32px)/2.5)] flex-shrink-0">
               <ContinueCard item={item} />
             </div>
           ))}
