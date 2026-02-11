@@ -84,7 +84,7 @@ export default async function LibraryPage() {
           id: String(d.id),
           name: d.name,
           cardCount: cardCountByDeck.get(String(d.id)) || 0,
-          author: 'Ty',
+          author: '',
           createdAt: new Date(d.createdAt || d.updatedAt || new Date()).toLocaleString('pl-PL', { month: 'long', year: 'numeric' }),
         }))}
         folders={folders.docs.map((f: any) => {
