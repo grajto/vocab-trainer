@@ -50,7 +50,7 @@ export default function CalendarPage() {
 
   return (
     <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--containerMax)' }}>
-      <div className="flex items-center justify-between pt-8">
+      <div className="flex items-center justify-between pt-1">
         <div className="flex items-center gap-3">
           <span
             className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg"
@@ -59,8 +59,12 @@ export default function CalendarPage() {
             <CalendarIcon size={20} />
           </span>
           <div>
-            <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Kalendarz</h1>
-            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Śledź aktywność i streak</p>
+            <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>
+              Kalendarz
+            </h1>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+              Twoja historia nauki i seria dni
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">

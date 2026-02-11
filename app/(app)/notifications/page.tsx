@@ -37,9 +37,21 @@ export default function NotificationsPage() {
 
   return (
     <div className="mx-auto w-full space-y-6" style={{ maxWidth: 'var(--containerMax)' }}>
-      <div className="flex items-center gap-2">
-        <Bell className="h-5 w-5" style={{ color: 'var(--muted)' }} />
-        <h2 className="text-lg font-semibold" style={{ color: 'var(--text)' }}>Powiadomienia</h2>
+      <div className="flex items-center gap-3 pt-1">
+        <span
+          className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg"
+          style={{ background: 'var(--primary-soft)', color: 'var(--primary)' }}
+        >
+          <Bell size={20} />
+        </span>
+        <div>
+          <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>
+            Powiadomienia
+          </h1>
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+            Przypomnienia i ważne informacje
+          </p>
+        </div>
       </div>
 
       {loading ? (
