@@ -159,6 +159,12 @@ button, input { font: inherit; }
   position: relative;
 }
 
+.top-nav-minimal__search {
+  position: relative;
+  flex: 1;
+  max-width: 760px;
+}
+
 .top-nav__search-icon {
   position: absolute;
   left: 10px;
