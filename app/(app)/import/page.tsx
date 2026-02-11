@@ -27,8 +27,8 @@ export default async function ImportPage() {
   return (
     <div className="mx-auto w-full space-y-6" style={{ maxWidth: '640px' }}>
       <div>
-        <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Import fiszek (CSV)</h1>
-        <p className="mt-1 text-sm" style={{ color: 'var(--muted)' }}>Wklej dane w formacie CSV, aby masowo dodać karty.</p>
+        <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Import kart (CSV)</h1>
+        <p className="mt-1 text-sm" style={{ color: 'var(--muted)' }}>Wklej dane w formacie CSV, aby masowo dodać karty do zestawu.</p>
       </div>
 
       {decks.docs.length === 0 ? (

@@ -57,13 +57,13 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
   }
 
   const tabClass = (active: boolean) =>
-    `border-b-2 pb-2 text-sm font-semibold ${
-      active ? 'border-[var(--primary)] text-[var(--text)]' : 'border-transparent text-[var(--muted)] hover:opacity-80'
+    `pb-2 text-sm font-semibold transition-colors ${
+      active ? 'border-b-3 border-[var(--primary)] text-[var(--text)]' : 'border-b-3 border-transparent text-[var(--muted)] hover:opacity-80'
     }`
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center gap-6 pb-2">
+      <div className="flex flex-wrap items-center gap-6 pb-2 border-b" style={{ borderColor: 'var(--border)' }}>
         <button onClick={() => setTab('decks')} className={tabClass(tab === 'decks')}>
           Zestawy
         </button>
@@ -89,8 +89,18 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
 
       {tab === 'decks' && (
         <div className="space-y-6">
-          <section className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--gray600)' }}>W tym tygodniu</h3>
+          <div className="flex items-center justify-between">
+            <section className="flex-1 space-y-3">
+              <h3 className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--gray600)' }}>W tym tygodniu</h3>
+            </section>
+            <Link
+              href="/create"
+              className="rounded-full px-4 py-2 text-xs font-semibold transition-colors hover:opacity-90"
+              style={{ background: 'var(--primary-soft)', color: 'var(--primary)' }}
+            >
+              Dodaj zestaw
+            </Link>
+          </div>
 
             {filteredDecks.length === 0 ? (
               <p className="text-sm" style={{ color: 'var(--muted)' }}>Brak zestawów.</p>
@@ -116,7 +126,6 @@ export function LibraryTabs({ decks, folders }: { decks: Deck[]; folders: Folder
                 </Link>
               ))
             )}
-          </section>
         </div>
       )}
 
