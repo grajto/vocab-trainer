@@ -86,13 +86,6 @@ export const Users: CollectionConfig = {
         },
 
         {
-          name: 'dailyGoalWords',
-          type: 'number',
-          defaultValue: 20,
-          min: 5,
-          max: 500,
-        },
-        {
           name: 'defaultStudyMode',
           type: 'select',
           defaultValue: 'translate',
