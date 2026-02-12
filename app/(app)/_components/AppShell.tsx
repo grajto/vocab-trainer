@@ -6,6 +6,7 @@ import { LeftSidebar } from './LeftSidebar'
 import { QueryProvider } from '../../providers/QueryProvider'
 
 export function AppShell({
+  username,
   folders,
   children,
 }: {
