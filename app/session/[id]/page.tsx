@@ -444,6 +444,14 @@ export default function SessionPage() {
     return () => window.removeEventListener('keydown', handleKey)
   }, [currentTask, feedback, typoState])
 
+  // Auto-redirect when session is done - must be before conditional returns
+  useEffect(() => {
+    if (!sessionDone) return
+    const target = returnDeckId ? `/decks/${returnDeckId}` : '/decks'
+    const timer = setTimeout(() => router.replace(target), 200)
+    return () => clearTimeout(timer)
+  }, [sessionDone, returnDeckId, router])
+
   async function handleSentenceSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!currentTask) return
@@ -761,13 +769,6 @@ export default function SessionPage() {
       </div>
     )
   }
-
-  useEffect(() => {
-    if (!sessionDone) return
-    const target = returnDeckId ? `/decks/${returnDeckId}` : '/decks'
-    const timer = setTimeout(() => router.replace(target), 200)
-    return () => clearTimeout(timer)
-  }, [sessionDone, returnDeckId, router])
 
   if (sessionDone) {
     return (
