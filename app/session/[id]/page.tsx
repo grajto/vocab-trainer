@@ -732,9 +732,11 @@ export default function SessionPage() {
   }
 
   if (sessionMode === 'test') {
+    const isFreeForm = (taskType: string) => taskType === 'describe' || taskType === 'sentence'
     const incorrect = tasks.filter(task => {
       const answer = testAnswers[task.cardId] || ''
       if (task.taskType === 'abcd') return normalizeAnswer(answer) !== normalizeAnswer(task.answer)
+      if (isFreeForm(task.taskType)) return !answer.trim()
       return normalizeAnswer(answer) !== normalizeAnswer(task.expectedAnswer || task.answer)
     })
 
@@ -813,18 +815,21 @@ export default function SessionPage() {
               ))}
               <button
                 onClick={() => {
-                  const correct = tasks.filter(task => {
-                    const answer = testAnswers[task.cardId] || ''
-                    if (task.taskType === 'abcd') return normalizeAnswer(answer) === normalizeAnswer(task.answer)
-                    return normalizeAnswer(answer) === normalizeAnswer(task.expectedAnswer || task.answer)
-                  })
+                   const correct = tasks.filter(task => {
+                     const answer = testAnswers[task.cardId] || ''
+                     if (task.taskType === 'abcd') return normalizeAnswer(answer) === normalizeAnswer(task.answer)
+                     if (isFreeForm(task.taskType)) return Boolean(answer.trim())
+                     return normalizeAnswer(answer) === normalizeAnswer(task.expectedAnswer || task.answer)
+                   })
                   setTestScore({ correct: correct.length, total: tasks.length })
                   setTestSubmitted(true)
                   tasks.forEach(task => {
                     const answer = testAnswers[task.cardId] || ''
-                    const isCorrect = task.taskType === 'abcd'
-                      ? normalizeAnswer(answer) === normalizeAnswer(task.answer)
-                      : normalizeAnswer(answer) === normalizeAnswer(task.expectedAnswer || task.answer)
+                     const isCorrect = task.taskType === 'abcd'
+                       ? normalizeAnswer(answer) === normalizeAnswer(task.answer)
+                       : isFreeForm(task.taskType)
+                         ? Boolean(answer.trim())
+                         : normalizeAnswer(answer) === normalizeAnswer(task.expectedAnswer || task.answer)
                     saveAnswerInBackground({
                       sessionId,
                       cardId: task.cardId,

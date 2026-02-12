@@ -30,6 +30,11 @@ export function DeckStudyLauncher({ deckId, cardCount }: Props) {
   const [error, setError] = useState('')
 
   async function handleStart() {
+    if (mode === 'test') {
+      router.push(`/test?source=set&deckId=${deckId}`)
+      return
+    }
+
     setLoading(true)
     setError('')
     unlock()
