@@ -7,7 +7,7 @@ import { Grid3X3, Layers, ListChecks, MessageSquare, Rocket, Shapes, X } from 'l
 import { useSound } from '@/src/lib/SoundProvider'
 
 type StudyMode = 'translate' | 'abcd' | 'sentence' | 'describe' | 'mixed' | 'test'
-type TestType = 'tf' | 'abcd' | 'matching' | 'written'
+type TestMode = 'abcd' | 'translate' | 'sentence' | 'describe'
 
 const modes = [
   { id: 'abcd' as const, label: 'ABCD', icon: Grid3X3, color: 'var(--primary)' },
@@ -36,12 +36,11 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
   // Test modal state
   const [showTestModal, setShowTestModal] = useState(false)
   const [testCount, setTestCount] = useState(20)
-  const [testTypes, setTestTypes] = useState<TestType[]>(['abcd'])
+  const [enabledModes, setEnabledModes] = useState<TestMode[]>(['abcd', 'translate'])
   const [starredOnly, setStarredOnly] = useState(false)
-  const [answerLang, setAnswerLang] = useState('auto')
-  const [allowTypos, setAllowTypos] = useState(true)
-  const [requireSingle, setRequireSingle] = useState(false)
-  const [minTypeHint, setMinTypeHint] = useState(false)
+  const [randomQuestionOrder, setRandomQuestionOrder] = useState(true)
+  const [randomAnswerOrder, setRandomAnswerOrder] = useState(true)
+  const [minModeHint, setMinModeHint] = useState(false)
   const [savingPrefs, setSavingPrefs] = useState(false)
   const [loadingPrefs, setLoadingPrefs] = useState(true)
   const triggerRef = useRef<HTMLButtonElement | null>(null)
@@ -68,10 +67,9 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
         const parsed = JSON.parse(raw)
         setTestCount(parsed.questionCount ?? 20)
         setStarredOnly(!!parsed.starredOnly)
-        setTestTypes(parsed.enabledTypes?.length ? parsed.enabledTypes : ['abcd'])
-        setAnswerLang(parsed.answerLang ?? 'auto')
-        setAllowTypos(parsed.correction?.allowTypos ?? true)
-        setRequireSingle(parsed.correction?.requireSingle ?? false)
+        setEnabledModes(parsed.enabledModes?.length ? parsed.enabledModes : ['abcd', 'translate'])
+        setRandomQuestionOrder(parsed.randomQuestionOrder ?? true)
+        setRandomAnswerOrder(parsed.randomAnswerOrder ?? true)
       }
     } catch {
       /* ignore */
@@ -86,14 +84,10 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
           if (data) {
             setTestCount(data.questionCount ?? 20)
             setStarredOnly(!!data.starredOnly)
-            const enabled = Array.isArray(data.enabledTypes) && data.enabledTypes.length ? data.enabledTypes : ['abcd']
-            setTestTypes(enabled as TestType[])
-            const langs = Array.isArray(data.answerLanguages) && data.answerLanguages[0]?.lang
-              ? data.answerLanguages.map((l: any) => l.lang)
-              : data.answerLanguages ?? []
-            setAnswerLang(langs[0] || 'auto')
-            setAllowTypos(Boolean(data.correctionOptions?.allowTypos ?? true))
-            setRequireSingle(Boolean(data.correctionOptions?.requireSingle ?? false))
+            const enabled = Array.isArray(data.enabledTypes) && data.enabledTypes.length ? data.enabledTypes : ['abcd', 'translate']
+            setEnabledModes(enabled as TestMode[])
+            setRandomQuestionOrder(data.randomQuestionOrder ?? true)
+            setRandomAnswerOrder(data.randomAnswerOrder ?? true)
           }
         }
       } catch {
@@ -109,9 +103,9 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
     const payload = {
       questionCount: clampedCount,
       starredOnly,
-      enabledTypes: testTypes,
-      answerLang,
-      correction: { allowTypos, requireSingle },
+      enabledModes,
+      randomQuestionOrder,
+      randomAnswerOrder,
     }
     localStorage.setItem(PREF_KEY, JSON.stringify(payload))
   }
@@ -126,9 +120,9 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
         body: JSON.stringify({
           questionCount: clampedCount,
           starredOnly,
-          enabledTypes: testTypes,
-          answerLanguages: [answerLang].filter(Boolean),
-          correctionOptions: { allowTypos, requireSingle },
+          enabledTypes: enabledModes,
+          randomQuestionOrder,
+          randomAnswerOrder,
         }),
       })
     } catch {
@@ -190,16 +184,16 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
     }
   }
 
-  function toggleType(type: TestType, next: boolean) {
-    setTestTypes((prev) => {
-      let arr: TestType[] = prev
-      if (next && !prev.includes(type)) arr = [...prev, type]
-      if (!next) arr = prev.filter((t) => t !== type)
+  function toggleMode(mode: TestMode, next: boolean) {
+    setEnabledModes((prev) => {
+      let arr: TestMode[] = prev
+      if (next && !prev.includes(mode)) arr = [...prev, mode]
+      if (!next) arr = prev.filter((m) => m !== mode)
       if (!arr.length) {
-        setMinTypeHint(true)
-        return ['abcd']
+        setMinModeHint(true)
+        return ['abcd', 'translate']
       }
-      setMinTypeHint(false)
+      setMinModeHint(false)
       return arr
     })
   }
@@ -209,10 +203,10 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
     if (poolEmpty) return
     const target = Math.min(cardCount, clampedCount)
     const settings = {
-      types: testTypes,
+      enabledModes,
       starredOnly,
-      answerLang,
-      correction: { allowTypos, requireSingle },
+      shuffle: randomQuestionOrder,
+      randomAnswerOrder,
       questionCount: target,
     }
     persistLocal()
@@ -386,52 +380,27 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
                 />
 
                 <Section
-                  title="Typy pytań"
-                  hint={minTypeHint ? 'Minimum jeden typ musi być włączony. Włączono ABCD.' : undefined}
+                  title="Tryby testu"
+                  hint={minModeHint ? 'Minimum jeden tryb musi być włączony. Włączono ABCD i Tłumaczenie.' : undefined}
                   items={[
-                    { label: 'Prawda/Fałsz', control: <Toggle checked={testTypes.includes('tf')} onChange={(v) => toggleType('tf', v)} /> },
-                    {
-                      label: 'Pytania wielokrotnego wyboru (ABCD)',
-                      control: <Toggle checked={testTypes.includes('abcd')} onChange={(v) => toggleType('abcd', v)} />,
-                    },
-                    { label: 'Dopasuj pytania do odpowiedzi', control: <Toggle checked={testTypes.includes('matching')} onChange={(v) => toggleType('matching', v)} /> },
-                    { label: 'Pytania pisemne', control: <Toggle checked={testTypes.includes('written')} onChange={(v) => toggleType('written', v)} /> },
+                    { label: 'ABCD', control: <Toggle checked={enabledModes.includes('abcd')} onChange={(v) => toggleMode('abcd', v)} /> },
+                    { label: 'Tłumaczenie', control: <Toggle checked={enabledModes.includes('translate')} onChange={(v) => toggleMode('translate', v)} /> },
+                    { label: 'Zdanie', control: <Toggle checked={enabledModes.includes('sentence')} onChange={(v) => toggleMode('sentence', v)} /> },
+                    { label: 'Opis', control: <Toggle checked={enabledModes.includes('describe')} onChange={(v) => toggleMode('describe', v)} /> },
                   ]}
                 />
 
                 <Section
-                  title="Języki odpowiedzi"
+                  title="Ustawienia kolejności"
                   items={[
                     {
-                      label: 'Preferuj odpowiedzi w',
-                      control: (
-                        <select
-                          value={answerLang}
-                          onChange={(e) => setAnswerLang(e.target.value)}
-                          className="h-9 rounded-lg border px-3 text-sm focus:outline-none"
-                          style={{ borderColor: 'var(--border)', color: 'var(--text)', background: 'var(--surface)' }}
-                        >
-                          <option value="auto">Auto</option>
-                          <option value="pl">Polski</option>
-                          <option value="en">Angielski</option>
-                          <option value="mix">Oba</option>
-                        </select>
-                      ),
-                    },
-                  ]}
-                />
-
-                <Section
-                  title="Opcje korekty"
-                  items={[
-                    {
-                      label: 'Wymagaj tylko 1 odpowiedzi',
-                      control: <Toggle checked={requireSingle} onChange={setRequireSingle} />,
+                      label: 'Losowa kolejność pytań',
+                      control: <Toggle checked={randomQuestionOrder} onChange={setRandomQuestionOrder} />,
                     },
                     {
-                      label: 'Pomijanie literówek',
-                      control: <Toggle checked={allowTypos} onChange={setAllowTypos} disabled={!testTypes.includes('written')} />,
-                      muted: !testTypes.includes('written'),
+                      label: 'Losowa kolejność odpowiedzi (ABCD)',
+                      control: <Toggle checked={randomAnswerOrder} onChange={setRandomAnswerOrder} disabled={!enabledModes.includes('abcd')} />,
+                      muted: !enabledModes.includes('abcd'),
                     },
                   ]}
                 />
@@ -456,7 +425,7 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
                   </button>
                   <button
                     type="button"
-                    disabled={loading || savingPrefs || !testTypes.length || (starredOnly && cardCount === 0)}
+                    disabled={loading || savingPrefs || !enabledModes.length || (starredOnly && cardCount === 0)}
                     className="h-10 rounded-full px-5 text-sm font-semibold text-white disabled:opacity-50"
                     style={{ background: '#4255FF' }}
                     onClick={handleCreateTest}
