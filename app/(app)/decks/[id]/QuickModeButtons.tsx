@@ -217,6 +217,7 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
   function handleReset() {
     setSelectedMode(null)
     setSelectedCount(null)
+    setCustomCount('')
   }
 
   function toggleMode(mode: TestMode, next: boolean) {
