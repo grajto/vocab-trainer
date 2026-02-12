@@ -1008,7 +1008,7 @@ export default function SessionPage() {
           onClick={handleStopSession}
           className="p-2 transition-colors hover:bg-[var(--hover-bg)] rounded-full"
           style={{ color: '#64748B' }}
-          title="Wróć do dashboardu"
+          title="Return to dashboard"
           aria-label="Exit session"
         >
           <X size={18} />
@@ -1018,16 +1018,16 @@ export default function SessionPage() {
             onClick={() => setMenuOpen(prev => !prev)}
             className="p-2 transition-colors hover:bg-[var(--hover-bg)] rounded-full"
             style={{ color: '#64748B' }}
-            title="Ustawienia"
+          title="Settings"
             aria-label="Settings"
           >
             <Settings size={18} />
           </button>
           {menuOpen ? (
             <div className="absolute right-12 top-1/2 z-20 w-52 -translate-y-1/2 rounded-lg border p-2 text-xs" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-              <button onClick={toggleSound} className="block w-full rounded px-2 py-1 text-left hover:bg-[var(--hover-bg)]">Dźwięk: {soundEnabled ? 'włączony' : 'wyłączony'}</button>
-              <button onClick={toggleShuffle} className="block w-full rounded px-2 py-1 text-left hover:bg-[var(--hover-bg)]">Mieszanie: {shuffleEnabled ? 'włączone' : 'wyłączone'}</button>
-              <button onClick={handleStopSession} className="block w-full rounded px-2 py-1 text-left hover:bg-[var(--hover-bg)]" style={{ color: '#EF4444' }}>Zakończ sesję</button>
+              <button onClick={toggleSound} className="block w-full rounded px-2 py-1 text-left hover:bg-[var(--hover-bg)]">Sound: {soundEnabled ? 'on' : 'off'}</button>
+              <button onClick={toggleShuffle} className="block w-full rounded px-2 py-1 text-left hover:bg-[var(--hover-bg)]">Shuffle: {shuffleEnabled ? 'on' : 'off'}</button>
+              <button onClick={handleStopSession} className="block w-full rounded px-2 py-1 text-left hover:bg-[var(--hover-bg)]" style={{ color: '#EF4444' }}>End session</button>
             </div>
           ) : null}
         </div>
@@ -1427,7 +1427,7 @@ export default function SessionPage() {
                         className="min-w-[96px] px-4 py-3 rounded-[var(--radiusSm)] text-sm font-medium transition-colors"
                         style={{ border: '1px solid var(--border)', color: '#64748B', background: 'var(--surface)' }}
                       >
-                        Pomiń
+                        Skip
                       </button>
                     )}
                   </div>
@@ -1547,7 +1547,7 @@ export default function SessionPage() {
                         className="min-w-[96px] px-4 py-3 rounded-[var(--radiusSm)] text-sm font-medium transition-colors"
                         style={{ border: '1px solid var(--border)', color: '#64748B', background: 'var(--surface)' }}
                       >
-                        Pomiń
+                        Skip
                       </button>
                     )}
                   </div>
