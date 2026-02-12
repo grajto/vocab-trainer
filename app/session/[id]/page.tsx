@@ -486,6 +486,10 @@ export default function SessionPage() {
       setSentenceStage('sentence')
       setUserAnswer('')
       playCorrect()
+      // Auto-dismiss feedback after showing success message
+      setTimeout(() => {
+        setFeedback(null)
+      }, 1500)
       return
     }
 
@@ -578,6 +582,10 @@ export default function SessionPage() {
       setDescribeStage('describe')
       setUserAnswer('')
       playCorrect()
+      // Auto-dismiss feedback after showing success message
+      setTimeout(() => {
+        setFeedback(null)
+      }, 1500)
       return
     }
 
