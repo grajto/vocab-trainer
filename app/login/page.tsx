@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
   const [login, setLogin] = useState('')
-  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
@@ -19,7 +18,7 @@ export default function LoginPage() {
       const res = await fetch('/api/users/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: login, password }),
+        body: JSON.stringify({ username: login }),
         credentials: 'include',
       })
 
@@ -28,7 +27,7 @@ export default function LoginPage() {
         router.refresh()
       } else {
         // Handle error responses
-        let errorMessage = 'Nieprawidłowy login lub hasło.'
+        let errorMessage = 'Nieprawidłowy login.'
         
         try {
           const data = await res.json()
@@ -43,17 +42,6 @@ export default function LoginPage() {
           }
         } catch {
           // If JSON parsing fails, use default error message
-        }
-
-        // Translate common error messages to Polish
-        const errorLower = errorMessage.toLowerCase()
-        if (errorLower.includes('too many failed login attempts') || 
-            errorLower.includes('locked due to')) {
-          errorMessage = 'To konto zostało zablokowane z powodu zbyt wielu nieudanych prób logowania. Skontaktuj się z administratorem, aby odblokować konto.'
-        } else if (errorLower.includes('invalid login credentials')) {
-          errorMessage = 'Nieprawidłowy login lub hasło.'
-        } else if (errorLower.includes('invalid') && (errorLower.includes('username') || errorLower.includes('password') || errorLower.includes('email'))) {
-          errorMessage = 'Nieprawidłowy login lub hasło.'
         }
 
         setError(errorMessage)
@@ -83,18 +71,6 @@ export default function LoginPage() {
             type="text"
             value={login}
             onChange={e => setLogin(e.target.value)}
-            required
-            className="w-full rounded-[var(--radiusSm)] px-3 py-2.5 text-sm focus:outline-none"
-            style={{ border: '1px solid var(--border)', color: 'var(--text)' }}
-          />
-        </div>
-
-        <div className="space-y-1.5">
-          <label className="block text-sm" style={{ color: 'var(--text)' }}>1Hasło</label>
-          <input
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
             required
             className="w-full rounded-[var(--radiusSm)] px-3 py-2.5 text-sm focus:outline-none"
             style={{ border: '1px solid var(--border)', color: 'var(--text)' }}

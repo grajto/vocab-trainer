@@ -31,9 +31,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     return stored ? Number(stored) : 20
   })
   const [theme, setThemeState] = useState<'light' | 'dark' | 'system'>(() => {
-    if (typeof window === 'undefined') return 'system'
+    if (typeof window === 'undefined') return 'light'
     const stored = localStorage.getItem('theme')
-    return (stored as 'light' | 'dark' | 'system') || 'system'
+    return (stored as 'light' | 'dark' | 'system') || 'light'
   })
   const [language, setLanguageState] = useState<'pl' | 'en'>(() => {
     if (typeof window === 'undefined') return 'pl'

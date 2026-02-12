@@ -977,16 +977,23 @@ export default function SessionPage() {
               <span className="tabular-nums">{currentIndex + 1} / {tasks.length}</span>
             </div>
           )}
-          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight" style={{ color: 'var(--text)' }}>
+          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight mb-3" style={{ color: 'var(--text)' }}>
             {currentTask.prompt}
           </h2>
+          {currentTask.taskType === 'translate' && (
+            <p className="text-sm mb-8" style={{ color: '#64748B' }}>Przetłumacz to słowo.</p>
+          )}
           {currentTask.taskType === 'sentence' && (
-            <p className="text-sm mt-3 mb-8" style={{ color: '#64748B' }}>Create a sentence with this word.</p>
+            <p className="text-sm mb-8" style={{ color: '#64748B' }}>
+              {sentenceStage === 'translate' ? 'Przetłumacz to słowo.' : 'Ułóż zdanie z tym słowem.'}
+            </p>
           )}
           {currentTask.taskType === 'describe' && (
-            <p className="text-sm mt-3 mb-8" style={{ color: '#64748B' }}>Opisz to słowo własnymi słowami.</p>
+            <p className="text-sm mb-8" style={{ color: '#64748B' }}>Opisz to słowo własnymi słowami.</p>
           )}
-          {currentTask.taskType !== 'sentence' && <div className="mb-8" />}
+          {currentTask.taskType === 'abcd' && (
+            <p className="text-sm mb-8" style={{ color: '#64748B' }}>Wybierz poprawną odpowiedź.</p>
+          )}
 
           {showHint && !feedback && !typoState && (
             <div className="mb-6 text-sm font-mono tracking-widest rounded-full px-5 py-2 inline-block" style={{ color: '#d97706', background: '#fffbeb', border: '1px solid #fde68a' }}>
@@ -1236,7 +1243,7 @@ export default function SessionPage() {
                       className="transition-colors hover:opacity-80"
                       style={{ color: '#3B82F6' }}
                     >
-                      Nie wiem
+                      Skip
                     </button>
                   </div>
                 </div>
@@ -1244,22 +1251,6 @@ export default function SessionPage() {
 
               {currentTask.taskType === 'sentence' && (
                 <div className="space-y-5">
-                  {/* Title and stage indicator */}
-                  {sentenceStage === 'sentence' && (
-                    <div className="mb-4">
-                      <h3 className="text-lg font-semibold mb-3" style={{ color: 'var(--text)' }}>
-                        Ułóż zdanie z: {currentTask.prompt}
-                      </h3>
-                    </div>
-                  )}
-
-                  {/* Required word as pill/chip - show Polish word in both stages */}
-                  <div className="flex justify-center">
-                    <span className="inline-block font-semibold px-5 py-2 rounded-full text-base tracking-wide" style={{ background: 'var(--primaryBg)', color: '#3B82F6', border: '1px solid #BFDBFE' }}>
-                      {currentTask.prompt}
-                    </span>
-                  </div>
-
                   {/* Input field - single line for translate, textarea for sentence */}
                   {sentenceStage === 'translate' ? (
                     <input
@@ -1381,20 +1372,6 @@ export default function SessionPage() {
 
               {currentTask.taskType === 'describe' && (
                 <div className="space-y-5">
-                  {/* Title */}
-                  <div className="mb-4">
-                    <h3 className="text-lg font-semibold mb-3" style={{ color: 'var(--text)' }}>
-                      Opisz używając: {currentTask.prompt}
-                    </h3>
-                  </div>
-
-                  {/* Target word chip */}
-                  <div className="flex justify-center">
-                    <span className="inline-block font-semibold px-5 py-2 rounded-full text-base tracking-wide" style={{ background: 'var(--primaryBg)', color: '#3B82F6', border: '1px solid #BFDBFE' }}>
-                      {currentTask.prompt}
-                    </span>
-                  </div>
-
                   <textarea
                     ref={inputRef as React.RefObject<HTMLTextAreaElement>}
                     value={userAnswer}
@@ -1438,6 +1415,43 @@ export default function SessionPage() {
                     >
                       {loading ? 'Checking…' : 'Sprawdź'}
                     </button>
+                    {!feedback && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!currentTask) return
+                          const state = getTaskState(currentTask.cardId)
+                          state.attempts++
+                          state.wasWrongBefore = true
+                          setStreak(0)
+                          const expected = currentTask.expectedAnswer || currentTask.answer
+                          setFeedback({ correct: false, message: expected ? `Correct answer: ${expected}` : 'Pominięto' })
+                          playWrong()
+                          requeueCard(currentTask)
+                          saveAnswerInBackground({
+                            sessionId,
+                            cardId: currentTask.cardId,
+                            taskType: 'describe',
+                            userAnswer: '',
+                            isCorrect: false,
+                            expectedAnswer: expected,
+                            attemptsCount: state.attempts,
+                            wasWrongBeforeCorrect: state.wasWrongBefore,
+                            usedHint: state.usedHint,
+                            aiUsed: false,
+                            responseTimeMs: Date.now() - questionStartedAt,
+                            streakAfterAnswer: 0,
+                          })
+                          setUserAnswer('')
+                          setShowHint(false)
+                          advanceToNext(FEEDBACK_DELAY_WRONG_SLOW)
+                        }}
+                        className="px-4 py-3 rounded-[var(--radiusSm)] text-sm font-medium transition-colors"
+                        style={{ border: '1px solid var(--border)', color: '#64748B', background: 'var(--surface)' }}
+                      >
+                        Skip
+                      </button>
+                    )}
                   </div>
                   <p className="text-xs text-center" style={{ color: '#64748B' }}>Ctrl+Enter to submit</p>
                 </div>

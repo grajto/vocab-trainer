@@ -5,6 +5,7 @@ import { getPayload } from './getPayload'
 export async function getUser() {
   const payload = await getPayload()
   const headersList = await getHeaders()
+  const cookieStore = await getCookies()
   const fetchSite = headersList.get('sec-fetch-site')
   const origin = headersList.get('origin')
   const host = headersList.get('host')
@@ -19,6 +20,25 @@ export async function getUser() {
   if (user) {
     console.info('[auth] Payload cookie user authenticated', { id: user.id })
     return user
+  }
+
+  // Passwordless username-based login (cookie set by /api/users/login)
+  const usernameCookie = cookieStore.get('username-auth')?.value
+  if (usernameCookie && isTrustedRequest) {
+    try {
+      const found = await payload.find({
+        collection: 'users',
+        where: { username: { equals: usernameCookie } },
+        limit: 1,
+        depth: 0,
+      })
+      if (found.docs[0]) {
+        console.info('[auth] Username cookie authenticated', { username: usernameCookie })
+        return found.docs[0]
+      }
+    } catch (error) {
+      console.error('Username cookie lookup failed', error)
+    }
   }
 
   const appToken = process.env.APP_ACCESS_TOKEN
@@ -49,7 +69,6 @@ export async function getUser() {
   }
 
   const headerToken = headersList.get('x-app-token')
-  const cookieStore = await getCookies()
   const cookieToken = cookieStore.get('app-token')?.value
   const incomingToken = headerToken || cookieToken
   if (!incomingToken) {
