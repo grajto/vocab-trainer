@@ -24,7 +24,7 @@ export default function SettingsPage() {
     setLanguage,
   } = useSettings()
 
-  const saveTimeoutRef = useRef<NodeJS.Timeout>()
+  const saveTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
 
   useEffect(() => {
     if (!loading) {
