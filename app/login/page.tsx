@@ -57,7 +57,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'var(--surface2)' }}>
       <form onSubmit={handleSubmit} className="w-full max-w-md rounded-[var(--radius)] p-6 space-y-4" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
-        <p style={{ color: 'var(--muted)' }}>Wprowadź dane, aby kontynuować.</p>
+        <p style={{ color: 'var(--muted)' }}>Podaj login, aby kontynuować.</p>
 
         {error && (
           <div className="rounded-[var(--radiusSm)] px-4 py-3 text-sm" style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b' }}>
