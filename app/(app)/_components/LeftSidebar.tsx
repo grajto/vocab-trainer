@@ -127,7 +127,7 @@ export function LeftSidebar({
         : 'bg-[#f1f5f9] text-[var(--muted)] hover:bg-[#e2e8f0]'
     }`
 
-  const toggleChip = <T,>(currentValue: T | null, newValue: T) => 
+  const toggleChip = <T extends string>(currentValue: T | null, newValue: T): T | null => 
     currentValue === newValue ? null : newValue
 
   async function startDailySession() {
@@ -256,7 +256,7 @@ export function LeftSidebar({
                   onClick={() => setQuickMode(toggleChip(quickMode, 'translate'))}
                   className={chipClass(quickMode === 'translate')}
                 >
-                  Tłumacz
+                  Tłumaczenie
                 </button>
                 <button
                   type="button"
