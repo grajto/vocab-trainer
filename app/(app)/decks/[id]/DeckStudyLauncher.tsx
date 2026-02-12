@@ -25,7 +25,7 @@ export function DeckStudyLauncher({ deckId, cardCount }: Props) {
   const router = useRouter()
   const { unlock } = useSound()
   const [mode, setMode] = useState<StudyMode>('test')
-  const [targetCount, setTargetCount] = useState(Math.min(cardCount, 20))
+  const [targetCount, setTargetCount] = useState(Math.min(cardCount, 10))
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -94,10 +94,10 @@ export function DeckStudyLauncher({ deckId, cardCount }: Props) {
           <input
             id="deck-word-count"
             type="number"
-            min={5}
+            min={1}
             max={Math.min(35, cardCount)}
             value={targetCount}
-            onChange={e => setTargetCount(Math.max(5, Math.min(Number(e.target.value || 20), Math.min(35, cardCount))))}
+            onChange={e => setTargetCount(Math.max(1, Math.min(Number(e.target.value || cardCount), Math.min(35, cardCount))))}
             className="h-10 w-full rounded-lg px-3 text-sm focus:outline-none"
             style={{ border: '1px solid var(--border)', color: 'var(--text)' }}
           />
