@@ -10,7 +10,8 @@ type StudyMode = 'translate' | 'abcd' | 'sentence' | 'describe' | 'mixed' | 'tes
 type TestMode = 'abcd' | 'translate' | 'sentence' | 'describe'
 
 const DEFAULT_TEST_MODE: TestMode = 'abcd'
-const allowedTestModes: TestMode[] = ['abcd', 'translate']
+const allowedTestModes = ['abcd', 'translate'] as const
+const allowedTestModesArray: TestMode[] = [...allowedTestModes]
 const allowedTestModesSet = new Set<string>(allowedTestModes)
 
 const normalizeTestModes = (modes: unknown): TestMode[] => {
@@ -46,7 +47,7 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
   // Test modal state
   const [showTestModal, setShowTestModal] = useState(false)
   const [testCount, setTestCount] = useState(20)
-  const [enabledModes, setEnabledModes] = useState<TestMode[]>(allowedTestModes)
+  const [enabledModes, setEnabledModes] = useState<TestMode[]>(allowedTestModesArray)
   const [randomizeQuestions, setRandomizeQuestions] = useState(true)
   const [randomizeAnswers, setRandomizeAnswers] = useState(true)
   const [starredOnly, setStarredOnly] = useState(false)
@@ -81,7 +82,7 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
         const parsed = JSON.parse(raw)
         setTestCount(parsed.questionCount ?? 20)
         setStarredOnly(!!parsed.starredOnly)
-        const modes = parsed.enabledModes?.length ? parsed.enabledModes : (parsed.enabledTypes?.length ? parsed.enabledTypes : allowedTestModes)
+        const modes = parsed.enabledModes?.length ? parsed.enabledModes : (parsed.enabledTypes?.length ? parsed.enabledTypes : allowedTestModesArray)
         setEnabledModes(normalizeTestModes(modes))
         setRandomizeQuestions(parsed.randomizeQuestions ?? true)
         setRandomizeAnswers(parsed.randomizeAnswers ?? true)
@@ -104,7 +105,7 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
             setStarredOnly(!!data.starredOnly)
             const modes = Array.isArray(data.enabledModes) && data.enabledModes.length 
               ? data.enabledModes 
-              : (Array.isArray(data.enabledTypes) && data.enabledTypes.length ? data.enabledTypes : allowedTestModes)
+              : (Array.isArray(data.enabledTypes) && data.enabledTypes.length ? data.enabledTypes : allowedTestModesArray)
             setEnabledModes(normalizeTestModes(modes))
             setRandomizeQuestions(data.randomizeQuestions ?? true)
             setRandomizeAnswers(data.randomizeAnswers ?? true)
