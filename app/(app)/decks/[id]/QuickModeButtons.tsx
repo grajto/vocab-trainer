@@ -225,7 +225,7 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
           <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
             Wybierz tryb
           </h3>
-          {selectedMode && selectedMode !== 'test' && (
+          {selectedMode && (
             <button onClick={handleReset} className="text-xs font-medium" style={{ color: 'var(--primary)' }}>
               Zmień tryb
             </button>
@@ -314,6 +314,7 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
             onClick={(e) => {
               if (e.target === e.currentTarget) {
                 setShowTestModal(false)
+                handleReset()
                 triggerRef.current?.focus()
               }
             }}
@@ -328,6 +329,7 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
                 if (e.key === 'Escape') {
                   e.stopPropagation()
                   setShowTestModal(false)
+                  handleReset()
                   triggerRef.current?.focus()
                 }
               }}
@@ -339,6 +341,7 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
                 <button
                   onClick={() => {
                     setShowTestModal(false)
+                    handleReset()
                     triggerRef.current?.focus()
                   }}
                   className="h-9 w-9 rounded-full hover:bg-[var(--hover-bg)]"
@@ -437,7 +440,10 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={() => setShowTestModal(false)}
+                    onClick={() => {
+                      setShowTestModal(false)
+                      handleReset()
+                    }}
                     className="h-10 rounded-full px-4 text-sm font-semibold"
                     style={{ border: '1px solid var(--border)', color: 'var(--text)' }}
                   >
