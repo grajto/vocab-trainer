@@ -486,7 +486,7 @@ export default function SessionPage() {
 
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [translateNeedsAdvance, currentIndex, tasks.length, acknowledgeTranslateFeedback])
+  }, [translateNeedsAdvance, acknowledgeTranslateFeedback])
 
 
   useEffect(() => {

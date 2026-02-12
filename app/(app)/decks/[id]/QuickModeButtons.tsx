@@ -12,6 +12,12 @@ type TestMode = 'abcd' | 'translate' | 'sentence' | 'describe'
 const DEFAULT_TEST_MODE: TestMode = 'abcd'
 const allowedTestModes: TestMode[] = [DEFAULT_TEST_MODE, 'translate']
 
+const normalizeTestModes = (modes: unknown): TestMode[] => {
+  if (!Array.isArray(modes)) return [DEFAULT_TEST_MODE]
+  const filtered = modes.filter((mode): mode is TestMode => allowedTestModes.includes(mode as TestMode))
+  return filtered.length ? filtered : [DEFAULT_TEST_MODE]
+}
+
 const modes = [
   { id: 'abcd' as const, label: 'ABCD', icon: Grid3X3, color: 'var(--primary)' },
   { id: 'translate' as const, label: 'Tłumaczenie', icon: Layers, color: 'var(--primary)' },
@@ -75,8 +81,7 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
         setTestCount(parsed.questionCount ?? 20)
         setStarredOnly(!!parsed.starredOnly)
         const modes = parsed.enabledModes?.length ? parsed.enabledModes : (parsed.enabledTypes?.length ? parsed.enabledTypes : allowedTestModes)
-        const normalizedModes = (modes as TestMode[]).filter((mode) => allowedTestModes.includes(mode))
-        setEnabledModes(normalizedModes.length ? normalizedModes : [DEFAULT_TEST_MODE])
+        setEnabledModes(normalizeTestModes(modes))
         setRandomizeQuestions(parsed.randomizeQuestions ?? true)
         setRandomizeAnswers(parsed.randomizeAnswers ?? true)
         setAnswerLang(parsed.answerLang ?? 'auto')
@@ -99,8 +104,7 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
             const modes = Array.isArray(data.enabledModes) && data.enabledModes.length 
               ? data.enabledModes 
               : (Array.isArray(data.enabledTypes) && data.enabledTypes.length ? data.enabledTypes : allowedTestModes)
-            const normalizedModes = (modes as TestMode[]).filter((mode) => allowedTestModes.includes(mode))
-            setEnabledModes(normalizedModes.length ? normalizedModes : [DEFAULT_TEST_MODE])
+            setEnabledModes(normalizeTestModes(modes))
             setRandomizeQuestions(data.randomizeQuestions ?? true)
             setRandomizeAnswers(data.randomizeAnswers ?? true)
             const langs = Array.isArray(data.answerLanguages) && data.answerLanguages[0]?.lang
@@ -224,7 +228,7 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
     const poolEmpty = starredOnly && cardCount === 0
     if (poolEmpty) return
     const target = useAllWords ? cardCount : Math.min(cardCount, clampedCount)
-    const selectedModes = enabledModes.filter((mode) => allowedTestModes.includes(mode))
+    const selectedModes = normalizeTestModes(enabledModes)
     const settings = {
       modes: selectedModes.length ? selectedModes : [DEFAULT_TEST_MODE],
       starredOnly,
