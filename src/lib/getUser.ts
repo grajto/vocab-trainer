@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from 'crypto'
 import { headers as getHeaders, cookies as getCookies } from 'next/headers'
 import { getPayload } from './getPayload'
+import { USERNAME_TOKEN_MAX_AGE_SECONDS } from './usernameAuth'
 
 function verifyUsernameToken(token: string): string | null {
   const secret = process.env.PAYLOAD_SECRET
@@ -21,7 +22,7 @@ function verifyUsernameToken(token: string): string | null {
     const decoded = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8')) as { u?: string; t?: number }
     if (!decoded.u || typeof decoded.u !== 'string') return null
     if (!decoded.t || typeof decoded.t !== 'number') return null
-    const maxAgeMs = 1000 * 60 * 60 * 24 * 30 // 30 days
+    const maxAgeMs = USERNAME_TOKEN_MAX_AGE_SECONDS * 1000
     if (Date.now() - decoded.t > maxAgeMs) return null
     return decoded.u
   } catch {
@@ -51,13 +52,10 @@ export async function getUser() {
 
   // Passwordless username-based login (cookie set by /api/users/login)
   const usernameCookie = cookieStore.get('username-auth')?.value
-  if (usernameCookie && isTrustedRequest) {
-    const verifiedUsername = verifyUsernameToken(usernameCookie)
-    if (!verifiedUsername) {
-      console.warn('[auth] Invalid username cookie signature')
-    }
-  }
   const verifiedUsername = usernameCookie ? verifyUsernameToken(usernameCookie) : null
+  if (usernameCookie && !verifiedUsername) {
+    console.warn('[auth] Invalid username cookie signature')
+  }
   if (verifiedUsername && isTrustedRequest) {
     try {
       const found = await payload.find({

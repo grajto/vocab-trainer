@@ -1243,7 +1243,7 @@ export default function SessionPage() {
                       className="transition-colors hover:opacity-80"
                       style={{ color: '#3B82F6' }}
                     >
-                      Skip
+                      Pomiń
                     </button>
                   </div>
                 </div>

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getPayload } from '@/src/lib/getPayload'
 import { createHmac } from 'crypto'
+import { USERNAME_TOKEN_MAX_AGE_SECONDS } from '@/src/lib/usernameAuth'
 
 function signUsernameToken(username: string) {
   const secret = process.env.PAYLOAD_SECRET
@@ -15,7 +16,7 @@ export async function POST(req: Request) {
     const body = await req.json().catch(() => ({}))
     const username = typeof body.username === 'string' ? body.username.trim() : ''
 
-    if (!username) {
+    if (!username || !/^[a-zA-Z0-9._-]{3,50}$/.test(username)) {
       return NextResponse.json({ error: 'Wprowadź login.' }, { status: 400 })
     }
 
@@ -39,7 +40,7 @@ export async function POST(req: Request) {
       sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',
       path: '/',
-      maxAge: 60 * 60 * 24 * 30, // 30 days
+      maxAge: USERNAME_TOKEN_MAX_AGE_SECONDS,
     })
     return response
   } catch (error) {
