@@ -39,7 +39,12 @@ function createAudioPool(src: string): HTMLAudioElement[] {
 }
 
 export function SoundProvider({ children }: { children: React.ReactNode }) {
-  const [enabled, setEnabled] = useState(true)
+  // Initialize from localStorage to prevent hydration mismatch
+  const [enabled, setEnabled] = useState(() => {
+    if (typeof window === 'undefined') return true
+    const stored = localStorage.getItem('sound-enabled')
+    return stored !== null ? stored === 'true' : true
+  })
   const correctPoolRef = useRef<HTMLAudioElement[]>([])
   const wrongPoolRef = useRef<HTMLAudioElement[]>([])
   const correctIndexRef = useRef(0)
@@ -47,11 +52,8 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
   const unlockedRef = useRef(false)
 
   useEffect(() => {
-    // Only access localStorage in browser
+    // Only create audio pools in browser
     if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('sound-enabled')
-      if (stored !== null) setEnabled(stored === 'true')
-
       correctPoolRef.current = createAudioPool('/sounds/correct.wav')
       wrongPoolRef.current = createAudioPool('/sounds/wrong.wav')
     }

@@ -85,8 +85,12 @@ export default function SessionPage() {
   // Hint state
   const [showHint, setShowHint] = useState(false)
 
-  // Shuffle toggle (persisted in localStorage)
-  const [shuffleEnabled, setShuffleEnabled] = useState(false)
+  // Shuffle toggle (persisted in localStorage) - initialize from localStorage to prevent hydration mismatch
+  const [shuffleEnabled, setShuffleEnabled] = useState(() => {
+    if (typeof window === 'undefined') return false
+    const saved = localStorage.getItem('vocab-shuffle')
+    return saved === 'true'
+  })
   const [menuOpen, setMenuOpen] = useState(false)
 
   // Track per-card state (attempts, hints used)
@@ -100,13 +104,6 @@ export default function SessionPage() {
   const accuracy = answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0
 
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null)
-
-  // Load shuffle setting
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    const saved = localStorage.getItem('vocab-shuffle')
-    if (saved === 'true') setShuffleEnabled(true)
-  }, [])
 
   useEffect(() => {
     let ignore = false
