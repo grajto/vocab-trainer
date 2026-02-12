@@ -26,6 +26,9 @@ export function useSound() {
 const POOL_SIZE = 3
 
 function createAudioPool(src: string): HTMLAudioElement[] {
+  // Only create audio pool in browser environment
+  if (typeof window === 'undefined') return []
+  
   const pool: HTMLAudioElement[] = []
   for (let i = 0; i < POOL_SIZE; i++) {
     const audio = new Audio(src)
@@ -44,11 +47,14 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
   const unlockedRef = useRef(false)
 
   useEffect(() => {
-    const stored = localStorage.getItem('sound-enabled')
-    if (stored !== null) setEnabled(stored === 'true')
+    // Only access localStorage in browser
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('sound-enabled')
+      if (stored !== null) setEnabled(stored === 'true')
 
-    correctPoolRef.current = createAudioPool('/sounds/correct.wav')
-    wrongPoolRef.current = createAudioPool('/sounds/wrong.wav')
+      correctPoolRef.current = createAudioPool('/sounds/correct.wav')
+      wrongPoolRef.current = createAudioPool('/sounds/wrong.wav')
+    }
   }, [])
 
   // Unlock audio on first user interaction (for mobile)
@@ -65,7 +71,8 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   useEffect(() => {
-    if (unlockedRef.current) return
+    if (typeof window === 'undefined' || unlockedRef.current) return
+    
     document.addEventListener('click', unlock, { once: true })
     document.addEventListener('touchstart', unlock, { once: true })
     return () => {
@@ -77,7 +84,9 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
   const toggle = useCallback(() => {
     setEnabled(prev => {
       const next = !prev
-      localStorage.setItem('sound-enabled', String(next))
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('sound-enabled', String(next))
+      }
       return next
     })
   }, [])
