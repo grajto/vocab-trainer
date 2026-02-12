@@ -11,6 +11,7 @@ import { Button } from '../_components/ui/Button'
 import { type ContinueItem } from './_components/ContinueCard'
 import { JumpBackInCarousel } from './_components/JumpBackInCarousel'
 import { StartSessionButton } from './_components/StartSessionButton'
+import { DismissableRecommendedCard } from './_components/DismissableRecommendedCard'
 import { PageHeader } from '../_components/PageHeader'
 import { PageContainer } from '../_components/PageContainer'
 import { ProgressBar } from '../_components/ui/ProgressBar'
@@ -48,6 +49,7 @@ export default async function DashboardPage() {
   let folders: any = { docs: [] }
   let recentSessions: any = { docs: [] }
   let allSessionsYear: any = { docs: [] }
+  let allCards: any = { docs: [] }
 
   try {
     const results = await Promise.all([
@@ -75,6 +77,7 @@ export default async function DashboardPage() {
         limit: 0,
         depth: 0,
       }),
+      payload.find({ collection: 'cards', where: { owner: { equals: user.id } }, limit: 5000, depth: 0 }),
     ])
 
     sessionsToday = results[0]
@@ -82,11 +85,19 @@ export default async function DashboardPage() {
     folders = results[2]
     recentSessions = results[3]
     allSessionsYear = results[4]
+    allCards = results[5]
   } catch (err) {
     console.error('Dashboard data fetch error:', err)
   }
 
   const settings = getStudySettings(user as Record<string, unknown>)
+
+  // Create card count map for each deck
+  const deckCardCount = new Map<string, number>()
+  for (const card of allCards.docs) {
+    const deckId = String(card.deck)
+    deckCardCount.set(deckId, (deckCardCount.get(deckId) || 0) + 1)
+  }
 
   const timeTodayMinutes = sessionsToday.docs.reduce((sum: number, s: any) => {
     if (!s.startedAt || !s.endedAt) return sum
@@ -178,7 +189,7 @@ export default async function DashboardPage() {
         type: 'deck' as const,
         id: String(d.id),
         name: d.name,
-        meta: `${Number(d.cardCount || 0)} słówek`,
+        meta: `${deckCardCount.get(String(d.id)) || 0} słówek`,
       })),
     ...folders.docs.slice(0, 4).map((f: any) => {
       const count = decks.docs.filter((d: any) => String(d.folder) === String(f.id)).length
@@ -331,37 +342,7 @@ export default async function DashboardPage() {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {recommendedDecks.map((item) => (
-              <Card key={item.id} className="relative">
-                <div className="space-y-4">
-                  {/* Header with deck name and mode badge */}
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="text-base font-bold truncate" style={{ color: 'var(--text)' }}>{item.title}</h3>
-                    <span className="rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap" style={{ background: 'var(--primary-soft)', color: 'var(--primary)' }}>
-                      {item.modeLabel}
-                    </span>
-                  </div>
-                  
-                  {/* Quick stats */}
-                  <div className="flex items-center gap-3 text-sm" style={{ color: 'var(--text-muted)' }}>
-                    <div className="flex items-center gap-1">
-                      <BookOpen size={14} />
-                      <span className="font-medium" style={{ color: 'var(--text)' }}>{item.targetCount}</span> kart
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock size={14} />
-                      <span className="font-medium" style={{ color: 'var(--text)' }}>{item.estimatedMinutes}</span> min
-                    </div>
-                  </div>
-
-                  {/* Start button */}
-                  <StartSessionButton
-                    deckId={item.id}
-                    mode={item.mode}
-                    targetCount={item.targetCount}
-                    direction={item.direction}
-                  />
-                </div>
-              </Card>
+              <DismissableRecommendedCard key={item.id} item={item} />
             ))}
           </div>
         )}
