@@ -72,6 +72,18 @@ export function middleware(request: NextRequest) {
     return response
   }
 
+  // Log when token is NOT injected for allowlisted APIs
+  if (isAllowlistedApi && APP_ACCESS_TOKEN && !shouldInjectAppToken) {
+    console.warn('[middleware] Token NOT injected for allowlisted API', {
+      pathname,
+      fetchSite,
+      origin,
+      host,
+      isTrustedRequest,
+      reason: !isTrustedRequest ? 'untrusted request' : 'unknown',
+    })
+  }
+
   if (isApiPath) {
     return NextResponse.next()
   }

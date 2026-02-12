@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
       data: updateData,
     })
 
-    // Update session item
+    // Update session item (or create if missing)
     const sessionItems = await payload.find({
       collection: 'session-items',
       where: {
@@ -107,44 +107,81 @@ export async function POST(req: NextRequest) {
       depth: 0,
     })
 
+    let sessionItemId: string | number
+    let existingTaskType = taskType
+    
     if (sessionItems.docs.length > 0) {
-      const itemUpdate: Record<string, unknown> = {
-        userAnswer: userAnswer || '',
-        isCorrect,
-        aiUsed: taskType === 'sentence' || taskType === 'describe' ? !!clientAiUsed : false,
-        taskType: taskType || sessionItems.docs[0].taskType,
-        responseTimeMs: Number(responseTimeMs || 0),
-        streakAfterAnswer: Number(streakAfterAnswer || 0),
-        levelAfterAnswer: Number(updateData.level || rs.level || 0),
-        answeredAt: new Date().toISOString(),
-      }
-
-      // Save new fields if provided (gracefully handle missing columns)
-      if (attemptsCount !== undefined) itemUpdate.attemptsCount = attemptsCount
-      if (wasWrongBeforeCorrect !== undefined) itemUpdate.wasWrongBeforeCorrect = wasWrongBeforeCorrect
-      if (usedHint !== undefined) itemUpdate.usedHint = usedHint
-      if (userOverride !== undefined) itemUpdate.userOverride = userOverride
-
+      sessionItemId = sessionItems.docs[0].id
+      existingTaskType = taskType || sessionItems.docs[0].taskType
+    } else {
+      // Session item doesn't exist - create it on demand
+      console.log(`Creating session-item on-demand for session ${sessionId}, card ${cardId}`)
+      
+      // Try to get prompt from session.settings.tasks
+      let promptShown = ''
       try {
-        await payload.update({
-          collection: 'session-items',
-          id: sessionItems.docs[0].id,
-          data: itemUpdate,
-        })
+        const session = await payload.findByID({ collection: 'sessions', id: sessionId, depth: 0 })
+        const sessionSettings = session.settings as Record<string, unknown> | undefined
+        const tasks = sessionSettings?.tasks as Array<{ cardId: number; prompt: string }> | undefined
+        if (tasks) {
+          const matchingTask = tasks.find((t: { cardId: number }) => Number(t.cardId) === Number(cardId))
+          if (matchingTask) {
+            promptShown = matchingTask.prompt || ''
+          }
+        }
       } catch (err) {
-        // If new columns don't exist yet, fall back to basic update
-        console.error('SessionItem update with new fields failed, falling back:', err)
-        await payload.update({
-          collection: 'session-items',
-          id: sessionItems.docs[0].id,
-          data: {
-            userAnswer: userAnswer || '',
-            isCorrect,
-            aiUsed: taskType === 'sentence' || taskType === 'describe' ? !!clientAiUsed : false,
-            taskType: taskType || sessionItems.docs[0].taskType,
-          },
-        })
+        console.error('Failed to read session.settings.tasks:', err)
       }
+      
+      const newItem = await payload.create({
+        collection: 'session-items',
+        data: {
+          session: sessionId,
+          card: cardId,
+          taskType: taskType || 'translate',
+          promptShown,
+        },
+      })
+      sessionItemId = newItem.id
+      existingTaskType = taskType || 'translate'
+    }
+
+    const itemUpdate: Record<string, unknown> = {
+      userAnswer: userAnswer || '',
+      isCorrect,
+      aiUsed: taskType === 'sentence' || taskType === 'describe' ? !!clientAiUsed : false,
+      taskType: existingTaskType,
+      responseTimeMs: Number(responseTimeMs || 0),
+      streakAfterAnswer: Number(streakAfterAnswer || 0),
+      levelAfterAnswer: Number(updateData.level || rs.level || 0),
+      answeredAt: new Date().toISOString(),
+    }
+
+    // Save new fields if provided (gracefully handle missing columns)
+    if (attemptsCount !== undefined) itemUpdate.attemptsCount = attemptsCount
+    if (wasWrongBeforeCorrect !== undefined) itemUpdate.wasWrongBeforeCorrect = wasWrongBeforeCorrect
+    if (usedHint !== undefined) itemUpdate.usedHint = usedHint
+    if (userOverride !== undefined) itemUpdate.userOverride = userOverride
+
+    try {
+      await payload.update({
+        collection: 'session-items',
+        id: sessionItemId,
+        data: itemUpdate,
+      })
+    } catch (err) {
+      // If new columns don't exist yet, fall back to basic update
+      console.error('SessionItem update with new fields failed, falling back:', err)
+      await payload.update({
+        collection: 'session-items',
+        id: sessionItemId,
+        data: {
+          userAnswer: userAnswer || '',
+          isCorrect,
+          aiUsed: taskType === 'sentence' || taskType === 'describe' ? !!clientAiUsed : false,
+          taskType: existingTaskType,
+        },
+      })
     }
 
     // Update session completedCount and accuracy
@@ -166,6 +203,15 @@ export async function POST(req: NextRequest) {
 
     if (session.mode === 'test' && linkedTestId) {
       try {
+        // Get promptShown from the item we just updated/created
+        let promptForTest = ''
+        try {
+          const updatedItem = await payload.findByID({ collection: 'session-items', id: sessionItemId, depth: 0 })
+          promptForTest = updatedItem.promptShown || ''
+        } catch {
+          // Fall back to empty
+        }
+        
         await payload.create({
           collection: 'test_answers',
           data: {
@@ -173,7 +219,7 @@ export async function POST(req: NextRequest) {
             test: linkedTestId,
             card: cardId,
             modeUsed: taskType || 'translate',
-            promptShown: sessionItems.docs[0]?.promptShown || '',
+            promptShown: promptForTest,
             userAnswer: userAnswer || '',
             isCorrect,
             timeMs: Number(responseTimeMs || 0),

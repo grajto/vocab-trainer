@@ -6,8 +6,43 @@ import { selectCardsForSession } from '@/src/lib/srs'
 import { parseNumericId } from '@/src/lib/parseNumericId'
 import { getStudySettings } from '@/src/lib/userSettings'
 
+// Batch create session items with concurrency limit
+async function createSessionItemsBatch(
+  payload: Awaited<ReturnType<typeof getPayload>>,
+  sessionId: string | number,
+  tasks: Array<{ cardId: number; taskType: string; prompt: string }>,
+  concurrency = 10
+): Promise<void> {
+  const results: Array<{ status: 'fulfilled' | 'rejected'; value?: unknown; reason?: unknown }> = []
+  
+  for (let i = 0; i < tasks.length; i += concurrency) {
+    const batch = tasks.slice(i, i + concurrency)
+    const batchPromises = batch.map(task =>
+      payload.create({
+        collection: 'session-items',
+        data: {
+          session: sessionId,
+          card: task.cardId,
+          taskType: task.taskType,
+          promptShown: task.prompt,
+        },
+      })
+    )
+    const batchResults = await Promise.allSettled(batchPromises)
+    results.push(...batchResults)
+  }
+  
+  const failed = results.filter(r => r.status === 'rejected')
+  if (failed.length > 0) {
+    console.error(`Failed to create ${failed.length}/${tasks.length} session items`)
+    // Continue execution - items can be created on-demand in answer endpoint
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
+    console.time('session-start-total')
+    
     if (!requireAppToken(req)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -37,6 +72,8 @@ export async function POST(req: NextRequest) {
     }
 
     const count = Math.min(Math.max(Number(targetCount), 5), 35)
+    
+    console.time('session-start-card-selection')
     const payload = await getPayload()
     const settings = getStudySettings(user as Record<string, unknown>)
 
@@ -156,6 +193,9 @@ export async function POST(req: NextRequest) {
 
     const selectedCards = selectCardsForSession(cardsWithState, cardsWithoutState, count, 20, introToday)
 
+    console.timeEnd('session-start-card-selection')
+    console.time('session-start-create-review-states')
+    
     // Precompute numeric card IDs
     const cardIdMap = new Map<string, number>()
     for (const card of selectedCards) {
@@ -190,6 +230,9 @@ export async function POST(req: NextRequest) {
     }
 
 
+    console.timeEnd('session-start-create-review-states')
+    console.time('session-start-create-test-and-session')
+    
     if (mode === 'test' && !linkedTestId) {
       const createdTest = await payload.create({
         collection: 'tests',
@@ -208,30 +251,6 @@ export async function POST(req: NextRequest) {
       })
       linkedTestId = createdTest.id
     }
-
-    // Create session
-    const session = await payload.create({
-      collection: 'sessions',
-      data: {
-        owner: user.id,
-        mode,
-        deck: deckIds[0],
-        targetCount: selectedCards.length,
-        completedCount: 0,
-        startedAt: new Date().toISOString(),
-        settings: {
-          deckIds,
-          folderId: numericFolderId ?? null,
-          direction: selectedDirection,
-          levels: selectedLevels,
-          shuffle,
-          requireCorrect,
-          testId: linkedTestId,
-          enabledModes: Array.isArray(enabledModes) ? enabledModes : null,
-          randomAnswerOrder: Boolean(randomAnswerOrder),
-        },
-      },
-    })
 
     // Determine direction for each task
     function getDirection(): 'normal' | 'reverse' {
@@ -327,10 +346,16 @@ export async function POST(req: NextRequest) {
       tasks.sort(() => Math.random() - 0.5)
     }
 
-    await payload.update({
+    // Create session with all settings and tasks included
+    const session = await payload.create({
       collection: 'sessions',
-      id: session.id,
       data: {
+        owner: user.id,
+        mode,
+        deck: deckIds[0],
+        targetCount: selectedCards.length,
+        completedCount: 0,
+        startedAt: new Date().toISOString(),
         settings: {
           deckIds,
           folderId: numericFolderId ?? null,
@@ -347,19 +372,15 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    // Create session items
-    for (const task of tasks) {
-      await payload.create({
-        collection: 'session-items',
-        data: {
-          session: session.id,
-          card: task.cardId,
-          taskType: task.taskType,
-          promptShown: task.prompt,
-        },
-      })
-    }
+    console.timeEnd('session-start-create-test-and-session')
+    console.time('session-start-create-items')
 
+    // Create session items in parallel batches
+    await createSessionItemsBatch(payload, session.id, tasks)
+
+    console.timeEnd('session-start-create-items')
+    console.timeEnd('session-start-total')
+    
     return NextResponse.json({
       sessionId: session.id,
       tasks,
