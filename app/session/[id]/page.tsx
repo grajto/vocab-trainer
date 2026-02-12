@@ -447,6 +447,19 @@ export default function SessionPage() {
     advanceToNext(50)
   }, [advanceToNext, resetFeedbackState])
 
+  const renderAdvanceButton = (onClick: () => void) => (
+    <div className="flex justify-center">
+      <button
+        type="button"
+        onClick={onClick}
+        className="inline-flex items-center px-5 py-2.5 rounded-[var(--radiusSm)] text-sm font-semibold text-white transition-colors"
+        style={{ background: '#3B82F6' }}
+      >
+        Dalej (Enter)
+      </button>
+    </div>
+  )
+
   useEffect(() => {
     if (!sentenceNeedsAcknowledge || typeof window === 'undefined') return
 
@@ -1181,30 +1194,8 @@ export default function SessionPage() {
                   )}
                 </>
               )}
-              {currentTask.taskType === 'sentence' && sentenceNeedsAcknowledge && (
-                <div className="flex justify-center">
-                  <button
-                    type="button"
-                    onClick={acknowledgeSentenceFeedback}
-                    className="inline-flex items-center px-5 py-2.5 rounded-[var(--radiusSm)] text-sm font-semibold text-white transition-colors"
-                    style={{ background: '#3B82F6' }}
-                  >
-                    Dalej (Enter)
-                  </button>
-                </div>
-              )}
-              {translateNeedsAdvance && (
-                <div className="flex justify-center">
-                  <button
-                    type="button"
-                    onClick={acknowledgeTranslateFeedback}
-                    className="inline-flex items-center px-5 py-2.5 rounded-[var(--radiusSm)] text-sm font-semibold text-white transition-colors"
-                    style={{ background: '#3B82F6' }}
-                  >
-                    Dalej (Enter)
-                  </button>
-                </div>
-              )}
+              {currentTask.taskType === 'sentence' && sentenceNeedsAcknowledge && renderAdvanceButton(acknowledgeSentenceFeedback)}
+              {translateNeedsAdvance && renderAdvanceButton(acknowledgeTranslateFeedback)}
               {currentTask.taskType === 'sentence' && aiInfo && (
                 <div className="flex justify-center">
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-semibold" style={{

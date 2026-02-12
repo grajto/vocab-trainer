@@ -11,10 +11,11 @@ type TestMode = 'abcd' | 'translate' | 'sentence' | 'describe'
 
 const DEFAULT_TEST_MODE: TestMode = 'abcd'
 const allowedTestModes: TestMode[] = ['abcd', 'translate']
+const allowedTestModesSet = new Set<string>(allowedTestModes)
 
 const normalizeTestModes = (modes: unknown): TestMode[] => {
   if (!Array.isArray(modes)) return [DEFAULT_TEST_MODE]
-  const filtered = modes.filter((mode): mode is TestMode => allowedTestModes.includes(mode as TestMode))
+  const filtered = modes.filter((mode): mode is TestMode => typeof mode === 'string' && allowedTestModesSet.has(mode))
   return filtered.length ? filtered : [DEFAULT_TEST_MODE]
 }
 
