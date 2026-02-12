@@ -36,13 +36,14 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
   // Test modal state
   const [showTestModal, setShowTestModal] = useState(false)
   const [testCount, setTestCount] = useState(20)
-  const [enabledModes, setEnabledModes] = useState<TestMode[]>(['abcd', 'translate'])
+  const [enabledModes, setEnabledModes] = useState<TestMode[]>(['abcd', 'translate', 'sentence', 'describe'])
   const [randomizeQuestions, setRandomizeQuestions] = useState(true)
   const [randomizeAnswers, setRandomizeAnswers] = useState(true)
   const [starredOnly, setStarredOnly] = useState(false)
   const [answerLang, setAnswerLang] = useState('auto')
   const [allowTypos, setAllowTypos] = useState(true)
   const [requireSingle, setRequireSingle] = useState(false)
+  const [useAllWords, setUseAllWords] = useState(false)
   const [minTypeHint, setMinTypeHint] = useState(false)
   const [savingPrefs, setSavingPrefs] = useState(false)
   const [loadingPrefs, setLoadingPrefs] = useState(true)
@@ -181,9 +182,10 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
 
   function handleModeSelect(mode: StudyMode) {
     if (mode === 'test') {
-      setSelectedMode('test')
       setShowTestModal(true)
-      setTimeout(() => modalRef.current?.focus(), 0)
+      setSelectedMode(null)
+      setSelectedCount(null)
+      return
     } else {
       setSelectedMode(mode)
       setSelectedCount(null)
@@ -216,7 +218,7 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
   async function handleCreateTest() {
     const poolEmpty = starredOnly && cardCount === 0
     if (poolEmpty) return
-    const target = Math.min(cardCount, clampedCount)
+    const target = useAllWords ? cardCount : Math.min(cardCount, clampedCount)
     const settings = {
       modes: enabledModes,
       starredOnly,

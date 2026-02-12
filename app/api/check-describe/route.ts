@@ -75,7 +75,7 @@ Zasady:
       ] satisfies Array<{ role: 'system' | 'user'; content: string }>
 
       const completion = await openai.chat.completions.create({
-        model: 'gpt-5-nano',
+        model: 'gpt-4o-mini',
         max_completion_tokens: 400,
         response_format: { type: 'json_object' },
         messages,

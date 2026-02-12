@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from '@/src/lib/getPayload'
 import { getUser } from '@/src/lib/getUser'
+import { parseNumericId } from '@/src/lib/parseNumericId'
 
 export async function GET(req: NextRequest) {
   const user = await getUser()
@@ -84,33 +85,40 @@ export async function POST(req: NextRequest) {
   const payload = await getPayload()
 
   const questionCount = Math.max(5, Math.min(100, Number(body.questionCount || 20)))
-  const sourceType = body.sourceType === 'folder' ? 'folder' : 'set'
+  const allowAll = Boolean(body.allowAll)
+  const sourceType = allowAll ? 'all' : (body.sourceType === 'folder' ? 'folder' : 'set')
   const enabledModes = Array.isArray(body.enabledModes) && body.enabledModes.length > 0
-    ? body.enabledModes.filter((m: string) => ['abcd', 'translate', 'sentence', 'describe'].includes(m))
+    ? body.enabledModes.filter((m: string) => ['abcd', 'translate'].includes(m))
     : ['abcd', 'translate']
 
-  const sourceDeck = sourceType === 'set' ? body.deckId : null
-  const sourceFolder = sourceType === 'folder' ? body.folderId : null
+  const sourceDeckRaw = sourceType === 'set' ? body.deckId : null
+  const sourceFolderRaw = sourceType === 'folder' ? body.folderId : null
+  const sourceDeck = sourceDeckRaw != null ? parseNumericId(sourceDeckRaw) : null
+  const sourceFolder = sourceFolderRaw != null ? parseNumericId(sourceFolderRaw) : null
 
-  if ((sourceType === 'set' && !sourceDeck) || (sourceType === 'folder' && !sourceFolder)) {
-    return NextResponse.json({ error: 'Missing source id' }, { status: 400 })
+  if (!allowAll && ((sourceType === 'set' && sourceDeck === null) || (sourceType === 'folder' && sourceFolder === null))) {
+    return NextResponse.json({ error: 'Missing or invalid source id' }, { status: 400 })
   }
 
-  const test = await payload.create({
-    collection: 'tests',
-    data: {
-      owner: user.id,
-      sourceType,
-      sourceDeck,
-      sourceFolder,
-      enabledModes: enabledModes.map((mode: string) => ({ mode })),
-      questionCount,
-      randomQuestionOrder: Boolean(body.randomQuestionOrder ?? true),
-      randomAnswerOrder: Boolean(body.randomAnswerOrder ?? true),
-      startedAt: new Date().toISOString(),
-      status: 'in_progress',
-    },
-  })
-
-  return NextResponse.json({ testId: test.id })
+  try {
+    const test = await payload.create({
+      collection: 'tests',
+      data: {
+        owner: user.id,
+        sourceType,
+        sourceDeck,
+        sourceFolder,
+        enabledModes: enabledModes.map((mode: string) => ({ mode })),
+        questionCount,
+        randomQuestionOrder: Boolean(body.randomQuestionOrder ?? true),
+        randomAnswerOrder: Boolean(body.randomAnswerOrder ?? true),
+        startedAt: new Date().toISOString(),
+        status: 'in_progress',
+      },
+    })
+    return NextResponse.json({ testId: test.id })
+  } catch (error) {
+    console.error('Test create failed, falling back to ephemeral test', error)
+    return NextResponse.json({ testId: null, warning: 'tests_table_missing' })
+  }
 }

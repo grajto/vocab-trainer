@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
       })
       deckIds = folderDecks.docs.map((d: any) => Number(d.id))
     }
-    if (allowAll && !numericDeckId && !numericFolderId) {
+    if (allowAll) {
       const ownedDecks = await payload.find({
         collection: 'decks',
         where: { owner: { equals: user.id } },
@@ -191,22 +191,27 @@ export async function POST(req: NextRequest) {
 
 
     if (mode === 'test' && !linkedTestId) {
-      const createdTest = await payload.create({
-        collection: 'tests',
-        data: {
-          owner: user.id,
-          sourceType: numericDeckId ? 'set' : 'folder',
-          sourceDeck: numericDeckId || null,
-          sourceFolder: numericFolderId || null,
-          enabledModes: (Array.isArray(enabledModes) && enabledModes.length > 0 ? enabledModes : ['abcd', 'translate']).map((m: string) => ({ mode: m })),
-          questionCount: count,
-          randomQuestionOrder: Boolean(shuffle),
-          randomAnswerOrder: Boolean(randomAnswerOrder),
-          startedAt: new Date().toISOString(),
-          status: 'in_progress',
-        },
-      })
-      linkedTestId = createdTest.id
+      try {
+        const createdTest = await payload.create({
+          collection: 'tests',
+          data: {
+            owner: user.id,
+            sourceType: numericDeckId ? 'set' : 'folder',
+            sourceDeck: numericDeckId || null,
+            sourceFolder: numericFolderId || null,
+            enabledModes: (Array.isArray(enabledModes) && enabledModes.length > 0 ? enabledModes : ['abcd', 'translate']).map((m: string) => ({ mode: m })),
+            questionCount: count,
+            randomQuestionOrder: Boolean(shuffle),
+            randomAnswerOrder: Boolean(randomAnswerOrder),
+            startedAt: new Date().toISOString(),
+            status: 'in_progress',
+          },
+        })
+        linkedTestId = createdTest.id
+      } catch (err: unknown) {
+        console.error('Session start test create failed, running ephemeral test', err)
+        linkedTestId = null
+      }
     }
 
     // Create session
@@ -263,8 +268,8 @@ export async function POST(req: NextRequest) {
       let taskType: TaskType
       if (mode === 'test') {
         const types = (Array.isArray(enabledModes) && enabledModes.length > 0
-          ? enabledModes.filter((m: string) => ['translate', 'abcd', 'sentence', 'describe'].includes(m))
-          : ['translate', 'abcd']) as Array<'translate' | 'abcd' | 'sentence' | 'describe'>
+          ? enabledModes.filter((m: string) => ['translate', 'abcd'].includes(m))
+          : ['translate', 'abcd']) as Array<'translate' | 'abcd'>
         taskType = types[Math.floor(Math.random() * types.length)] || 'translate'
       } else if (mode === 'mixed') {
         const types: MixedTaskType[] = ['translate', 'abcd', 'sentence']

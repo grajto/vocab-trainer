@@ -24,7 +24,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
   const [name, setName] = useState('')
   const [description, setOpis] = useState('')
   const [folderId, setFolderId] = useState('')
-  const [direction, setKierunek] = useState<'front-to-back' | 'back-to-front' | 'both'>('front-to-back')
+  const direction = 'back-to-front'
   const [cards, setCards] = useState<CardRow[]>([
     { id: newId(), front: '', back: '', examples: '', notes: '' },
   ])
@@ -121,16 +121,14 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
 
   const importPreview = showImport ? parseImport() : []
 
-  async function saveDeck(startSession: boolean) {
+  async function saveDeck() {
     const validCards = cards.filter(c => c.front.trim() && c.back.trim())
     if (!name.trim()) { setError('Deck name is required'); return }
     if (validCards.length === 0) { setError('Add at least 1 card with front and back'); return }
 
     setSaving(true)
     setError('')
-    if (startSession) {
-      unlock()
-    }
+    unlock()
 
     try {
       const deckRes = await fetch('/api/decks', {
@@ -172,26 +170,6 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
         ))
       }
 
-      if (startSession) {
-        // Start a session immediately
-        const sessionRes = await fetch('/api/session/start', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            deckId: String(deckId),
-            mode: 'translate',
-            targetCount: Math.min(validCards.length, 20),
-          }),
-        })
-        const sessionData = await sessionRes.json()
-        if (sessionRes.ok && sessionData.sessionId) {
-          sessionStorage.setItem(`session-${sessionData.sessionId}`, JSON.stringify({ tasks: sessionData.tasks, mode: 'translate', returnDeckId: String(deckId) }))
-          router.push(`/session/${sessionData.sessionId}`)
-          return
-        }
-      }
-
       router.push(`/decks/${deckId}`)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to save')
@@ -202,25 +180,6 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-end gap-2">
-        <button
-          onClick={() => saveDeck(true)}
-          disabled={saving}
-          className="px-4 py-2 rounded-full text-sm font-semibold disabled:opacity-50 transition-colors"
-          style={{ background: 'var(--primary-soft)', color: 'var(--primary)', border: '1px solid transparent' }}
-        >
-          {saving ? 'Zapisywanie…' : 'Utwórz i ćwicz'}
-        </button>
-        <button
-          onClick={() => saveDeck(false)}
-          disabled={saving}
-          className="px-5 py-2 rounded-full text-sm font-semibold disabled:opacity-50 transition-colors"
-          style={{ background: 'var(--primary)', color: '#fff', border: '1px solid var(--primary)' }}
-        >
-          {saving ? 'Zapisywanie…' : 'Utwórz zestaw'}
-        </button>
-      </div>
-
       {error && <p className="text-sm rounded-xl px-4 py-2" style={{ color: '#dc2626', background: '#fef2f2', border: '1px solid #fecaca' }}>{error}</p>}
 
       {/* Deck meta */}
@@ -252,20 +211,6 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
           </div>
 
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>Odpowiedz w języku</label>
-            <select
-              value={direction}
-              onChange={e => setKierunek(e.target.value as typeof direction)}
-              className="w-full rounded-[var(--radiusSm)] px-3 py-2.5 text-sm focus:outline-none"
-              style={{ border: '1px solid var(--border)', color: 'var(--text)', background: 'var(--surface)' }}
-            >
-              <option value="front-to-back">🇵🇱 Polski</option>
-              <option value="back-to-front">🇬🇧 Angielski</option>
-              <option value="both">🌍 Oba (losowo)</option>
-            </select>
-          </div>
-
-          <div>
             <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>Opis</label>
             <input
               type="text"
@@ -285,14 +230,9 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
           <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>
             Cards <span style={{ color: 'var(--gray400)' }}>({cards.filter(c => c.front && c.back).length} valid)</span>
           </p>
-          <div className="flex gap-2">
-            <button onClick={() => setShowImport(true)} className="text-xs font-medium px-3 py-1.5 rounded-[var(--radiusSm)] transition-colors" style={{ color: 'var(--muted)', border: '1px solid var(--border)' }}>
-              Import
-            </button>
-            <button onClick={addRow} className="text-xs font-medium" style={{ color: 'var(--primary)' }}>
-              + Add Row
-            </button>
-          </div>
+          <button onClick={() => setShowImport(true)} className="text-xs font-medium px-3 py-1.5 rounded-[var(--radiusSm)] transition-colors" style={{ color: 'var(--muted)', border: '1px solid var(--border)' }}>
+            Import
+          </button>
         </div>
 
         {/* Header */}
@@ -353,21 +293,12 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
       </div>
 
       {/* Bottom actions */}
-      <div className="flex items-center justify-between">
-        <button onClick={() => router.back()} className="text-sm transition-colors" style={{ color: 'var(--gray400)' }}>
-          Cancel
-        </button>
-        <div className="flex gap-2">
-          <button
-            onClick={() => saveDeck(true)}
-            disabled={saving}
-            className="px-5 py-2.5 rounded-full text-sm font-semibold disabled:opacity-50 transition-colors"
-            style={{ background: 'var(--primaryBg)', color: 'var(--primary)', border: '1px solid transparent' }}
-          >
-            {saving ? 'Zapisywanie…' : 'Utwórz i ćwicz'}
+        <div className="flex items-center justify-between">
+          <button onClick={() => router.back()} className="text-sm transition-colors" style={{ color: 'var(--gray400)' }}>
+            Cancel
           </button>
           <button
-            onClick={() => saveDeck(false)}
+            onClick={() => saveDeck()}
             disabled={saving}
             className="px-6 py-2.5 rounded-full text-sm font-semibold disabled:opacity-50 transition-colors"
             style={{ background: 'var(--primary)', color: '#fff', border: '1px solid var(--primary)' }}
@@ -375,7 +306,6 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
             {saving ? 'Saving…' : `Create (${cards.filter(c => c.front && c.back).length} cards)`}
           </button>
         </div>
-      </div>
 
       {/* Import Modal */}
       {showImport && (

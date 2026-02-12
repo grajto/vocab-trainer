@@ -1,10 +1,39 @@
-import { timingSafeEqual } from 'crypto'
+import { createHmac, timingSafeEqual } from 'crypto'
 import { headers as getHeaders, cookies as getCookies } from 'next/headers'
 import { getPayload } from './getPayload'
+import { USERNAME_TOKEN_MAX_AGE_SECONDS } from './usernameAuth'
+
+function verifyUsernameToken(token: string): string | null {
+  const secret = process.env.PAYLOAD_SECRET
+  if (!secret) return null
+  const parts = token.split('.')
+  if (parts.length !== 2) return null
+  const [payloadB64, signature] = parts
+  const expectedSig = createHmac('sha256', secret).update(payloadB64).digest('base64url')
+  const expectedBuf = Buffer.from(expectedSig)
+  const actualBuf = Buffer.from(signature)
+  if (expectedBuf.length !== actualBuf.length) return null
+  try {
+    if (!timingSafeEqual(expectedBuf, actualBuf)) return null
+  } catch {
+    return null
+  }
+  try {
+    const decoded = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8')) as { u?: string; t?: number }
+    if (!decoded.u || typeof decoded.u !== 'string') return null
+    if (!decoded.t || typeof decoded.t !== 'number') return null
+    const maxAgeMs = USERNAME_TOKEN_MAX_AGE_SECONDS * 1000
+    if (Date.now() - decoded.t > maxAgeMs) return null
+    return decoded.u
+  } catch {
+    return null
+  }
+}
 
 export async function getUser() {
   const payload = await getPayload()
   const headersList = await getHeaders()
+  const cookieStore = await getCookies()
   const fetchSite = headersList.get('sec-fetch-site')
   const origin = headersList.get('origin')
   const host = headersList.get('host')
@@ -19,6 +48,29 @@ export async function getUser() {
   if (user) {
     console.info('[auth] Payload cookie user authenticated', { id: user.id })
     return user
+  }
+
+  // Passwordless username-based login (cookie set by /api/users/login)
+  const usernameCookie = cookieStore.get('username-auth')?.value
+  const verifiedUsername = usernameCookie ? verifyUsernameToken(usernameCookie) : null
+  if (usernameCookie && !verifiedUsername) {
+    console.warn('[auth] Invalid username cookie signature')
+  }
+  if (verifiedUsername && isTrustedRequest) {
+    try {
+      const found = await payload.find({
+        collection: 'users',
+        where: { username: { equals: verifiedUsername } },
+        limit: 1,
+        depth: 0,
+      })
+      if (found.docs[0]) {
+        console.info('[auth] Username cookie authenticated', { username: verifiedUsername })
+        return found.docs[0]
+      }
+    } catch (error) {
+      console.error('Username cookie lookup failed', error)
+    }
   }
 
   const appToken = process.env.APP_ACCESS_TOKEN
@@ -49,7 +101,6 @@ export async function getUser() {
   }
 
   const headerToken = headersList.get('x-app-token')
-  const cookieStore = await getCookies()
   const cookieToken = cookieStore.get('app-token')?.value
   const incomingToken = headerToken || cookieToken
   if (!incomingToken) {

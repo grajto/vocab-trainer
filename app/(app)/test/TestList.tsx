@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useRouter } from 'next/navigation'
 
 type Item = { id: string; name: string }
@@ -24,11 +25,13 @@ type RankingRow = { key: string; deckName: string; avgScore: number; testsCount:
 
 export function TestList({ decks, folders }: { decks: Item[]; folders: Item[] }) {
   const router = useRouter()
-  const [sourceType, setSourceType] = useState<'set' | 'folder'>('set')
+  const search = useSearchParams()
+  const [sourceType, setSourceType] = useState<'set' | 'folder' | 'all'>('set')
   const [deckId, setDeckId] = useState(decks[0]?.id || '')
   const [folderId, setFolderId] = useState(folders[0]?.id || '')
   const [questionCount, setQuestionCount] = useState(20)
   const [customCount, setCustomCount] = useState('')
+  const [useAllWords, setUseAllWords] = useState(false)
   const [enabledModes, setEnabledModes] = useState<string[]>(['abcd', 'translate'])
   const [randomQuestionOrder, setRandomQuestionOrder] = useState(true)
   const [randomAnswerOrder, setRandomAnswerOrder] = useState(true)
@@ -41,7 +44,23 @@ export function TestList({ decks, folders }: { decks: Item[]; folders: Item[] })
   const [ranking, setRanking] = useState<RankingRow[]>([])
   const [loadingResults, setLoadingResults] = useState(false)
 
-  const sourceId = sourceType === 'set' ? deckId : folderId
+  const sourceId = sourceType === 'all' ? 'all' : (sourceType === 'set' ? deckId : folderId)
+
+  // Prefill from query params
+  useEffect(() => {
+    const qSource = search.get('source')
+    const qDeck = search.get('deckId')
+    const qFolder = search.get('folderId')
+    if (qSource === 'folder' && qFolder) {
+      setSourceType('folder')
+      setFolderId(qFolder)
+    } else if (qDeck) {
+      setSourceType('set')
+      setDeckId(qDeck)
+    } else if (qSource === 'all') {
+      setSourceType('all')
+    }
+  }, [search])
 
   async function loadResults() {
     setLoadingResults(true)
@@ -63,23 +82,24 @@ export function TestList({ decks, folders }: { decks: Item[]; folders: Item[] })
     if (!canStart) return
     setLoadingStart(true)
     try {
-      const count = customCount ? Number(customCount) : questionCount
+      const count = useAllWords ? 9999 : (customCount ? Number(customCount) : questionCount)
       const create = await fetch('/api/tests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          sourceType,
-          deckId: sourceType === 'set' ? deckId : null,
-          folderId: sourceType === 'folder' ? folderId : null,
+          sourceType: useAllWords ? 'all' : sourceType,
+          deckId: useAllWords ? null : (sourceType === 'set' ? deckId : null),
+          folderId: useAllWords ? null : (sourceType === 'folder' ? folderId : null),
           questionCount: count,
           enabledModes,
           randomQuestionOrder,
           randomAnswerOrder,
+          allowAll: useAllWords,
         }),
       })
       const created = await create.json()
-      const testId = created.testId
+      const testId = created.testId || undefined
 
       const start = await fetch('/api/session/start', {
         method: 'POST',
@@ -87,12 +107,13 @@ export function TestList({ decks, folders }: { decks: Item[]; folders: Item[] })
         credentials: 'include',
         body: JSON.stringify({
           mode: 'test',
-          deckId: sourceType === 'set' ? deckId : undefined,
-          folderId: sourceType === 'folder' ? folderId : undefined,
+          deckId: useAllWords ? undefined : (sourceType === 'set' ? deckId : undefined),
+          folderId: useAllWords ? undefined : (sourceType === 'folder' ? folderId : undefined),
           targetCount: count,
           enabledModes,
           shuffle: randomQuestionOrder,
           randomAnswerOrder,
+          allowAll: useAllWords,
           testId,
         }),
       })
@@ -115,30 +136,44 @@ export function TestList({ decks, folders }: { decks: Item[]; folders: Item[] })
       <section className="rounded-xl border p-5" style={{ borderColor: 'var(--border)' }}>
         <h3 className="mb-4 text-sm font-semibold">Kreator testu</h3>
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-          <select value={sourceType} onChange={(e) => setSourceType(e.target.value as 'set' | 'folder')} className="rounded-lg border px-3 py-2 text-sm" style={{ borderColor: 'var(--border)' }}>
-            <option value="set">Zestaw</option><option value="folder">Folder</option>
+          <select
+            value={sourceType}
+            onChange={(e) => setSourceType(e.target.value as 'set' | 'folder' | 'all')}
+            className="rounded-lg border px-3 py-2 text-sm"
+            style={{ borderColor: 'var(--border)' }}
+            disabled={useAllWords}
+          >
+            <option value="set">Zestaw</option><option value="folder">Folder</option><option value="all">Wszystkie źródła</option>
           </select>
-          {sourceType === 'set' ? (
+          {sourceType === 'set' && !useAllWords ? (
             <select value={deckId} onChange={(e) => setDeckId(e.target.value)} className="rounded-lg border px-3 py-2 text-sm" style={{ borderColor: 'var(--border)' }}>
               {decks.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
             </select>
-          ) : (
+          ) : sourceType === 'folder' && !useAllWords ? (
             <select value={folderId} onChange={(e) => setFolderId(e.target.value)} className="rounded-lg border px-3 py-2 text-sm" style={{ borderColor: 'var(--border)' }}>
               {folders.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
             </select>
+          ) : (
+            <div className="rounded-lg border px-3 py-2 text-sm" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
+              Wszystkie słowa z konta
+            </div>
           )}
           <select value={String(questionCount)} onChange={(e) => { setQuestionCount(Number(e.target.value)); setCustomCount('') }} className="rounded-lg border px-3 py-2 text-sm" style={{ borderColor: 'var(--border)' }}>
             {countOptions.map((c) => <option key={c} value={c}>{c} pytań</option>)}
             <option value="0">custom</option>
           </select>
-          <input value={customCount} onChange={(e) => setCustomCount(e.target.value)} placeholder="custom" className="rounded-lg border px-3 py-2 text-sm" style={{ borderColor: 'var(--border)' }} />
+          <input value={customCount} onChange={(e) => setCustomCount(e.target.value)} placeholder="custom" className="rounded-lg border px-3 py-2 text-sm" style={{ borderColor: 'var(--border)' }} disabled={useAllWords} />
+          <label className="flex items-center gap-2 text-xs font-semibold" style={{ color: 'var(--text)' }}>
+            <input type="checkbox" checked={useAllWords} onChange={(e) => setUseAllWords(e.target.checked)} />
+            Wszystkie słowa (wszystkie zestawy i foldery)
+          </label>
         </div>
 
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           <div className="rounded-lg border p-3" style={{ borderColor: 'var(--border)' }}>
             <p className="mb-2 text-xs font-semibold">Tryby testu</p>
             <div className="grid grid-cols-2 gap-2 text-sm">
-              {['abcd', 'translate', 'sentence', 'describe'].map((m) => (
+              {['abcd', 'translate'].map((m) => (
                 <label key={m} className="flex items-center gap-2">
                   <input
                     type="checkbox"

@@ -45,6 +45,8 @@ interface TaskState {
   attempts: number
   usedHint: boolean
   wasWrongBefore: boolean
+  translatedDone?: boolean
+  describeTranslated?: boolean
 }
 
 function saveAnswerInBackground(data: {
@@ -86,6 +88,7 @@ export default function SessionPage() {
   const [feedback, setFeedback] = useState<{ correct: boolean; message: string } | null>(null)
   const [sentenceNeedsAcknowledge, setSentenceNeedsAcknowledge] = useState(false)
   const [sentenceStage, setSentenceStage] = useState<'translate' | 'sentence'>('translate')
+  const [describeStage, setDescribeStage] = useState<'translate' | 'describe'>('translate')
   const [loading, setLoading] = useState(false)
   const [sessionDone, setSessionDone] = useState(false)
   const [returnDeckId, setReturnDeckId] = useState('')
@@ -200,9 +203,21 @@ export default function SessionPage() {
   const currentTask = tasks[currentIndex]
 
   useEffect(() => {
-    setSentenceStage('translate')
+    const task = tasks[currentIndex]
+    if (task?.taskType === 'sentence') {
+      const state = getTaskState(task.cardId)
+      setSentenceStage(state.translatedDone ? 'sentence' : 'translate')
+    } else {
+      setSentenceStage('translate')
+    }
+    if (task?.taskType === 'describe') {
+      const state = getTaskState(task.cardId)
+      setDescribeStage(state.describeTranslated ? 'describe' : 'translate')
+    } else {
+      setDescribeStage('translate')
+    }
     setQuestionStartedAt(Date.now())
-  }, [currentIndex])
+  }, [currentIndex, tasks])
 
 
   async function handleStopSession() {
@@ -220,7 +235,7 @@ export default function SessionPage() {
 
   function getTaskState(cardId: string): TaskState {
     if (!taskStatesRef.current.has(cardId)) {
-      taskStatesRef.current.set(cardId, { attempts: 0, usedHint: false, wasWrongBefore: false })
+      taskStatesRef.current.set(cardId, { attempts: 0, usedHint: false, wasWrongBefore: false, translatedDone: false, describeTranslated: false })
     }
     return taskStatesRef.current.get(cardId)!
   }
@@ -499,9 +514,11 @@ export default function SessionPage() {
       setAnsweredCount(prev => prev + 1)
       setCorrectCount(prev => prev + 1)
       setStreak(prev => prev + 1)
-      setFeedback({ correct: true, message: 'Tłumaczenie poprawne. Teraz napisz zdanie z użyciem tego słowa.' })
+      state.translatedDone = true
       setSentenceStage('sentence')
       setUserAnswer('')
+      setFeedback(null)
+      setShowHint(false)
       playCorrect()
       return
     }
@@ -574,8 +591,30 @@ export default function SessionPage() {
   async function handleDescribeSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!userAnswer.trim() || !currentTask) return
-
     const state = getTaskState(currentTask.cardId)
+
+    if (describeStage === 'translate') {
+      const expected = currentTask.expectedAnswer || currentTask.answer
+      const result = checkAnswerWithTypo(userAnswer, expected)
+      const correct = result === 'correct' || result === 'typo'
+      if (!correct) {
+        setStreak(0)
+        setFeedback({ correct: false, message: `Najpierw poprawnie przetłumacz słowo. Poprawna odpowiedź: ${expected}` })
+        playWrong()
+        return
+      }
+      state.describeTranslated = true
+      setAnsweredCount(prev => prev + 1)
+      setCorrectCount(prev => prev + 1)
+      setStreak(prev => prev + 1)
+      setDescribeStage('describe')
+      setUserAnswer('')
+      setShowHint(false)
+      setFeedback(null)
+      playCorrect()
+      return
+    }
+
     state.attempts++
 
     setLoading(true)
@@ -723,9 +762,11 @@ export default function SessionPage() {
   }
 
   if (sessionMode === 'test') {
+    const isFreeForm = (taskType: string) => taskType === 'describe' || taskType === 'sentence'
     const incorrect = tasks.filter(task => {
       const answer = testAnswers[task.cardId] || ''
       if (task.taskType === 'abcd') return normalizeAnswer(answer) !== normalizeAnswer(task.answer)
+      if (isFreeForm(task.taskType)) return !answer.trim()
       return normalizeAnswer(answer) !== normalizeAnswer(task.expectedAnswer || task.answer)
     })
 
@@ -804,18 +845,21 @@ export default function SessionPage() {
               ))}
               <button
                 onClick={() => {
-                  const correct = tasks.filter(task => {
-                    const answer = testAnswers[task.cardId] || ''
-                    if (task.taskType === 'abcd') return normalizeAnswer(answer) === normalizeAnswer(task.answer)
-                    return normalizeAnswer(answer) === normalizeAnswer(task.expectedAnswer || task.answer)
-                  })
+                   const correct = tasks.filter(task => {
+                     const answer = testAnswers[task.cardId] || ''
+                     if (task.taskType === 'abcd') return normalizeAnswer(answer) === normalizeAnswer(task.answer)
+                     if (isFreeForm(task.taskType)) return Boolean(answer.trim())
+                     return normalizeAnswer(answer) === normalizeAnswer(task.expectedAnswer || task.answer)
+                   })
                   setTestScore({ correct: correct.length, total: tasks.length })
                   setTestSubmitted(true)
                   tasks.forEach(task => {
                     const answer = testAnswers[task.cardId] || ''
-                    const isCorrect = task.taskType === 'abcd'
-                      ? normalizeAnswer(answer) === normalizeAnswer(task.answer)
-                      : normalizeAnswer(answer) === normalizeAnswer(task.expectedAnswer || task.answer)
+                     const isCorrect = task.taskType === 'abcd'
+                       ? normalizeAnswer(answer) === normalizeAnswer(task.answer)
+                       : isFreeForm(task.taskType)
+                         ? Boolean(answer.trim())
+                         : normalizeAnswer(answer) === normalizeAnswer(task.expectedAnswer || task.answer)
                     saveAnswerInBackground({
                       sessionId,
                       cardId: task.cardId,
@@ -977,16 +1021,23 @@ export default function SessionPage() {
               <span className="tabular-nums">{currentIndex + 1} / {tasks.length}</span>
             </div>
           )}
-          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight" style={{ color: 'var(--text)' }}>
+          <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight mb-3" style={{ color: 'var(--text)' }}>
             {currentTask.prompt}
           </h2>
+          {currentTask.taskType === 'translate' && (
+            <p className="text-sm mb-8" style={{ color: '#64748B' }}>Przetłumacz to słowo.</p>
+          )}
           {currentTask.taskType === 'sentence' && (
-            <p className="text-sm mt-3 mb-8" style={{ color: '#64748B' }}>Create a sentence with this word.</p>
+            <p className="text-sm mb-8" style={{ color: '#64748B' }}>
+              {sentenceStage === 'translate' ? 'Przetłumacz to słowo.' : 'Ułóż zdanie z tym słowem.'}
+            </p>
           )}
           {currentTask.taskType === 'describe' && (
-            <p className="text-sm mt-3 mb-8" style={{ color: '#64748B' }}>Opisz to słowo własnymi słowami.</p>
+            <p className="text-sm mb-8" style={{ color: '#64748B' }}>Opisz to słowo własnymi słowami.</p>
           )}
-          {currentTask.taskType !== 'sentence' && <div className="mb-8" />}
+          {currentTask.taskType === 'abcd' && (
+            <p className="text-sm mb-8" style={{ color: '#64748B' }}>Wybierz poprawną odpowiedź.</p>
+          )}
 
           {showHint && !feedback && !typoState && (
             <div className="mb-6 text-sm font-mono tracking-widest rounded-full px-5 py-2 inline-block" style={{ color: '#d97706', background: '#fffbeb', border: '1px solid #fde68a' }}>
@@ -1236,7 +1287,7 @@ export default function SessionPage() {
                       className="transition-colors hover:opacity-80"
                       style={{ color: '#3B82F6' }}
                     >
-                      Nie wiem
+                      Pomiń
                     </button>
                   </div>
                 </div>
@@ -1244,22 +1295,6 @@ export default function SessionPage() {
 
               {currentTask.taskType === 'sentence' && (
                 <div className="space-y-5">
-                  {/* Title and stage indicator */}
-                  {sentenceStage === 'sentence' && (
-                    <div className="mb-4">
-                      <h3 className="text-lg font-semibold mb-3" style={{ color: 'var(--text)' }}>
-                        Ułóż zdanie z: {currentTask.prompt}
-                      </h3>
-                    </div>
-                  )}
-
-                  {/* Required word as pill/chip - show Polish word in both stages */}
-                  <div className="flex justify-center">
-                    <span className="inline-block font-semibold px-5 py-2 rounded-full text-base tracking-wide" style={{ background: 'var(--primaryBg)', color: '#3B82F6', border: '1px solid #BFDBFE' }}>
-                      {currentTask.prompt}
-                    </span>
-                  </div>
-
                   {/* Input field - single line for translate, textarea for sentence */}
                   {sentenceStage === 'translate' ? (
                     <input
@@ -1361,7 +1396,7 @@ export default function SessionPage() {
                         className="px-4 py-3 rounded-[var(--radiusSm)] text-sm font-medium transition-colors"
                         style={{ border: '1px solid var(--border)', color: '#64748B', background: 'var(--surface)' }}
                       >
-                        Skip
+                        Pomiń
                       </button>
                     )}
                   </div>
@@ -1381,41 +1416,49 @@ export default function SessionPage() {
 
               {currentTask.taskType === 'describe' && (
                 <div className="space-y-5">
-                  {/* Title */}
-                  <div className="mb-4">
-                    <h3 className="text-lg font-semibold mb-3" style={{ color: 'var(--text)' }}>
-                      Opisz używając: {currentTask.prompt}
-                    </h3>
-                  </div>
-
-                  {/* Target word chip */}
-                  <div className="flex justify-center">
-                    <span className="inline-block font-semibold px-5 py-2 rounded-full text-base tracking-wide" style={{ background: 'var(--primaryBg)', color: '#3B82F6', border: '1px solid #BFDBFE' }}>
-                      {currentTask.prompt}
-                    </span>
-                  </div>
-
-                  <textarea
-                    ref={inputRef as React.RefObject<HTMLTextAreaElement>}
-                    value={userAnswer}
-                    onChange={e => setUserAnswer(e.target.value)}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-                        e.preventDefault()
-                        if (userAnswer.trim() && !loading) {
-                          handleDescribeSubmit(e as unknown as React.FormEvent)
+                  {describeStage === 'translate' ? (
+                    <input
+                      ref={inputRef as React.RefObject<HTMLInputElement>}
+                      type="text"
+                      value={userAnswer}
+                      onChange={e => setUserAnswer(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          if (userAnswer.trim() && !loading) {
+                            handleDescribeSubmit(e as unknown as React.FormEvent)
+                          }
                         }
-                      }
-                    }}
-                    placeholder="Napisz opis..."
-                    autoFocus
-                    rows={4}
-                    className="w-full rounded-[var(--radiusSm)] px-4 py-3 text-sm focus:outline-none resize-none transition-colors"
-                    style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
-                    disabled={loading}
-                  />
+                      }}
+                      placeholder="Przetłumacz to słowo..."
+                      autoFocus
+                      className="w-full rounded-[var(--radiusSm)] px-4 py-3 text-center text-lg focus:outline-none transition-colors"
+                      style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
+                      disabled={loading}
+                    />
+                  ) : (
+                    <textarea
+                      ref={inputRef as React.RefObject<HTMLTextAreaElement>}
+                      value={userAnswer}
+                      onChange={e => setUserAnswer(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                          e.preventDefault()
+                          if (userAnswer.trim() && !loading) {
+                            handleDescribeSubmit(e as unknown as React.FormEvent)
+                          }
+                        }
+                      }}
+                      placeholder="Napisz definicję własnymi słowami..."
+                      autoFocus
+                      rows={4}
+                      className="w-full rounded-[var(--radiusSm)] px-4 py-3 text-sm focus:outline-none resize-none transition-colors"
+                      style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
+                      disabled={loading}
+                    />
+                  )}
                   <div className="flex gap-2">
-                    {!showHint && (
+                    {!showHint && describeStage === 'translate' && (
                       <button
                         type="button"
                         onClick={handleHintClick}
@@ -1432,12 +1475,50 @@ export default function SessionPage() {
                           handleDescribeSubmit(e as unknown as React.FormEvent)
                         }
                       }}
-                      disabled={loading || !userAnswer.trim()}
+                      disabled={loading || (!userAnswer.trim())}
                       className="flex-1 text-white py-3 rounded-[var(--radiusSm)] text-sm font-medium disabled:opacity-40 transition-colors"
                       style={{ background: '#3B82F6' }}
                     >
-                      {loading ? 'Checking…' : 'Sprawdź'}
+                      {loading ? 'Checking…' : describeStage === 'translate' ? 'Sprawdź' : 'Sprawdź opis'}
                     </button>
+                    {!feedback && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!currentTask) return
+                          const state = getTaskState(currentTask.cardId)
+                          state.attempts++
+                          state.wasWrongBefore = true
+                          setStreak(0)
+                          const expected = currentTask.expectedAnswer || currentTask.answer
+                          setFeedback({ correct: false, message: expected ? `Correct answer: ${expected}` : 'Pominięto' })
+                          playWrong()
+                          requeueCard(currentTask)
+                          saveAnswerInBackground({
+                            sessionId,
+                            cardId: currentTask.cardId,
+                            taskType: 'describe',
+                            userAnswer: '',
+                            isCorrect: false,
+                            expectedAnswer: expected,
+                            attemptsCount: state.attempts,
+                            wasWrongBeforeCorrect: state.wasWrongBefore,
+                            usedHint: state.usedHint,
+                            aiUsed: false,
+                            responseTimeMs: Date.now() - questionStartedAt,
+                            streakAfterAnswer: 0,
+                          })
+                          setUserAnswer('')
+                          setShowHint(false)
+                          setDescribeStage('translate')
+                          advanceToNext(FEEDBACK_DELAY_WRONG_SLOW)
+                        }}
+                        className="px-4 py-3 rounded-[var(--radiusSm)] text-sm font-medium transition-colors"
+                        style={{ border: '1px solid var(--border)', color: '#64748B', background: 'var(--surface)' }}
+                      >
+                        Pomiń
+                      </button>
+                    )}
                   </div>
                   <p className="text-xs text-center" style={{ color: '#64748B' }}>Ctrl+Enter to submit</p>
                 </div>

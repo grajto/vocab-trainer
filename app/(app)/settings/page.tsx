@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { Target, Clock, Languages, Shuffle, Monitor, Globe2, TrendingUp, Save, Check, Settings2, Sliders, PlayCircle } from 'lucide-react'
+import { Target, Clock, Languages, Shuffle, Monitor, TrendingUp, Save, Check, Settings2, Sliders, PlayCircle } from 'lucide-react'
 import { PageHeader } from '../_components/PageHeader'
 import { PageContainer } from '../_components/PageContainer'
 import { useSettings } from '@/src/contexts/SettingsContext'
@@ -20,8 +20,6 @@ export default function SettingsPage() {
     setSessionLength,
     theme,
     setTheme,
-    language,
-    setLanguage,
   } = useSettings()
 
   const saveTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
@@ -228,6 +226,22 @@ export default function SettingsPage() {
             className="w-full"
           />
         </div>
+
+        <div className="settings-field">
+          <label>
+            <Clock size={16} />
+            <span>Sesje dziennie: {settings.minSessionsPerDay}</span>
+          </label>
+          <input
+            type="range"
+            min={1}
+            max={10}
+            step={1}
+            value={settings.minSessionsPerDay}
+            onChange={(e) => handleChange({ minSessionsPerDay: Number(e.target.value) })}
+            className="w-full"
+          />
+        </div>
       </section>
 
       {/* Section 5: Wygląd */}
@@ -243,51 +257,17 @@ export default function SettingsPage() {
             <span>Motyw</span>
           </label>
           <div className="flex flex-col gap-2">
-            {[
-              { value: 'light', label: 'Jasny' },
-              { value: 'dark', label: 'Ciemny' },
-              { value: 'system', label: 'Systemowy' },
-            ].map((option) => (
+             {[
+               { value: 'light', label: 'Jasny' },
+               { value: 'dark', label: 'Ciemny' },
+             ].map((option) => (
               <label key={option.value} className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
                   name="theme"
                   value={option.value}
                   checked={theme === option.value}
-                  onChange={(e) => setTheme(e.target.value as 'light' | 'dark' | 'system')}
-                  className="cursor-pointer"
-                />
-                <span className="text-sm">{option.label}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Section 5: Język interfejsu */}
-      <section className="settings-section">
-        <div className="settings-section-header">
-          <Globe2 size={20} />
-          <h2>Język interfejsu</h2>
-        </div>
-        
-        <div className="settings-field">
-          <label>
-            <Globe2 size={16} />
-            <span>Wybierz język</span>
-          </label>
-          <div className="flex flex-col gap-2">
-            {[
-              { value: 'pl', label: 'Polski' },
-              { value: 'en', label: 'English' },
-            ].map((option) => (
-              <label key={option.value} className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="language"
-                  value={option.value}
-                  checked={language === option.value}
-                  onChange={(e) => setLanguage(e.target.value as 'pl' | 'en')}
+                  onChange={(e) => setTheme(e.target.value as 'light' | 'dark')}
                   className="cursor-pointer"
                 />
                 <span className="text-sm">{option.label}</span>

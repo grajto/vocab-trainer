@@ -36,6 +36,7 @@ export function middleware(request: NextRequest) {
   }
 
   const payloadToken = request.cookies.get('payload-token')
+  const usernameAuth = request.cookies.get('username-auth')
 
   const fetchSite = request.headers.get('sec-fetch-site')
   const origin = request.headers.get('origin')
@@ -77,7 +78,7 @@ export function middleware(request: NextRequest) {
   }
 
   // Check for Payload CMS auth cookie ('payload-token' is Payload's default cookie name)
-  if (!payloadToken) {
+  if (!payloadToken && !usernameAuth) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
