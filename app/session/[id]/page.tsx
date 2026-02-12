@@ -1073,7 +1073,7 @@ export default function SessionPage() {
                   {/* Required EN word as pill/chip */}
                   <div className="flex justify-center">
                     <span className="inline-block font-semibold px-5 py-2 rounded-full text-base tracking-wide" style={{ background: 'var(--primaryBg)', color: 'var(--primary)' }}>
-                      {sentenceStage === 'translate' ? currentTask.prompt : (currentTask.promptPl || currentTask.answer)}
+                      {sentenceStage === 'translate' ? currentTask.prompt : currentTask.answer}
                     </span>
                   </div>
 

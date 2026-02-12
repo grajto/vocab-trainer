@@ -6,7 +6,7 @@ import { createOpenAIClient, logOpenAIEnv } from '@/src/lib/ai/openaiClient'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-const MODEL = 'gpt-5-nano'
+const MODEL = 'gpt-4o-mini'
 const PRIMARY_MAX_OUTPUT_TOKENS = 900
 const RETRY_MAX_OUTPUT_TOKENS = 1200
 const PREVIEW_LENGTH = 200
