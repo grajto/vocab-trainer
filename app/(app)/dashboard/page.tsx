@@ -281,7 +281,7 @@ export default async function DashboardPage() {
   }))
 
   return (
-    <PageContainer className="space-y-8 px-4 py-2 lg:px-0">
+    <PageContainer className="space-y-6 px-4 py-2 lg:px-0">
       <PageHeader title="Dashboard" description="Szybki podgląd Twojej nauki" icon={BarChart3} />
       {/* Section A - Informacje (unified analytical card) */}
       <section>
@@ -331,7 +331,7 @@ export default async function DashboardPage() {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {recommendedDecks.map((item) => (
-              <div key={item.id} className="relative overflow-hidden rounded-[var(--radius)] p-5" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
+              <div key={item.id} className="relative overflow-hidden rounded-xl p-5" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
                 <div className="absolute bottom-0 right-0 opacity-10 pointer-events-none" style={{ width: '110px', height: '110px', background: 'var(--primary)', borderRadius: '50% 0 0 0', transform: 'translate(20%, 20%)' }} />
                 <div className="relative z-10 space-y-3">
                   <div className="flex items-start justify-between gap-2">
@@ -427,8 +427,8 @@ export default async function DashboardPage() {
             <p className="text-xs font-semibold mb-2.5" style={{ color: 'var(--text)' }}>Ostatnie 5 dni</p>
             <div className="grid grid-cols-5 gap-2">
               {last5Days.map((day) => {
-                const stateColor = day.met ? '#22c55e' : day.sessions > 0 ? '#f97316' : '#ef4444'
-                const bgColor = day.met ? '#ecfdf3' : day.sessions > 0 ? '#fff7ed' : '#fef2f2'
+                const stateColor = day.met ? 'var(--success)' : day.sessions > 0 ? 'var(--warning-dark)' : 'var(--danger)'
+                const bgColor = day.met ? 'var(--success-soft)' : day.sessions > 0 ? 'var(--warning-soft)' : 'var(--danger-soft)'
 
                 return (
                   <div
@@ -450,7 +450,7 @@ export default async function DashboardPage() {
               {hardestSets.slice(0, 3).map((set) => (
                 <div key={set.id} className="flex items-center justify-between rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
                   <span className="text-xs font-semibold truncate" style={{ color: 'var(--text)' }}>{set.name}</span>
-                  <span className="text-[11px] font-bold px-2 py-1 rounded-full" style={{ background: '#fee2e2', color: '#b91c1c' }}>
+                  <span className="text-[11px] font-bold px-2 py-1 rounded-full" style={{ background: 'var(--danger-soft)', color: 'var(--danger-dark)' }}>
                     {set.accuracy}%
                   </span>
                 </div>
@@ -464,7 +464,7 @@ export default async function DashboardPage() {
               {easiestSets.slice(0, 3).map((set) => (
                 <div key={set.id} className="flex items-center justify-between rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
                   <span className="text-xs font-semibold truncate" style={{ color: 'var(--text)' }}>{set.name}</span>
-                  <span className="text-[11px] font-bold px-2 py-1 rounded-full" style={{ background: '#ecfdf3', color: '#15803d' }}>
+                  <span className="text-[11px] font-bold px-2 py-1 rounded-full" style={{ background: 'var(--success-soft)', color: 'var(--success-dark)' }}>
                     {set.accuracy}%
                   </span>
                 </div>

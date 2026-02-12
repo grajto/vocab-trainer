@@ -15,8 +15,14 @@
   --primary-hover: #3647d6;
   --primary-dark: #2a3ac0;
   --success: #16a34a;
+  --success-soft: #ecfdf3;
+  --success-dark: #15803d;
   --danger: #ef4444;
+  --danger-soft: #fee2e2;
+  --danger-dark: #b91c1c;
   --warning: #f59e0b;
+  --warning-soft: #fff7ed;
+  --warning-dark: #f97316;
 
   /* Spacing Scale */
   --xs: 6px;
@@ -343,9 +349,9 @@ button, input { font: inherit; }
 }
 
 .section-heading {
-  font-size: 0.875rem;
-  line-height: 1.4285714286;
-  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1.5;
+  font-weight: 700;
   letter-spacing: normal;
   color: var(--text);
   margin: 0 0 var(--md) 0;

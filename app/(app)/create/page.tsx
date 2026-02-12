@@ -5,6 +5,7 @@ import { getPayload } from '@/src/lib/getPayload'
 import { DeckCreator } from './DeckCreator'
 import { PageHeader } from '../_components/PageHeader'
 import { PageContainer } from '../_components/PageContainer'
+import { Card } from '../_components/ui/Card'
 
 export const dynamic = 'force-dynamic'
 
@@ -34,9 +35,9 @@ export default async function CreateDeckPage() {
     <PageContainer>
       <PageHeader title="Kreator zestawów" icon={PlusCircle} />
       
-      <div className="rounded-xl border p-5 lg:p-6" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+      <Card>
         <DeckCreator folders={folderList} />
-      </div>
+      </Card>
     </PageContainer>
   )
 }
