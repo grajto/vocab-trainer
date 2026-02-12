@@ -24,6 +24,7 @@ export async function GET(req: NextRequest) {
       where: {
         owner: { equals: user.id },
         startedAt: { greater_than_equal: monthStart.toISOString(), less_than_equal: monthEnd.toISOString() },
+        endedAt: { not_equals: null },
       },
       depth: 1,
       limit: 0,
@@ -51,9 +52,9 @@ export async function GET(req: NextRequest) {
     const dayMap = new Map<string, DayInfo>()
 
     for (const session of sessions.docs) {
-      if (!session.startedAt) continue
+      if (!session.startedAt || !session.endedAt) continue
       const start = new Date(session.startedAt)
-      const end = session.endedAt ? new Date(session.endedAt) : now
+      const end = new Date(session.endedAt)
       const minutes = Math.max(1, Math.round((end.getTime() - start.getTime()) / 60000))
       const key = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`
 
