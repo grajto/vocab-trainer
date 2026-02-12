@@ -488,7 +488,7 @@ export default function SessionPage() {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          phrase: currentTask.requiredEn || currentTask.prompt,
+          phrase: getRequiredWord(),
           sentence: userAnswer,
           promptPl: currentTask.promptPl || currentTask.answer,
         }),
@@ -510,7 +510,7 @@ export default function SessionPage() {
       } else {
         state.wasWrongBefore = true
         setStreak(0)
-        const message = buildSentenceFeedbackMessage(data as Record<string, unknown>, currentTask.requiredEn || currentTask.prompt)
+        const message = buildSentenceFeedbackMessage(data as Record<string, unknown>, getRequiredWord())
         setFeedback({ correct: false, message })
         setSentenceNeedsAcknowledge(true)
         playWrong()
@@ -638,6 +638,17 @@ export default function SessionPage() {
   function showToast(message: string) {
     setToast({ message, show: true })
     setTimeout(() => setToast(null), 2500)
+  }
+
+  function getModeLabel(): string {
+    if (sessionMode === 'sentence') return 'Sentence'
+    if (sessionMode === 'describe') return 'Describe'
+    if (currentTask?.taskType === 'abcd') return 'ABCD'
+    return 'Translate'
+  }
+
+  function getRequiredWord(): string {
+    return currentTask?.requiredEn || currentTask?.prompt || ''
   }
 
   if (tasks.length === 0) {
@@ -845,7 +856,7 @@ export default function SessionPage() {
             {/* Left: Mode badge */}
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider" style={{ background: '#EFF6FF', color: '#3B82F6', border: '1px solid #BFDBFE' }}>
-                {sessionMode === 'sentence' ? 'Sentence' : sessionMode === 'describe' ? 'Describe' : currentTask?.taskType === 'abcd' ? 'ABCD' : 'Translate'}
+                {getModeLabel()}
               </span>
             </div>
 
@@ -1186,7 +1197,7 @@ export default function SessionPage() {
                   {sentenceStage === 'sentence' && (
                     <div className="mb-4">
                       <h3 className="text-lg font-semibold mb-3" style={{ color: 'var(--text)' }}>
-                        Ułóż zdanie z: {currentTask.requiredEn || currentTask.prompt}
+                        Ułóż zdanie z: {getRequiredWord()}
                       </h3>
                     </div>
                   )}
@@ -1194,7 +1205,7 @@ export default function SessionPage() {
                   {/* Required EN word as pill/chip */}
                   <div className="flex justify-center">
                     <span className="inline-block font-semibold px-5 py-2 rounded-full text-base tracking-wide" style={{ background: 'var(--primaryBg)', color: '#3B82F6', border: '1px solid #BFDBFE' }}>
-                      {sentenceStage === 'translate' ? currentTask.prompt : (currentTask.requiredEn || currentTask.prompt)}
+                      {sentenceStage === 'translate' ? currentTask.prompt : getRequiredWord()}
                     </span>
                   </div>
 
