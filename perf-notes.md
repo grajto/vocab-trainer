@@ -147,7 +147,7 @@ invalidate({ deckId: '123' })
 
 **Purpose:**
 - Prevent cold starts by keeping database connection alive
-- Should be called by cron every 5 minutes
+- Called by cron every 6 hours (4 times per day)
 
 **Recommended Cron Setup (Vercel Cron):**
 ```json
@@ -155,11 +155,13 @@ invalidate({ deckId: '123' })
   "crons": [
     {
       "path": "/api/warmup",
-      "schedule": "*/5 * * * *"
+      "schedule": "0 */6 * * *"
     }
   ]
 }
 ```
+
+**Note:** Schedule set to every 6 hours to comply with Vercel Hobby plan limits (daily jobs only). For Pro plans, you can increase frequency to `*/5 * * * *` (every 5 minutes) for better cold start prevention.
 
 ## Expected Performance Improvements
 
