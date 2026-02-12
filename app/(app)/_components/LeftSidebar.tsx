@@ -127,6 +127,9 @@ export function LeftSidebar({
         : 'bg-[#f1f5f9] text-[var(--muted)] hover:bg-[#e2e8f0]'
     }`
 
+  const toggleChip = <T,>(currentValue: T | null, newValue: T) => 
+    currentValue === newValue ? null : newValue
+
   async function startDailySession() {
     if (dailyLoading) return
     setDailyLoading(true)
@@ -222,21 +225,21 @@ export function LeftSidebar({
               <div className="flex flex-wrap gap-1.5">
                 <button
                   type="button"
-                  onClick={() => setQuickDirection(quickDirection === 'pl-en' ? null : 'pl-en')}
+                  onClick={() => setQuickDirection(toggleChip(quickDirection, 'pl-en'))}
                   className={chipClass(quickDirection === 'pl-en')}
                 >
                   PL→EN
                 </button>
                 <button
                   type="button"
-                  onClick={() => setQuickDirection(quickDirection === 'en-pl' ? null : 'en-pl')}
+                  onClick={() => setQuickDirection(toggleChip(quickDirection, 'en-pl'))}
                   className={chipClass(quickDirection === 'en-pl')}
                 >
                   EN→PL
                 </button>
                 <button
                   type="button"
-                  onClick={() => setQuickDirection(quickDirection === 'both' ? null : 'both')}
+                  onClick={() => setQuickDirection(toggleChip(quickDirection, 'both'))}
                   className={chipClass(quickDirection === 'both')}
                 >
                   Oba
@@ -250,28 +253,28 @@ export function LeftSidebar({
               <div className="flex flex-wrap gap-1.5">
                 <button
                   type="button"
-                  onClick={() => setQuickMode(quickMode === 'translate' ? null : 'translate')}
+                  onClick={() => setQuickMode(toggleChip(quickMode, 'translate'))}
                   className={chipClass(quickMode === 'translate')}
                 >
                   Tłumacz
                 </button>
                 <button
                   type="button"
-                  onClick={() => setQuickMode(quickMode === 'sentence' ? null : 'sentence')}
+                  onClick={() => setQuickMode(toggleChip(quickMode, 'sentence'))}
                   className={chipClass(quickMode === 'sentence')}
                 >
                   Zdania
                 </button>
                 <button
                   type="button"
-                  onClick={() => setQuickMode(quickMode === 'describe' ? null : 'describe')}
+                  onClick={() => setQuickMode(toggleChip(quickMode, 'describe'))}
                   className={chipClass(quickMode === 'describe')}
                 >
                   Opis
                 </button>
                 <button
                   type="button"
-                  onClick={() => setQuickMode(quickMode === 'abcd' ? null : 'abcd')}
+                  onClick={() => setQuickMode(toggleChip(quickMode, 'abcd'))}
                   className={chipClass(quickMode === 'abcd')}
                 >
                   ABCD

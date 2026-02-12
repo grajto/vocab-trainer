@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server'
 import { getPayload } from '@/src/lib/getPayload'
 import { getUser } from '@/src/lib/getUser'
 
+interface Task {
+  completed?: boolean
+}
+
 export async function GET() {
   const user = await getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -30,7 +34,7 @@ export async function GET() {
     const session = result.docs[0] as unknown as {
       id: string
       deck?: { id: string; name: string } | string
-      settings?: { tasks?: unknown[] }
+      settings?: { tasks?: Task[] }
       mode?: string
       targetCount?: number
     }
@@ -38,7 +42,7 @@ export async function GET() {
     // Calculate progress
     const tasks = session.settings?.tasks || []
     const totalTasks = session.targetCount || tasks.length || 0
-    const completedTasks = tasks.filter((t: { completed?: boolean }) => t.completed).length
+    const completedTasks = tasks.filter((t) => t.completed).length
     const progressRatio = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
 
     // Get deck name
