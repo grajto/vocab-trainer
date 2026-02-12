@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { requireAppToken } from '@/app/api/_lib/requireAppToken'
-import { getUser } from '@/app/api/_lib/getUser'
+import { requireAppToken } from '@/src/lib/requireAppToken'
+import { getUser } from '@/src/lib/getUser'
 
 export async function PATCH(
   request: Request,
