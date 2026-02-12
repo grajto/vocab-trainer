@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
     const payload = await getPayload()
     const sp = req.nextUrl.searchParams
 
-    const preset = sp.get('preset') || '30' // 7|30|90|custom
+    const preset = sp.get('preset') || '30' // 7|30|90|custom|all
     const customFrom = toDateSafe(sp.get('from'))
     const customTo = toDateSafe(sp.get('to'))
     const deckId = sp.get('deckId') || ''
@@ -35,9 +35,11 @@ export async function GET(req: NextRequest) {
     const level = Number(sp.get('level') || 0)
 
     const now = new Date()
-    const from = preset === 'custom'
-      ? (customFrom || new Date(now.getTime() - 30 * 86400000))
-      : new Date(now.getTime() - Number(preset) * 86400000)
+    const from = preset === 'all'
+      ? new Date(0)
+      : preset === 'custom'
+        ? (customFrom || new Date(now.getTime() - 30 * 86400000))
+        : new Date(now.getTime() - Number(preset) * 86400000)
     const to = preset === 'custom' ? (customTo || now) : now
 
     const [decks, folders, sessionsRaw, reviewStates, cards] = await Promise.all([
@@ -109,6 +111,7 @@ export async function GET(req: NextRequest) {
     const avgSessionMinutes = totalSessions > 0
       ? Math.round(sessions.reduce((a, s) => a + Number(s.durationSeconds || 0), 0) / totalSessions / 60)
       : 0
+    const totalMinutes = Math.round(sessions.reduce((a, s) => a + Number(s.durationSeconds || 0), 0) / 60)
 
     const activityMap = new Map<string, { sessions: number; minutes: number }>()
     for (const s of sessions) {
@@ -183,6 +186,24 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    let selectedFolderStats: Record<string, unknown> | null = null
+    if (folderId && !deckId) {
+      const folderDeckIds = decks.docs
+        .filter((d) => String(d.folder || '') === String(folderId))
+        .map((d) => String(d.id))
+      const folderCards = cards.docs.filter((c) => folderDeckIds.includes(String(c.deck)))
+      const selectedLevelDist = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+      for (const c of folderCards) {
+        const l = Number(rsByCard.get(String(c.id))?.level || 0)
+        if (l >= 0 && l <= 5) selectedLevelDist[l as 0 | 1 | 2 | 3 | 4 | 5] += 1
+      }
+      selectedFolderStats = {
+        folderId,
+        folderName: folders.docs.find((f) => String(f.id) === String(folderId))?.name || 'Folder',
+        levelDistribution: selectedLevelDist,
+      }
+    }
+
     return NextResponse.json({
       filters: {
         decks: decks.docs.map((d) => ({ id: String(d.id), name: d.name, folderId: d.folder ? String(d.folder) : '' })),
@@ -190,6 +211,7 @@ export async function GET(req: NextRequest) {
       },
       global: {
         totalSessions,
+        totalMinutes,
         totalCorrect,
         totalWrong,
         accuracyPercent: totalCorrect + totalWrong > 0 ? Math.round((totalCorrect / (totalCorrect + totalWrong)) * 100) : 0,
@@ -199,6 +221,7 @@ export async function GET(req: NextRequest) {
       activity,
       modeStats,
       selectedDeckStats,
+      selectedFolderStats,
       sessions: sessions.slice(0, 200).map((s) => ({
         id: String(s.id),
         mode: String(s.mode),

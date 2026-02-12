@@ -43,6 +43,7 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
   const [loading, setLoading] = useState(false)
   const [selectedMode, setSelectedMode] = useState<StudyMode | null>(null)
   const [selectedCount, setSelectedCount] = useState<number | null>(null)
+  const [customCount, setCustomCount] = useState('')
 
   // Test modal state
   const [showTestModal, setShowTestModal] = useState(false)
@@ -196,15 +197,21 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
       setShowTestModal(true)
       setSelectedMode(null)
       setSelectedCount(null)
+      setCustomCount('')
       return
     } else {
       setSelectedMode(mode)
       setSelectedCount(null)
+      setCustomCount('')
+      if (cardCount > 0 && cardCount < cardCountOptions[0]) {
+        setSelectedCount(cardCount)
+      }
     }
   }
 
   function handleCountSelect(count: number) {
     setSelectedCount(count)
+    setCustomCount('')
   }
 
   function handleReset() {
@@ -317,6 +324,46 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
                 </button>
               )
             })}
+          </div>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedCount(cardCount)
+                setCustomCount('')
+              }}
+              disabled={loading || cardCount === 0}
+              className="rounded-xl px-4 py-3 text-sm font-semibold transition-all hover:opacity-90 disabled:opacity-50"
+              style={{
+                border: `1px solid ${selectedCount === cardCount ? 'var(--primary)' : 'var(--border)'}`,
+                background: selectedCount === cardCount ? 'var(--primary-soft)' : 'var(--surface)',
+                color: selectedCount === cardCount ? 'var(--primary)' : 'var(--text)',
+              }}
+            >
+              Wszystkie ({cardCount})
+            </button>
+            <label
+              className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm"
+              style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
+            >
+              Custom
+              <input
+                type="number"
+                min={1}
+                max={cardCount}
+                value={customCount}
+                onChange={(e) => {
+                  const value = e.target.value
+                  setCustomCount(value)
+                  const parsed = Number(value)
+                  if (Number.isFinite(parsed) && parsed > 0) {
+                    setSelectedCount(Math.min(cardCount, parsed))
+                  }
+                }}
+                className="w-full rounded-lg border px-3 py-1 text-sm focus:outline-none"
+                style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
+              />
+            </label>
           </div>
         </div>
       )}

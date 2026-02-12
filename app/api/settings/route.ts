@@ -11,7 +11,7 @@ function clampNumber(value: unknown, fallback: number, min: number, max: number)
 
 function normalizeSettings(body: Record<string, unknown>) {
   return {
-    minSessionsPerDay: clampNumber(body.minSessionsPerDay, defaultStudySettings.minSessionsPerDay, 1, 10),
+    minSessionsPerDay: clampNumber(body.minSessionsPerDay, defaultStudySettings.minSessionsPerDay, 1, 20),
     minMinutesPerDay: clampNumber(body.minMinutesPerDay, defaultStudySettings.minMinutesPerDay, 5, 180),
     dailyGoalMode: ['sessions', 'minutes', 'hybrid'].includes(String(body.dailyGoalMode))
       ? String(body.dailyGoalMode)

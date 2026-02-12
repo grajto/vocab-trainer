@@ -215,7 +215,7 @@ export default function SettingsPage() {
           <input
             type="range"
             min={10}
-            max={60}
+            max={180}
             step={5}
             value={settings.minMinutesPerDay}
             onChange={(e) => handleChange({ minMinutesPerDay: Number(e.target.value) })}
@@ -231,7 +231,7 @@ export default function SettingsPage() {
           <input
             type="range"
             min={1}
-            max={10}
+            max={20}
             step={1}
             value={settings.minSessionsPerDay}
             onChange={(e) => handleChange({ minSessionsPerDay: Number(e.target.value) })}

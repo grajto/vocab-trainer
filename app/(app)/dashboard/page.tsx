@@ -330,7 +330,7 @@ export default async function DashboardPage() {
 
             {/* A2: Goal + progress */}
             <div className="py-5" style={{ borderColor: 'var(--border)' }}>
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-4">
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Sesje dziennie: {sessionsGoal}</p>

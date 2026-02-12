@@ -24,6 +24,7 @@ export function FolderQuickModeButtons({ folderId, cardCount }: { folderId: stri
   const [loading, setLoading] = useState(false)
   const [selectedMode, setSelectedMode] = useState<StudyMode | null>(null)
   const [selectedCount, setSelectedCount] = useState<number | null>(null)
+  const [customCount, setCustomCount] = useState('')
   const [showTestModal, setShowTestModal] = useState(false)
   const [testCount, setTestCount] = useState(20)
   const [enabledModes, setEnabledModes] = useState<string[]>(['abcd', 'translate'])
@@ -67,6 +68,10 @@ export function FolderQuickModeButtons({ folderId, cardCount }: { folderId: stri
     } else {
       setSelectedMode(mode)
       setSelectedCount(null)
+      setCustomCount('')
+      if (cardCount > 0 && cardCount < cardCountOptions[0]) {
+        setSelectedCount(cardCount)
+      }
     }
   }
 
@@ -128,7 +133,10 @@ export function FolderQuickModeButtons({ folderId, cardCount }: { folderId: stri
                 <button
                   key={count}
                   type="button"
-                  onClick={() => setSelectedCount(count)}
+                  onClick={() => {
+                    setSelectedCount(count)
+                    setCustomCount('')
+                  }}
                   disabled={!isAvailable || loading}
                   className="flex items-center justify-center rounded-xl p-4 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{
@@ -145,6 +153,46 @@ export function FolderQuickModeButtons({ folderId, cardCount }: { folderId: stri
                 </button>
               )
             })}
+          </div>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedCount(cardCount)
+                setCustomCount('')
+              }}
+              disabled={loading || cardCount === 0}
+              className="rounded-xl px-4 py-3 text-sm font-semibold transition-all hover:opacity-90 disabled:opacity-50"
+              style={{
+                border: `1px solid ${selectedCount === cardCount ? 'var(--primary)' : 'var(--border)'}`,
+                background: selectedCount === cardCount ? 'var(--primary-soft)' : 'var(--surface)',
+                color: selectedCount === cardCount ? 'var(--primary)' : 'var(--text)',
+              }}
+            >
+              Wszystkie ({cardCount})
+            </button>
+            <label
+              className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm"
+              style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
+            >
+              Custom
+              <input
+                type="number"
+                min={1}
+                max={cardCount}
+                value={customCount}
+                onChange={(e) => {
+                  const value = e.target.value
+                  setCustomCount(value)
+                  const parsed = Number(value)
+                  if (Number.isFinite(parsed) && parsed > 0) {
+                    setSelectedCount(Math.min(cardCount, parsed))
+                  }
+                }}
+                className="w-full rounded-lg border px-3 py-1 text-sm focus:outline-none"
+                style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
+              />
+            </label>
           </div>
         </div>
       )}
