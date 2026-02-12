@@ -1,12 +1,12 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { requireAppToken } from '@/src/lib/requireAppToken'
 import { getUser } from '@/src/lib/getUser'
 
 export async function PATCH(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await requireAppToken(request)
@@ -16,13 +16,14 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { id } = await params
     const { starred } = await request.json()
     const payload = await getPayload({ config })
 
     // Update the card
     const card = await payload.update({
       collection: 'cards',
-      id: params.id,
+      id: id,
       data: {
         starred: starred === true,
       },
