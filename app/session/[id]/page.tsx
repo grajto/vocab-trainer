@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { checkAnswerWithTypo, generateHint, normalizeAnswer } from '@/src/lib/answerCheck'
 import { useSound } from '@/src/lib/SoundProvider'
 import { MoreVertical } from 'lucide-react'
+import { StarToggle } from '@/app/_components/StarToggle'
 
 const FEEDBACK_DELAY_CORRECT = 200
 const FEEDBACK_DELAY_WRONG = 1500
@@ -19,6 +20,7 @@ interface Task {
   answer: string
   expectedAnswer?: string
   options?: string[]
+  starred?: boolean
   /** Sentence mode: PL meaning shown as big prompt */
   promptPl?: string
   /** Sentence mode: EN word that must appear in the sentence */
@@ -892,7 +894,13 @@ export default function SessionPage() {
             <span className="uppercase tracking-[0.3em]">
               {currentTask.taskType === 'sentence' ? 'sentence' : currentTask.taskType}
             </span>
-            <span className="tabular-nums">{currentIndex + 1} / {tasks.length}</span>
+            <div className="flex items-center gap-3">
+              <StarToggle 
+                cardId={currentTask.cardId} 
+                initialStarred={currentTask.starred || false}
+              />
+              <span className="tabular-nums">{currentIndex + 1} / {tasks.length}</span>
+            </div>
           </div>
           <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight" style={{ color: 'var(--text)' }}>
             {currentTask.prompt}
