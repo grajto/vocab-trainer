@@ -335,7 +335,7 @@ If issues occur:
 
 After validating these optimizations:
 
-1. Set up Vercel Cron for warmup endpoint (every 6 hours for Hobby plan, or every 5 minutes for Pro plan)
+1. Set up Vercel Cron for warmup endpoint (once daily for free plan, every 6 hours for Hobby plan, or every 5 minutes for Pro plan)
 2. Enable production monitoring and alerts
 3. Gather real-world metrics and compare to targets
 4. Consider additional optimizations if needed:

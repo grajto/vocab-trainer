@@ -95,15 +95,15 @@ Configuration:
 - `app/api/warmup/route.ts` (already existed)
 - `vercel.json` (new cron configuration)
 
-Cron job runs every 6 hours (4 times per day):
+Cron job runs once daily:
 ```json
 {
   "path": "/api/warmup",
-  "schedule": "0 */6 * * *"
+  "schedule": "0 0 * * *"
 }
 ```
 
-**Note:** Schedule set to every 6 hours to comply with Vercel Hobby plan limits. For Pro plans, increase to `*/5 * * * *` for better cold start prevention.
+**Note:** Schedule set to once daily (midnight UTC) to comply with Vercel free plan limits. For Hobby plans, can increase to `0 */6 * * *` (every 6 hours). For Pro plans, increase to `*/5 * * * *` (every 5 minutes) for better cold start prevention.
 
 **Benefits:**
 - Prevents database cold starts
