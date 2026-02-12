@@ -191,22 +191,27 @@ export async function POST(req: NextRequest) {
 
 
     if (mode === 'test' && !linkedTestId) {
-      const createdTest = await payload.create({
-        collection: 'tests',
-        data: {
-          owner: user.id,
-          sourceType: numericDeckId ? 'set' : 'folder',
-          sourceDeck: numericDeckId || null,
-          sourceFolder: numericFolderId || null,
-          enabledModes: (Array.isArray(enabledModes) && enabledModes.length > 0 ? enabledModes : ['abcd', 'translate']).map((m: string) => ({ mode: m })),
-          questionCount: count,
-          randomQuestionOrder: Boolean(shuffle),
-          randomAnswerOrder: Boolean(randomAnswerOrder),
-          startedAt: new Date().toISOString(),
-          status: 'in_progress',
-        },
-      })
-      linkedTestId = createdTest.id
+      try {
+        const createdTest = await payload.create({
+          collection: 'tests',
+          data: {
+            owner: user.id,
+            sourceType: numericDeckId ? 'set' : 'folder',
+            sourceDeck: numericDeckId || null,
+            sourceFolder: numericFolderId || null,
+            enabledModes: (Array.isArray(enabledModes) && enabledModes.length > 0 ? enabledModes : ['abcd', 'translate']).map((m: string) => ({ mode: m })),
+            questionCount: count,
+            randomQuestionOrder: Boolean(shuffle),
+            randomAnswerOrder: Boolean(randomAnswerOrder),
+            startedAt: new Date().toISOString(),
+            status: 'in_progress',
+          },
+        })
+        linkedTestId = createdTest.id
+      } catch (err: unknown) {
+        console.error('Session start test create failed, running ephemeral test', err)
+        linkedTestId = null
+      }
     }
 
     // Create session
