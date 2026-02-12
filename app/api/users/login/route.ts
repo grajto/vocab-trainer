@@ -1,7 +1,14 @@
-'use server'
-
 import { NextResponse } from 'next/server'
 import { getPayload } from '@/src/lib/getPayload'
+import { createHmac } from 'crypto'
+
+function signUsernameToken(username: string) {
+  const secret = process.env.PAYLOAD_SECRET
+  if (!secret) throw new Error('Missing PAYLOAD_SECRET')
+  const payload = Buffer.from(JSON.stringify({ u: username, t: Date.now() })).toString('base64url')
+  const signature = createHmac('sha256', secret).update(payload).digest('base64url')
+  return `${payload}.${signature}`
+}
 
 export async function POST(req: Request) {
   try {
@@ -24,12 +31,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Nieprawidłowy login.' }, { status: 401 })
     }
 
+    const token = signUsernameToken(username)
+
     const response = NextResponse.json({ ok: true, userId: result.docs[0].id })
-    response.cookies.set('username-auth', username, {
+    response.cookies.set('username-auth', token, {
       httpOnly: true,
       sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',
       path: '/',
+      maxAge: 60 * 60 * 24 * 30, // 30 days
     })
     return response
   } catch (error) {

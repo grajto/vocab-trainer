@@ -1,6 +1,33 @@
-import { timingSafeEqual } from 'crypto'
+import { createHmac, timingSafeEqual } from 'crypto'
 import { headers as getHeaders, cookies as getCookies } from 'next/headers'
 import { getPayload } from './getPayload'
+
+function verifyUsernameToken(token: string): string | null {
+  const secret = process.env.PAYLOAD_SECRET
+  if (!secret) return null
+  const parts = token.split('.')
+  if (parts.length !== 2) return null
+  const [payloadB64, signature] = parts
+  const expectedSig = createHmac('sha256', secret).update(payloadB64).digest('base64url')
+  const expectedBuf = Buffer.from(expectedSig)
+  const actualBuf = Buffer.from(signature)
+  if (expectedBuf.length !== actualBuf.length) return null
+  try {
+    if (!timingSafeEqual(expectedBuf, actualBuf)) return null
+  } catch {
+    return null
+  }
+  try {
+    const decoded = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8')) as { u?: string; t?: number }
+    if (!decoded.u || typeof decoded.u !== 'string') return null
+    if (!decoded.t || typeof decoded.t !== 'number') return null
+    const maxAgeMs = 1000 * 60 * 60 * 24 * 30 // 30 days
+    if (Date.now() - decoded.t > maxAgeMs) return null
+    return decoded.u
+  } catch {
+    return null
+  }
+}
 
 export async function getUser() {
   const payload = await getPayload()
@@ -25,15 +52,22 @@ export async function getUser() {
   // Passwordless username-based login (cookie set by /api/users/login)
   const usernameCookie = cookieStore.get('username-auth')?.value
   if (usernameCookie && isTrustedRequest) {
+    const verifiedUsername = verifyUsernameToken(usernameCookie)
+    if (!verifiedUsername) {
+      console.warn('[auth] Invalid username cookie signature')
+    }
+  }
+  const verifiedUsername = usernameCookie ? verifyUsernameToken(usernameCookie) : null
+  if (verifiedUsername && isTrustedRequest) {
     try {
       const found = await payload.find({
         collection: 'users',
-        where: { username: { equals: usernameCookie } },
+        where: { username: { equals: verifiedUsername } },
         limit: 1,
         depth: 0,
       })
       if (found.docs[0]) {
-        console.info('[auth] Username cookie authenticated', { username: usernameCookie })
+        console.info('[auth] Username cookie authenticated', { username: verifiedUsername })
         return found.docs[0]
       }
     } catch (error) {
