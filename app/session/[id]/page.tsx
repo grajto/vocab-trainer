@@ -426,28 +426,27 @@ export default function SessionPage() {
     return lines.join('\n')
   }
 
-  function acknowledgeSentenceFeedback() {
+  const resetFeedbackState = useCallback(() => {
     setFeedback(null)
-    setSentenceNeedsAcknowledge(false)
     setUserAnswer('')
     setShowHint(false)
     setTypoState(null)
     setAiInfo(null)
     setSelectedOption(null)
+  }, [])
+
+  function acknowledgeSentenceFeedback() {
+    resetFeedbackState()
+    setSentenceNeedsAcknowledge(false)
     advanceToNext(50)
   }
 
   const acknowledgeTranslateFeedback = useCallback(() => {
-    setFeedback(null)
+    resetFeedbackState()
     setTranslateNeedsAdvance(false)
-    setUserAnswer('')
-    setShowHint(false)
-    setTypoState(null)
-    setAiInfo(null)
-    setSelectedOption(null)
     setSentenceNeedsAcknowledge(false)
     advanceToNext(50)
-  }, [advanceToNext])
+  }, [advanceToNext, resetFeedbackState])
 
   useEffect(() => {
     if (!sentenceNeedsAcknowledge || typeof window === 'undefined') return

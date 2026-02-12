@@ -9,7 +9,8 @@ import { useSound } from '@/src/lib/SoundProvider'
 type StudyMode = 'translate' | 'abcd' | 'sentence' | 'describe' | 'mixed' | 'test'
 type TestMode = 'abcd' | 'translate' | 'sentence' | 'describe'
 
-const allowedTestModes: TestMode[] = ['abcd', 'translate']
+const DEFAULT_TEST_MODE: TestMode = 'abcd'
+const allowedTestModes: TestMode[] = [DEFAULT_TEST_MODE, 'translate']
 
 const modes = [
   { id: 'abcd' as const, label: 'ABCD', icon: Grid3X3, color: 'var(--primary)' },
@@ -75,7 +76,7 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
         setStarredOnly(!!parsed.starredOnly)
         const modes = parsed.enabledModes?.length ? parsed.enabledModes : (parsed.enabledTypes?.length ? parsed.enabledTypes : allowedTestModes)
         const normalizedModes = (modes as TestMode[]).filter((mode) => allowedTestModes.includes(mode))
-        setEnabledModes(normalizedModes.length ? normalizedModes : ['abcd'])
+        setEnabledModes(normalizedModes.length ? normalizedModes : [DEFAULT_TEST_MODE])
         setRandomizeQuestions(parsed.randomizeQuestions ?? true)
         setRandomizeAnswers(parsed.randomizeAnswers ?? true)
         setAnswerLang(parsed.answerLang ?? 'auto')
@@ -99,7 +100,7 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
               ? data.enabledModes 
               : (Array.isArray(data.enabledTypes) && data.enabledTypes.length ? data.enabledTypes : allowedTestModes)
             const normalizedModes = (modes as TestMode[]).filter((mode) => allowedTestModes.includes(mode))
-            setEnabledModes(normalizedModes.length ? normalizedModes : ['abcd'])
+            setEnabledModes(normalizedModes.length ? normalizedModes : [DEFAULT_TEST_MODE])
             setRandomizeQuestions(data.randomizeQuestions ?? true)
             setRandomizeAnswers(data.randomizeAnswers ?? true)
             const langs = Array.isArray(data.answerLanguages) && data.answerLanguages[0]?.lang
@@ -212,7 +213,7 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
       if (!next) arr = prev.filter((m) => m !== mode)
       if (!arr.length) {
         setMinTypeHint(true)
-        return ['abcd']
+        return [DEFAULT_TEST_MODE]
       }
       setMinTypeHint(false)
       return arr
@@ -225,7 +226,7 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
     const target = useAllWords ? cardCount : Math.min(cardCount, clampedCount)
     const selectedModes = enabledModes.filter((mode) => allowedTestModes.includes(mode))
     const settings = {
-      modes: selectedModes.length ? selectedModes : ['abcd'],
+      modes: selectedModes.length ? selectedModes : [DEFAULT_TEST_MODE],
       starredOnly,
       randomizeQuestions,
       randomizeAnswers,
