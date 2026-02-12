@@ -181,9 +181,8 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
 
   function handleModeSelect(mode: StudyMode) {
     if (mode === 'test') {
-      setSelectedMode('test')
-      setShowTestModal(true)
-      setTimeout(() => modalRef.current?.focus(), 0)
+      router.push(`/test?source=set&deckId=${deckId}`)
+      return
     } else {
       setSelectedMode(mode)
       setSelectedCount(null)

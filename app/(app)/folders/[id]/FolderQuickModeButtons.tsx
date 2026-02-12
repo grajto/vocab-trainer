@@ -179,12 +179,12 @@ export function FolderQuickModeButtons({ folderId, cardCount }: { folderId: stri
             </label>
             <button
               type="button"
-              onClick={() => startSession('test', Math.min(cardCount, testCount))}
+              onClick={() => router.push(`/test?source=folder&folderId=${folderId}`)}
               className="w-full rounded-full py-2 text-sm font-semibold text-white"
               style={{ background: 'var(--primary)' }}
               disabled={loading}
             >
-              {loading ? 'Ładowanie…' : 'Start testu'}
+              Przejdź do kreatora testu
             </button>
           </div>
         </div>

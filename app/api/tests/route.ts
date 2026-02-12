@@ -96,21 +96,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Missing source id' }, { status: 400 })
   }
 
-  const test = await payload.create({
-    collection: 'tests',
-    data: {
-      owner: user.id,
-      sourceType,
-      sourceDeck,
-      sourceFolder,
-      enabledModes: enabledModes.map((mode: string) => ({ mode })),
-      questionCount,
-      randomQuestionOrder: Boolean(body.randomQuestionOrder ?? true),
-      randomAnswerOrder: Boolean(body.randomAnswerOrder ?? true),
-      startedAt: new Date().toISOString(),
-      status: 'in_progress',
-    },
-  })
-
-  return NextResponse.json({ testId: test.id })
+  try {
+    const test = await payload.create({
+      collection: 'tests',
+      data: {
+        owner: user.id,
+        sourceType,
+        sourceDeck,
+        sourceFolder,
+        enabledModes: enabledModes.map((mode: string) => ({ mode })),
+        questionCount,
+        randomQuestionOrder: Boolean(body.randomQuestionOrder ?? true),
+        randomAnswerOrder: Boolean(body.randomAnswerOrder ?? true),
+        startedAt: new Date().toISOString(),
+        status: 'in_progress',
+      },
+    })
+    return NextResponse.json({ testId: test.id })
+  } catch (error) {
+    console.error('Test create failed, falling back to ephemeral test', error)
+    return NextResponse.json({ testId: null, warning: 'tests_table_missing' })
+  }
 }

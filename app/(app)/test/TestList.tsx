@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useRouter } from 'next/navigation'
 
 type Item = { id: string; name: string }
@@ -24,6 +25,7 @@ type RankingRow = { key: string; deckName: string; avgScore: number; testsCount:
 
 export function TestList({ decks, folders }: { decks: Item[]; folders: Item[] }) {
   const router = useRouter()
+  const search = useSearchParams()
   const [sourceType, setSourceType] = useState<'set' | 'folder'>('set')
   const [deckId, setDeckId] = useState(decks[0]?.id || '')
   const [folderId, setFolderId] = useState(folders[0]?.id || '')
@@ -42,6 +44,20 @@ export function TestList({ decks, folders }: { decks: Item[]; folders: Item[] })
   const [loadingResults, setLoadingResults] = useState(false)
 
   const sourceId = sourceType === 'set' ? deckId : folderId
+
+  // Prefill from query params
+  useEffect(() => {
+    const qSource = search.get('source')
+    const qDeck = search.get('deckId')
+    const qFolder = search.get('folderId')
+    if (qSource === 'folder' && qFolder) {
+      setSourceType('folder')
+      setFolderId(qFolder)
+    } else if (qDeck) {
+      setSourceType('set')
+      setDeckId(qDeck)
+    }
+  }, [search])
 
   async function loadResults() {
     setLoadingResults(true)
@@ -79,7 +95,7 @@ export function TestList({ decks, folders }: { decks: Item[]; folders: Item[] })
         }),
       })
       const created = await create.json()
-      const testId = created.testId
+      const testId = created.testId || undefined
 
       const start = await fetch('/api/session/start', {
         method: 'POST',
