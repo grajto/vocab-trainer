@@ -675,7 +675,8 @@ export default function SessionPage() {
   }, [])
 
   function getModeLabel(): string {
-    if (sessionMode === 'sentence') return 'Sentence'
+    // Sentence mode should always show 'Translate' since it's translate-based
+    if (sessionMode === 'sentence') return 'Translate'
     if (sessionMode === 'describe') return 'Describe'
     if (currentTask?.taskType === 'abcd') return 'ABCD'
     return 'Translate'
@@ -960,12 +961,15 @@ export default function SessionPage() {
 
       <main className="max-w-4xl mx-auto px-6 py-10">
         <div className="rounded-[var(--radius)] px-8 py-10 text-center" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-          <div className="flex items-center justify-between mb-6 text-xs" style={{ color: '#64748B' }}>
-            <span className="uppercase tracking-[0.3em]">
-              {currentTask.taskType === 'sentence' ? 'sentence' : currentTask.taskType}
-            </span>
-            <span className="tabular-nums">{currentIndex + 1} / {tasks.length}</span>
-          </div>
+          {/* Hide task type label for sentence mode */}
+          {currentTask.taskType !== 'sentence' && (
+            <div className="flex items-center justify-between mb-6 text-xs" style={{ color: '#64748B' }}>
+              <span className="uppercase tracking-[0.3em]">
+                {currentTask.taskType}
+              </span>
+              <span className="tabular-nums">{currentIndex + 1} / {tasks.length}</span>
+            </div>
+          )}
           <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight" style={{ color: 'var(--text)' }}>
             {currentTask.prompt}
           </h2>
@@ -1245,15 +1249,15 @@ export default function SessionPage() {
                   {sentenceStage === 'sentence' && (
                     <div className="mb-4">
                       <h3 className="text-lg font-semibold mb-3" style={{ color: 'var(--text)' }}>
-                        Ułóż zdanie z: {getRequiredWord()}
+                        Ułóż zdanie z: {currentTask.prompt}
                       </h3>
                     </div>
                   )}
 
-                  {/* Required EN word as pill/chip */}
+                  {/* Required word as pill/chip - show Polish word in both stages */}
                   <div className="flex justify-center">
                     <span className="inline-block font-semibold px-5 py-2 rounded-full text-base tracking-wide" style={{ background: 'var(--primaryBg)', color: '#3B82F6', border: '1px solid #BFDBFE' }}>
-                      {sentenceStage === 'translate' ? currentTask.prompt : getRequiredWord()}
+                      {currentTask.prompt}
                     </span>
                   </div>
 
