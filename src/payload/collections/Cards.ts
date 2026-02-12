@@ -19,5 +19,6 @@ export const Cards: CollectionConfig = {
     { name: 'examples', type: 'textarea' },
     { name: 'notes', type: 'textarea' },
     { name: 'cardType', type: 'select', options: [{ label: 'Word', value: 'word' }, { label: 'Phrase', value: 'phrase' }, { label: 'Sentence', value: 'sentence' }], defaultValue: 'word' },
+    { name: 'starred', type: 'checkbox', defaultValue: false, index: true },
   ],
 }

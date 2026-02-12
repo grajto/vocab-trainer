@@ -4,11 +4,13 @@ import { useState, useMemo, useEffect } from 'react'
 import { Search, Pencil, Trash2, AlertTriangle } from 'lucide-react'
 import { IconSquare } from '../../_components/ui/IconSquare'
 import { useRouter } from 'next/navigation'
+import { StarToggle } from '../../../_components/StarToggle'
 
 interface Card {
   id: string
   front: string
   back: string
+  starred?: boolean
 }
 
 interface Props {
@@ -216,6 +218,7 @@ export function FilterableCardsList({ cards, deckId }: Props) {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
+                  <StarToggle cardId={card.id} initialStarred={Boolean(card.starred)} className="p-1.5 rounded hover:bg-[var(--hover-bg)] transition-colors" />
                   <button
                     type="button"
                     onClick={() => startEdit(card)}

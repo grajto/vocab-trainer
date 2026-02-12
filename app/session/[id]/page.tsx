@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { checkAnswerWithTypo, generateHint, normalizeAnswer } from '@/src/lib/answerCheck'
 import { useSound } from '@/src/lib/SoundProvider'
 import { MoreVertical, X, Settings } from 'lucide-react'
+import { StarToggle } from '@/app/_components/StarToggle'
 
 const FEEDBACK_DELAY_CORRECT = 200
 const FEEDBACK_DELAY_WRONG = 1500
@@ -37,6 +38,7 @@ interface Task {
   promptPl?: string
   /** Sentence mode: EN word that must appear in the sentence */
   requiredEn?: string
+  starred?: boolean
 }
 
 interface TaskState {
@@ -914,8 +916,15 @@ export default function SessionPage() {
               {currentIndex + 1} / {tasks.length}
             </div>
 
-            {/* Right: Exit + Settings */}
+            {/* Right: Star + Exit + Settings */}
             <div className="flex items-center gap-2">
+              {currentTask && (
+                <StarToggle 
+                  cardId={currentTask.cardId} 
+                  initialStarred={Boolean(currentTask.starred)} 
+                  className="p-1.5 transition-colors hover:bg-[var(--hover-bg)] rounded"
+                />
+              )}
               <button
                 onClick={handleStopSession}
                 className="p-1.5 transition-colors hover:bg-[var(--hover-bg)] rounded"
