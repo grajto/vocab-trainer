@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useSound } from '@/src/lib/SoundProvider'
 import { BarChart3, Bell, BookOpen, CalendarDays, ClipboardCheck, FolderOpen, Home, PlayCircle, Plus, Settings, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { SidebarSearch } from './SidebarSearch'
@@ -127,8 +127,8 @@ export function LeftSidebar({
         : 'bg-[#f1f5f9] text-[var(--muted)] hover:bg-[#e2e8f0]'
     }`
 
-  const toggleChip = <T extends string>(currentValue: T | null, newValue: T): T | null => 
-    currentValue === newValue ? null : newValue
+  const toggleChip = useCallback(<T extends string>(currentValue: T | null, newValue: T): T | null => 
+    currentValue === newValue ? null : newValue, [])
 
   async function startDailySession() {
     if (dailyLoading) return

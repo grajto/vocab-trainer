@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getPayload } from '@/src/lib/getPayload'
 import { getUser } from '@/src/lib/getUser'
+import type { SessionDocument } from '@/src/types/session'
 
 export async function GET() {
   const user = await getUser()
@@ -30,11 +31,7 @@ export async function GET() {
     let minutesSpent = 0
 
     for (const session of sessions.docs) {
-      const s = session as unknown as { 
-        endedAt?: string
-        startedAt?: string
-        settings?: { tasks?: unknown[] }
-      }
+      const s = session as SessionDocument
       
       if (s.settings?.tasks) {
         cardsCompleted += s.settings.tasks.length

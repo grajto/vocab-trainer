@@ -78,12 +78,17 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     }
   }, [theme])
 
-  // Apply dark mode from settings
+  // Sync darkMode setting with theme state when settings change
   useEffect(() => {
-    if (settings.darkMode) {
-      document.documentElement.setAttribute('data-theme', 'dark')
+    if (settings.darkMode && theme === 'light') {
+      // If settings have darkMode enabled but theme is light, respect theme state
+      return
     }
-  }, [settings.darkMode])
+    if (settings.darkMode !== (theme === 'dark')) {
+      // Sync theme state with settings.darkMode
+      setThemeState(settings.darkMode ? 'dark' : 'light')
+    }
+  }, [settings.darkMode, theme])
 
   // Apply language
   useEffect(() => {

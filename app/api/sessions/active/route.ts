@@ -1,9 +1,16 @@
 import { NextResponse } from 'next/server'
 import { getPayload } from '@/src/lib/getPayload'
 import { getUser } from '@/src/lib/getUser'
+import type { SessionDocument } from '@/src/types/session'
 
 interface Task {
   completed?: boolean
+}
+
+interface SessionWithDeck extends SessionDocument {
+  deck?: { id: string; name: string } | string
+  mode?: string
+  targetCount?: number
 }
 
 export async function GET() {
@@ -31,18 +38,12 @@ export async function GET() {
       return NextResponse.json({ session: null })
     }
 
-    const session = result.docs[0] as unknown as {
-      id: string
-      deck?: { id: string; name: string } | string
-      settings?: { tasks?: Task[] }
-      mode?: string
-      targetCount?: number
-    }
+    const session = result.docs[0] as SessionWithDeck
 
     // Calculate progress
     const tasks = session.settings?.tasks || []
     const totalTasks = session.targetCount || tasks.length || 0
-    const completedTasks = tasks.filter((t) => t.completed).length
+    const completedTasks = tasks.filter((t) => (t as Task).completed).length
     const progressRatio = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
 
     // Get deck name

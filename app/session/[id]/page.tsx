@@ -32,6 +32,7 @@ interface Task {
   answer: string
   expectedAnswer?: string
   options?: string[]
+  direction?: 'pl-en' | 'en-pl'
   /** Sentence mode: PL meaning shown as big prompt */
   promptPl?: string
   /** Sentence mode: EN word that must appear in the sentence */
@@ -676,6 +677,27 @@ export default function SessionPage() {
     return currentTask?.requiredEn || currentTask?.prompt || ''
   }
 
+  function getDirectionLabel(): string {
+    // Check if task has explicit direction
+    if (currentTask?.direction === 'en-pl') return 'EN → PL'
+    if (currentTask?.direction === 'pl-en') return 'PL → EN'
+    
+    // Fallback: try to infer from prompt vs answer
+    // If prompt looks like English (mostly ASCII) and answer looks like Polish (has special chars), it's EN→PL
+    const hasPolishChars = (text: string) => /[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/.test(text)
+    
+    if (currentTask) {
+      const promptHasPolish = hasPolishChars(currentTask.prompt)
+      const answerHasPolish = hasPolishChars(currentTask.answer)
+      
+      if (promptHasPolish && !answerHasPolish) return 'PL → EN'
+      if (!promptHasPolish && answerHasPolish) return 'EN → PL'
+    }
+    
+    // Default fallback
+    return 'PL → EN'
+  }
+
   if (tasks.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
@@ -1093,7 +1115,7 @@ export default function SessionPage() {
                   {/* Direction chip */}
                   <div className="flex justify-center mb-2">
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" style={{ background: '#F1F5F9', color: '#64748B', border: '1px solid #E2E8F0' }}>
-                      PL → EN
+                      {getDirectionLabel()}
                     </span>
                   </div>
                   <input

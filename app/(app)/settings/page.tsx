@@ -26,6 +26,15 @@ export default function SettingsPage() {
 
   const saveTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current)
+      }
+    }
+  }, [])
+
   useEffect(() => {
     if (!loading) {
       localStorage.setItem('vocab-shuffle', String(settings.shuffleWords))
