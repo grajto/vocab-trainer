@@ -4,13 +4,27 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { checkAnswerWithTypo, generateHint, normalizeAnswer } from '@/src/lib/answerCheck'
 import { useSound } from '@/src/lib/SoundProvider'
-import { MoreVertical } from 'lucide-react'
+import { MoreVertical, X, Settings } from 'lucide-react'
+import { StarToggle } from '@/app/_components/StarToggle'
 
 const FEEDBACK_DELAY_CORRECT = 200
 const FEEDBACK_DELAY_WRONG = 1500
 const FEEDBACK_DELAY_DONE = 1200
 const FEEDBACK_DELAY_CORRECT_SLOW = 800
 const FEEDBACK_DELAY_WRONG_SLOW = 2000
+
+// Color tokens
+const COLOR_SUCCESS = '#22C55E'
+const COLOR_SUCCESS_BG = '#ECFDF5'
+const COLOR_SUCCESS_BORDER = '#A7F3D0'
+const COLOR_ERROR = '#EF4444'
+const COLOR_ERROR_BG = '#FEF2F2'
+const COLOR_ERROR_BORDER = '#FECACA'
+const COLOR_NEUTRAL = '#64748B'
+const COLOR_CTA = '#3B82F6'
+const COLOR_CTA_BG = '#EFF6FF'
+const COLOR_CTA_BORDER = '#BFDBFE'
+const COLOR_GOLD_STREAK = '#d4af37'
 
 interface Task {
   cardId: string
@@ -19,10 +33,12 @@ interface Task {
   answer: string
   expectedAnswer?: string
   options?: string[]
+  direction?: 'pl-en' | 'en-pl'
   /** Sentence mode: PL meaning shown as big prompt */
   promptPl?: string
   /** Sentence mode: EN word that must appear in the sentence */
   requiredEn?: string
+  starred?: boolean
 }
 
 interface TaskState {
@@ -84,6 +100,10 @@ export default function SessionPage() {
 
   // Hint state
   const [showHint, setShowHint] = useState(false)
+
+  // Toast for success messages
+  const [toast, setToast] = useState<{ message: string; show: boolean } | null>(null)
+  const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // Shuffle toggle (persisted in localStorage) - initialize from localStorage to prevent hydration mismatch
   const [shuffleEnabled, setShuffleEnabled] = useState(() => {
@@ -444,6 +464,14 @@ export default function SessionPage() {
     return () => window.removeEventListener('keydown', handleKey)
   }, [currentTask, feedback, typoState])
 
+  // Redirect after session is done (must be before all conditional returns to avoid React error #310)
+  useEffect(() => {
+    if (!sessionDone) return
+    const target = returnDeckId ? `/decks/${returnDeckId}` : '/decks'
+    const timer = setTimeout(() => router.replace(target), 200)
+    return () => clearTimeout(timer)
+  }, [sessionDone, returnDeckId, router])
+
   async function handleSentenceSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!currentTask) return
@@ -485,7 +513,7 @@ export default function SessionPage() {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          phrase: currentTask.requiredEn || currentTask.prompt,
+          phrase: getRequiredWord(),
           sentence: userAnswer,
           promptPl: currentTask.promptPl || currentTask.answer,
         }),
@@ -502,11 +530,12 @@ export default function SessionPage() {
         setStreak(prev => prev + 1)
         setFeedback({ correct: true, message: data.comment || data.message_pl || 'Poprawne zdanie.' })
         setSentenceNeedsAcknowledge(false)
+        showToast('Zdanie poprawne')
         playCorrect()
       } else {
         state.wasWrongBefore = true
         setStreak(0)
-        const message = buildSentenceFeedbackMessage(data as Record<string, unknown>, currentTask.requiredEn || currentTask.prompt)
+        const message = buildSentenceFeedbackMessage(data as Record<string, unknown>, getRequiredWord())
         setFeedback({ correct: false, message })
         setSentenceNeedsAcknowledge(true)
         playWrong()
@@ -582,6 +611,7 @@ export default function SessionPage() {
         setCorrectCount(prev => prev + 1)
         setStreak(prev => prev + 1)
         setFeedback({ correct: true, message: data.message_pl || 'OK' })
+        showToast('Opis poprawny')
         playCorrect()
       } else {
         state.wasWrongBefore = true
@@ -630,12 +660,61 @@ export default function SessionPage() {
     })
   }
 
+  function showToast(message: string) {
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current)
+    }
+    setToast({ message, show: true })
+    toastTimeoutRef.current = setTimeout(() => setToast(null), 2500)
+  }
+
+  useEffect(() => {
+    return () => {
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  function getModeLabel(): string {
+    // Sentence mode should always show 'Translate' since it's translate-based
+    if (sessionMode === 'sentence') return 'Translate'
+    if (sessionMode === 'describe') return 'Describe'
+    if (currentTask?.taskType === 'abcd') return 'ABCD'
+    return 'Translate'
+  }
+
+  function getRequiredWord(): string {
+    return currentTask?.requiredEn || currentTask?.prompt || ''
+  }
+
+  function getDirectionLabel(): string {
+    // Check if task has explicit direction
+    if (currentTask?.direction === 'en-pl') return 'EN → PL'
+    if (currentTask?.direction === 'pl-en') return 'PL → EN'
+    
+    // Fallback: try to infer from prompt vs answer
+    // If prompt looks like English (mostly ASCII) and answer looks like Polish (has special chars), it's EN→PL
+    const hasPolishChars = (text: string) => /[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/.test(text)
+    
+    if (currentTask) {
+      const promptHasPolish = hasPolishChars(currentTask.prompt)
+      const answerHasPolish = hasPolishChars(currentTask.answer)
+      
+      if (promptHasPolish && !answerHasPolish) return 'PL → EN'
+      if (!promptHasPolish && answerHasPolish) return 'EN → PL'
+    }
+    
+    // Default fallback
+    return 'PL → EN'
+  }
+
   if (tasks.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
         <div className="text-center">
-          <p className="text-sm mb-3" style={{ color: 'var(--muted)' }}>No session data found.</p>
-          <button onClick={() => router.push('/study')} className="text-sm underline underline-offset-2" style={{ color: 'var(--primary)' }}>
+          <p className="text-sm mb-3" style={{ color: '#64748B' }}>No session data found.</p>
+          <button onClick={() => router.push('/study')} className="text-sm underline underline-offset-2" style={{ color: '#3B82F6' }}>
             Przejdź do Ucz się
           </button>
         </div>
@@ -654,11 +733,11 @@ export default function SessionPage() {
       <div className="min-h-screen" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
         <div className="px-6 py-3" style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
           <div className="max-w-4xl mx-auto flex items-center justify-between">
-            <div className="text-xs font-semibold uppercase tracking-[0.3em]" style={{ color: 'var(--muted)' }}>Test</div>
+            <div className="text-xs font-semibold uppercase tracking-[0.3em]" style={{ color: '#64748B' }}>Test</div>
             <button
               onClick={handleStopSession}
               className="text-xs font-medium hover:opacity-70 transition-colors"
-              style={{ color: 'var(--muted)' }}
+              style={{ color: '#64748B' }}
             >
               Przerwij sesję
             </button>
@@ -667,22 +746,22 @@ export default function SessionPage() {
         <main className="max-w-4xl mx-auto px-6 py-10 space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-semibold" style={{ color: 'var(--text)' }}>Test</h2>
-            <span className="text-sm" style={{ color: 'var(--muted)' }}>{tasks.length} pytań</span>
+            <span className="text-sm" style={{ color: '#64748B' }}>{tasks.length} pytań</span>
           </div>
           {testSubmitted && testScore ? (
             <div className="rounded-[var(--radius)] p-8 space-y-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
               <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>Wynik: {Math.round((testScore.correct / testScore.total) * 100)}%</p>
-              <p className="text-sm" style={{ color: 'var(--muted)' }}>Błędy: {testScore.total - testScore.correct}</p>
+              <p className="text-sm" style={{ color: '#64748B' }}>Błędy: {testScore.total - testScore.correct}</p>
               {incorrect.length > 0 && (
                 <div className="space-y-2 pt-4" style={{ borderTop: '1px solid var(--border)' }}>
                   {incorrect.map(task => (
-                    <div key={task.cardId} className="text-sm" style={{ color: 'var(--muted)' }}>
+                    <div key={task.cardId} className="text-sm" style={{ color: '#64748B' }}>
                       <span className="font-medium" style={{ color: 'var(--text)' }}>{task.prompt}</span> → poprawne: {task.answer}
                     </div>
                   ))}
                 </div>
               )}
-              <button onClick={() => router.push('/')} className="text-sm font-medium hover:opacity-80" style={{ color: 'var(--primary)' }}>
+              <button onClick={() => router.push('/')} className="text-sm font-medium hover:opacity-80" style={{ color: '#3B82F6' }}>
                 Wróć do dashboardu
               </button>
             </div>
@@ -691,8 +770,8 @@ export default function SessionPage() {
               {tasks.map((task, idx) => (
                 <div key={task.cardId} className="rounded-[var(--radius)] p-6 space-y-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
                   <div className="flex items-center justify-between">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: 'var(--gray400)' }}>Pytanie {idx + 1}</p>
-                    <span className="text-xs" style={{ color: 'var(--gray400)' }}>{idx + 1} / {tasks.length}</span>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: '#64748B' }}>Pytanie {idx + 1}</p>
+                    <span className="text-xs" style={{ color: '#64748B' }}>{idx + 1} / {tasks.length}</span>
                   </div>
                   <p className="text-lg font-medium" style={{ color: 'var(--text)' }}>{task.prompt}</p>
                   {task.taskType === 'abcd' && task.options ? (
@@ -751,7 +830,7 @@ export default function SessionPage() {
                   })
                 }}
                 className="w-full py-3 rounded-[var(--radiusSm)] font-medium text-white transition-colors"
-                style={{ background: 'var(--primary)' }}
+                style={{ background: '#3B82F6' }}
               >
                 Sprawdź
               </button>
@@ -762,20 +841,13 @@ export default function SessionPage() {
     )
   }
 
-  useEffect(() => {
-    if (!sessionDone) return
-    const target = returnDeckId ? `/decks/${returnDeckId}` : '/decks'
-    const timer = setTimeout(() => router.replace(target), 200)
-    return () => clearTimeout(timer)
-  }, [sessionDone, returnDeckId, router])
-
   if (sessionDone) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
         <div className="text-center max-w-xs mx-4">
-          <p className="text-xs uppercase tracking-widest mb-2" style={{ color: 'var(--muted)' }}>Session Complete</p>
-          <p className="text-5xl font-bold tabular-nums mb-1" style={{ color: 'var(--primary)' }}>{accuracy}%</p>
-          <p className="text-sm" style={{ color: 'var(--muted)' }}>Przekierowanie do zestawu…</p>
+          <p className="text-xs uppercase tracking-widest mb-2" style={{ color: '#64748B' }}>Session Complete</p>
+          <p className="text-5xl font-bold tabular-nums mb-1" style={{ color: '#3B82F6' }}>{accuracy}%</p>
+          <p className="text-sm" style={{ color: '#64748B' }}>Przekierowanie do zestawu…</p>
         </div>
       </div>
     )
@@ -785,7 +857,7 @@ export default function SessionPage() {
   if (!tasksLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
-        <p className="text-sm" style={{ color: 'var(--muted)' }}>Ładowanie sesji…</p>
+        <p className="text-sm" style={{ color: '#64748B' }}>Ładowanie sesji…</p>
       </div>
     )
   }
@@ -795,14 +867,14 @@ export default function SessionPage() {
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
         <div className="text-center max-w-sm px-4">
           <p className="text-sm font-semibold mb-2">Nie udało się załadować pytań sesji.</p>
-          <p className="text-xs mb-4" style={{ color: 'var(--muted)' }}>
+          <p className="text-xs mb-4" style={{ color: '#64748B' }}>
             Spróbuj uruchomić sesję ponownie z listy zestawów.
           </p>
           <button
             type="button"
             onClick={() => router.replace('/decks')}
             className="rounded-full px-4 py-2 text-sm font-semibold text-white"
-            style={{ background: 'var(--primary)' }}
+            style={{ background: '#3B82F6' }}
           >
             Wróć do zestawów
           </button>
@@ -816,58 +888,103 @@ export default function SessionPage() {
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
-      {/* Progress bar */}
+      {/* Toast notification */}
+      {toast?.show && (
+        <div 
+          className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-full shadow-lg transition-opacity"
+          style={{ background: '#ECFDF5', color: '#22C55E', border: '1px solid #A7F3D0' }}
+          role="alert"
+          aria-live="polite"
+        >
+          <span className="font-semibold">✓ {toast.message}</span>
+        </div>
+      )}
+
+      {/* New Session Header */}
       <div className="px-6 py-3" style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
-        <div className="max-w-4xl mx-auto flex flex-col gap-2">
-          <div className="flex items-center gap-4">
-            <span className="text-xs tabular-nums whitespace-nowrap" style={{ color: 'var(--muted)' }}>
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center justify-between gap-4 mb-3">
+            {/* Left: Mode badge - removed as per user request */}
+            <div className="flex items-center gap-2">
+              {/* Mode badge removed */}
+            </div>
+
+            {/* Center: Progress */}
+            <div className="text-sm font-semibold tabular-nums" style={{ color: 'var(--text)' }}>
               {currentIndex + 1} / {tasks.length}
-            </span>
-            <div className="flex-1 h-2.5 rounded-full" style={{ background: 'var(--surface2)' }}>
+            </div>
+
+            {/* Right: Star + Exit + Settings */}
+            <div className="flex items-center gap-2">
+              {currentTask && (
+                <StarToggle 
+                  cardId={currentTask.cardId} 
+                  initialStarred={Boolean(currentTask.starred)} 
+                  className="p-1.5 transition-colors hover:bg-[var(--hover-bg)] rounded"
+                />
+              )}
+              <button
+                onClick={handleStopSession}
+                className="p-1.5 transition-colors hover:bg-[var(--hover-bg)] rounded"
+                style={{ color: '#64748B' }}
+                title="Wróć do dashboardu"
+                aria-label="Exit session"
+              >
+                <X size={18} />
+              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setMenuOpen(prev => !prev)}
+                  className="p-1.5 transition-colors hover:bg-[var(--hover-bg)] rounded"
+                  style={{ color: '#64748B' }}
+                  title="Ustawienia"
+                  aria-label="Settings"
+                >
+                  <Settings size={18} />
+                </button>
+                {menuOpen ? (
+                  <div className="absolute right-0 top-9 z-20 w-52 rounded-lg border p-2 text-xs" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+                    <button onClick={toggleSound} className="block w-full rounded px-2 py-1 text-left hover:bg-[var(--hover-bg)]">Dźwięk: {soundEnabled ? 'włączony' : 'wyłączony'}</button>
+                    <button onClick={toggleShuffle} className="block w-full rounded px-2 py-1 text-left hover:bg-[var(--hover-bg)]">Mieszanie: {shuffleEnabled ? 'włączone' : 'wyłączone'}</button>
+                    <button onClick={handleStopSession} className="block w-full rounded px-2 py-1 text-left hover:bg-[var(--hover-bg)]" style={{ color: '#EF4444' }}>Zakończ sesję</button>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          </div>
+
+          {/* Progress bar */}
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-2 rounded-full" style={{ background: 'var(--surface2)' }}>
               <div
-                className="h-2.5 rounded-full transition-all duration-300"
-                style={{ width: `${progress}%`, background: streak >= 3 ? '#d4af37' : '#22c55e', height: '10px' }}
+                className="h-2 rounded-full transition-all duration-300"
+                style={{ width: `${progress}%`, background: streak >= 3 ? '#d4af37' : '#22C55E' }}
               />
             </div>
-            <span className="text-xs tabular-nums" style={{ color: 'var(--muted)' }}>{accuracy}%</span>
-            <div className="relative">
-            <button
-              onClick={() => setMenuOpen(prev => !prev)}
-              className="text-xs transition-colors"
-              style={{ color: 'var(--muted)' }}
-              title="Opcje"
-            >
-              <MoreVertical size={16} />
-            </button>
-            {menuOpen ? (
-              <div className="absolute right-0 top-7 z-20 w-52 rounded-lg border p-2 text-xs" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-                <button onClick={toggleSound} className="block w-full rounded px-2 py-1 text-left hover:bg-[var(--hover-bg)]">Dźwięk: {soundEnabled ? 'włączony' : 'wyłączony'}</button>
-                <button onClick={toggleShuffle} className="block w-full rounded px-2 py-1 text-left hover:bg-[var(--hover-bg)]">Mieszanie: {shuffleEnabled ? 'włączone' : 'wyłączone'}</button>
-                <p className="px-2 py-1" style={{ color: 'var(--muted)' }}>Informacja o mieszaniu i voice ukryta w menu</p>
-                <button onClick={handleStopSession} className="block w-full rounded px-2 py-1 text-left hover:bg-[var(--hover-bg)]" style={{ color: 'var(--danger)' }}>Zakończ sesję/test</button>
-              </div>
-            ) : null}
-            </div>
+            <span className="text-xs tabular-nums" style={{ color: '#64748B' }}>{accuracy}%</span>
           </div>
         </div>
       </div>
 
       <main className="max-w-4xl mx-auto px-6 py-10">
         <div className="rounded-[var(--radius)] px-8 py-10 text-center" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-          <div className="flex items-center justify-between mb-6 text-xs" style={{ color: 'var(--gray400)' }}>
-            <span className="uppercase tracking-[0.3em]">
-              {currentTask.taskType === 'sentence' ? 'sentence' : currentTask.taskType}
-            </span>
-            <span className="tabular-nums">{currentIndex + 1} / {tasks.length}</span>
-          </div>
+          {/* Hide task type label for sentence mode */}
+          {currentTask.taskType !== 'sentence' && (
+            <div className="flex items-center justify-between mb-6 text-xs" style={{ color: '#64748B' }}>
+              <span className="uppercase tracking-[0.3em]">
+                {currentTask.taskType}
+              </span>
+              <span className="tabular-nums">{currentIndex + 1} / {tasks.length}</span>
+            </div>
+          )}
           <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight" style={{ color: 'var(--text)' }}>
             {currentTask.prompt}
           </h2>
           {currentTask.taskType === 'sentence' && (
-            <p className="text-sm mt-3 mb-8" style={{ color: 'var(--muted)' }}>Create a sentence with this word.</p>
+            <p className="text-sm mt-3 mb-8" style={{ color: '#64748B' }}>Create a sentence with this word.</p>
           )}
           {currentTask.taskType === 'describe' && (
-            <p className="text-sm mt-3 mb-8" style={{ color: 'var(--muted)' }}>Opisz to słowo własnymi słowami.</p>
+            <p className="text-sm mt-3 mb-8" style={{ color: '#64748B' }}>Opisz to słowo własnymi słowami.</p>
           )}
           {currentTask.taskType !== 'sentence' && <div className="mb-8" />}
 
@@ -892,14 +1009,14 @@ export default function SessionPage() {
                 <button
                   onClick={() => handleTypoDecision(true)}
                   className="flex-1 text-white py-2.5 rounded-[var(--radiusSm)] text-sm font-medium transition-colors"
-                  style={{ background: '#22c55e' }}
+                  style={{ background: '#22C55E' }}
                 >
                   ✓ Accept
                 </button>
                 <button
                   onClick={() => handleTypoDecision(false)}
                   className="flex-1 text-white py-2.5 rounded-[var(--radiusSm)] text-sm font-medium transition-colors"
-                  style={{ background: '#ef4444' }}
+                  style={{ background: '#EF4444' }}
                 >
                   ✗ Reject
                 </button>
@@ -908,35 +1025,95 @@ export default function SessionPage() {
           )}
 
           {feedback ? (
-            <div className="space-y-3">
-              <div className={`inline-block px-5 py-3 rounded-[var(--radiusSm)] text-sm font-medium`} style={{
-                background: feedback.correct ? '#ecfdf5' : '#fef2f2',
-                color: feedback.correct ? '#059669' : '#dc2626',
-                border: `1px solid ${feedback.correct ? '#a7f3d0' : '#fecaca'}`,
-              }}>
-                {feedback.correct ? '✓ ' : '✗ '}
-                {feedback.message.split('\n').map((line, i) => (
-                  <span key={i}>{i > 0 && <br />}{line}</span>
-                ))}
-              </div>
+            <div className="space-y-4" role="alert" aria-live="polite">
+              {feedback.correct ? (
+                <>
+                  {/* Success badge for translate mode */}
+                  {currentTask.taskType === 'translate' && (
+                    <div className="flex justify-center">
+                      <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold" style={{ background: '#ECFDF5', color: '#22C55E', border: '1px solid #A7F3D0' }}>
+                        Translate ✓
+                      </span>
+                    </div>
+                  )}
+                  {/* Success badges for sentence mode */}
+                  {currentTask.taskType === 'sentence' && sentenceStage === 'sentence' && (
+                    <div className="flex justify-center gap-2">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" style={{ background: '#ECFDF5', color: '#22C55E', border: '1px solid #A7F3D0' }}>
+                        Translate ✓
+                      </span>
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" style={{ background: '#ECFDF5', color: '#22C55E', border: '1px solid #A7F3D0' }}>
+                        Sentence ✓
+                      </span>
+                    </div>
+                  )}
+                  {/* Success badges for describe mode */}
+                  {currentTask.taskType === 'describe' && (
+                    <div className="flex justify-center gap-2">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" style={{ background: '#ECFDF5', color: '#22C55E', border: '1px solid #A7F3D0' }}>
+                        Translate ✓
+                      </span>
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" style={{ background: '#ECFDF5', color: '#22C55E', border: '1px solid #A7F3D0' }}>
+                        Describe ✓
+                      </span>
+                    </div>
+                  )}
+                  {currentTask.taskType === 'sentence' && sentenceStage === 'translate' && (
+                    <div className={`inline-block px-5 py-3 rounded-[var(--radiusSm)] text-sm font-medium`} style={{
+                      background: '#ECFDF5',
+                      color: '#22C55E',
+                      border: '1px solid #A7F3D0',
+                    }}>
+                      ✓ {feedback.message}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  {/* Error panel with AI explanation */}
+                  <div className={`rounded-[var(--radiusSm)] p-4 text-sm`} style={{
+                    background: '#FEF2F2',
+                    color: '#EF4444',
+                    border: '1px solid #FECACA',
+                  }}>
+                    <div className="font-medium mb-2">✗ Incorrect</div>
+                    <div style={{ color: '#DC2626' }}>
+                      {feedback.message.split('\n').map((line, i) => (
+                        <div key={i} className={i > 0 ? 'mt-1' : ''}>{line}</div>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Error badges for sentence/describe */}
+                  {(currentTask.taskType === 'sentence' || currentTask.taskType === 'describe') && sentenceNeedsAcknowledge && (
+                    <div className="flex justify-center gap-2">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" style={{ background: '#ECFDF5', color: '#22C55E', border: '1px solid #A7F3D0' }}>
+                        Translate ✓
+                      </span>
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" style={{ background: '#FEF2F2', color: '#EF4444', border: '1px solid #FECACA' }}>
+                        {currentTask.taskType === 'sentence' ? 'Sentence' : 'Describe'} ✗
+                      </span>
+                    </div>
+                  )}
+                </>
+              )}
               {currentTask.taskType === 'sentence' && sentenceNeedsAcknowledge && (
                 <div className="flex justify-center">
                   <button
                     type="button"
                     onClick={acknowledgeSentenceFeedback}
-                    className="inline-flex items-center px-4 py-2 rounded-full text-xs font-semibold transition-colors hover:bg-[var(--primaryBg)]"
-                    style={{ border: '1px solid var(--border)', color: 'var(--primary)' }}
+                    className="inline-flex items-center px-5 py-2.5 rounded-[var(--radiusSm)] text-sm font-semibold text-white transition-colors"
+                    style={{ background: '#3B82F6' }}
                   >
-                    I understand — next card (Enter)
+                    Dalej (Enter)
                   </button>
                 </div>
               )}
               {currentTask.taskType === 'sentence' && aiInfo && (
                 <div className="flex justify-center">
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-semibold" style={{
-                    background: aiInfo.used ? '#ecfdf5' : 'var(--surface2)',
-                    color: aiInfo.used ? '#059669' : 'var(--muted)',
-                    border: `1px solid ${aiInfo.used ? '#a7f3d0' : 'var(--border)'}`,
+                    background: aiInfo.used ? '#ECFDF5' : 'var(--surface2)',
+                    color: aiInfo.used ? '#22C55E' : '#64748B',
+                    border: `1px solid ${aiInfo.used ? '#A7F3D0' : 'var(--border)'}`,
                   }}>
                     AI: {aiInfo.used ? 'ON' : 'OFF'} ({aiInfo.latencyMs} ms)
                   </span>
@@ -947,6 +1124,7 @@ export default function SessionPage() {
             <>
               {currentTask.taskType === 'translate' && (
                 <form onSubmit={handleTranslateSubmit} className="space-y-4">
+                  {/* Direction chip removed as per user request */}
                   <input
                     ref={inputRef as React.RefObject<HTMLInputElement>}
                     type="text"
@@ -972,9 +1150,39 @@ export default function SessionPage() {
                       type="submit"
                       disabled={!userAnswer.trim()}
                       className="flex-1 text-white py-3 rounded-[var(--radiusSm)] text-sm font-medium disabled:opacity-40 transition-colors"
-                      style={{ background: 'var(--primary)' }}
+                      style={{ background: '#3B82F6' }}
                     >
-                      Check
+                      Sprawdź
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!currentTask) return
+                        const state = getTaskState(currentTask.cardId)
+                        state.attempts++
+                        state.wasWrongBefore = true
+                        setStreak(0)
+                        const expected = currentTask.expectedAnswer || currentTask.answer
+                        setFeedback({ correct: false, message: `Correct answer: ${expected}` })
+                        playWrong()
+                        requeueCard(currentTask)
+                        saveAnswerInBackground({
+                          sessionId,
+                          cardId: currentTask.cardId,
+                          taskType: 'translate',
+                          userAnswer: '',
+                          isCorrect: false,
+                          expectedAnswer: expected,
+                          attemptsCount: state.attempts,
+                          wasWrongBeforeCorrect: state.wasWrongBefore,
+                          usedHint: state.usedHint,
+                        })
+                        advanceToNext(FEEDBACK_DELAY_WRONG)
+                      }}
+                      className="px-4 py-3 rounded-[var(--radiusSm)] text-sm font-medium transition-colors"
+                      style={{ border: '1px solid var(--border)', color: '#64748B', background: 'var(--surface)' }}
+                    >
+                      Skip
                     </button>
                   </div>
                 </form>
@@ -992,41 +1200,41 @@ export default function SessionPage() {
                         border: `1px solid ${
                           feedback
                             ? opt === currentTask.answer
-                              ? '#a7f3d0'
+                              ? '#A7F3D0'
                               : opt === selectedOption
-                                ? '#fecaca'
+                                ? '#FECACA'
                                 : 'var(--border)'
                             : 'var(--border)'
                         }`,
                         background: feedback
                           ? opt === currentTask.answer
-                            ? '#ecfdf5'
+                            ? '#ECFDF5'
                             : opt === selectedOption
-                              ? '#fef2f2'
+                              ? '#FEF2F2'
                               : 'var(--surface)'
                           : 'var(--surface)',
                         color: feedback
                           ? opt === currentTask.answer
-                            ? '#059669'
+                            ? '#22C55E'
                             : opt === selectedOption
-                              ? '#dc2626'
-                              : 'var(--muted)'
+                              ? '#EF4444'
+                              : '#64748B'
                           : 'var(--text)',
                       }}
                     >
-                      <span className="inline-flex items-center justify-center w-7 h-7 mr-3 rounded-full text-xs font-semibold" style={{ background: 'var(--surface2)', color: 'var(--muted)' }}>
+                      <span className="inline-flex items-center justify-center w-7 h-7 mr-3 rounded-full text-xs font-semibold" style={{ background: 'var(--surface2)', color: '#64748B' }}>
                         {idx + 1}
                       </span>
                       {opt}
                     </button>
                   ))}
-                  <div className="flex items-center justify-center gap-4 text-[11px]" style={{ color: 'var(--muted)' }}>
+                  <div className="flex items-center justify-center gap-4 text-[11px]" style={{ color: '#64748B' }}>
                     <span>Tip: press 1–4</span>
                     <button
                       type="button"
                       onClick={handleAbcdSkip}
                       className="transition-colors hover:opacity-80"
-                      style={{ color: 'var(--primary)' }}
+                      style={{ color: '#3B82F6' }}
                     >
                       Nie wiem
                     </button>
@@ -1036,37 +1244,68 @@ export default function SessionPage() {
 
               {currentTask.taskType === 'sentence' && (
                 <div className="space-y-5">
-                  {/* Required EN word as pill/chip */}
+                  {/* Title and stage indicator */}
+                  {sentenceStage === 'sentence' && (
+                    <div className="mb-4">
+                      <h3 className="text-lg font-semibold mb-3" style={{ color: 'var(--text)' }}>
+                        Ułóż zdanie z: {currentTask.prompt}
+                      </h3>
+                    </div>
+                  )}
+
+                  {/* Required word as pill/chip - show Polish word in both stages */}
                   <div className="flex justify-center">
-                    <span className="inline-block font-semibold px-5 py-2 rounded-full text-base tracking-wide" style={{ background: 'var(--primaryBg)', color: 'var(--primary)' }}>
-                      {sentenceStage === 'translate' ? currentTask.prompt : (currentTask.promptPl || currentTask.answer)}
+                    <span className="inline-block font-semibold px-5 py-2 rounded-full text-base tracking-wide" style={{ background: 'var(--primaryBg)', color: '#3B82F6', border: '1px solid #BFDBFE' }}>
+                      {currentTask.prompt}
                     </span>
                   </div>
 
-                  {/* Textarea */}
-                  <textarea
-                    ref={inputRef as React.RefObject<HTMLTextAreaElement>}
-                    value={userAnswer}
-                    onChange={e => setUserAnswer(e.target.value)}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-                        e.preventDefault()
-                        if ((!feedback && userAnswer.trim() && !loading) || (feedback && sentenceNeedsAcknowledge && !loading)) {
-                          handleSentenceSubmit(e as unknown as React.FormEvent)
+                  {/* Input field - single line for translate, textarea for sentence */}
+                  {sentenceStage === 'translate' ? (
+                    <input
+                      ref={inputRef as React.RefObject<HTMLInputElement>}
+                      type="text"
+                      value={userAnswer}
+                      onChange={e => setUserAnswer(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          if (userAnswer.trim() && !loading) {
+                            handleSentenceSubmit(e as unknown as React.FormEvent)
+                          }
                         }
-                      }
-                    }}
-                    placeholder={sentenceStage === 'translate' ? 'Najpierw wpisz tłumaczenie…' : 'Napisz zdanie z użyciem tego słowa…'}
-                    autoFocus
-                    rows={3}
-                    className="w-full rounded-[var(--radiusSm)] px-4 py-3 text-sm focus:outline-none resize-none transition-colors"
-                    style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
-                    disabled={loading}
-                  />
+                      }}
+                      placeholder="Type translation..."
+                      autoFocus
+                      className="w-full rounded-[var(--radiusSm)] px-4 py-3 text-center text-lg focus:outline-none transition-colors"
+                      style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
+                      disabled={loading}
+                    />
+                  ) : (
+                    <textarea
+                      ref={inputRef as React.RefObject<HTMLTextAreaElement>}
+                      value={userAnswer}
+                      onChange={e => setUserAnswer(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                          e.preventDefault()
+                          if ((!feedback && userAnswer.trim() && !loading) || (feedback && sentenceNeedsAcknowledge && !loading)) {
+                            handleSentenceSubmit(e as unknown as React.FormEvent)
+                          }
+                        }
+                      }}
+                      placeholder="Write a sentence using this word..."
+                      autoFocus
+                      rows={4}
+                      className="w-full rounded-[var(--radiusSm)] px-4 py-3 text-sm focus:outline-none resize-none transition-colors"
+                      style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
+                      disabled={loading}
+                    />
+                  )}
 
-                  {/* Hint + Check buttons */}
+                  {/* Hint + Check + Skip buttons */}
                   <div className="flex gap-2">
-                    {!showHint && (
+                    {!showHint && sentenceStage === 'translate' && (
                       <button
                         type="button"
                         onClick={handleHintClick}
@@ -1085,17 +1324,77 @@ export default function SessionPage() {
                       }}
                       disabled={loading || (!sentenceNeedsAcknowledge && !userAnswer.trim())}
                       className="flex-1 text-white py-3 rounded-[var(--radiusSm)] text-sm font-medium disabled:opacity-40 transition-colors"
-                      style={{ background: 'var(--primary)' }}
+                      style={{ background: '#3B82F6' }}
                     >
-                      {loading ? 'Checking…' : sentenceNeedsAcknowledge ? 'Go to next card' : sentenceStage === 'translate' ? 'Sprawdź tłumaczenie' : 'Sprawdź zdanie'}
+                      {loading ? 'Checking…' : sentenceNeedsAcknowledge ? 'Dalej' : 'Sprawdź'}
                     </button>
+                    {!feedback && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!currentTask) return
+                          const state = getTaskState(currentTask.cardId)
+                          state.attempts++
+                          state.wasWrongBefore = true
+                          setStreak(0)
+                          playWrong()
+                          
+                          // Save as wrong answer
+                          saveAnswerInBackground({
+                            sessionId,
+                            cardId: currentTask.cardId,
+                            taskType: 'sentence',
+                            userAnswer: '',
+                            isCorrect: false,
+                            expectedAnswer: currentTask.expectedAnswer || currentTask.answer,
+                            attemptsCount: state.attempts,
+                            wasWrongBeforeCorrect: state.wasWrongBefore,
+                            usedHint: state.usedHint,
+                          })
+                          
+                          // Skip entire word - don't enter sentence stage
+                          setUserAnswer('')
+                          setShowHint(false)
+                          setSentenceStage('translate')
+                          advanceToNext(FEEDBACK_DELAY_WRONG)
+                        }}
+                        className="px-4 py-3 rounded-[var(--radiusSm)] text-sm font-medium transition-colors"
+                        style={{ border: '1px solid var(--border)', color: '#64748B', background: 'var(--surface)' }}
+                      >
+                        Skip
+                      </button>
+                    )}
                   </div>
-                  <p className="text-xs text-center" style={{ color: 'var(--muted)' }}>{sentenceStage === 'translate' ? 'Etap 1/2: tłumaczenie' : 'Etap 2/2: napisz zdanie'}</p>
+
+                  {/* Completion badges */}
+                  {sentenceStage === 'sentence' && (
+                    <div className="flex justify-center gap-2">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" style={{ background: '#ECFDF5', color: '#22C55E', border: '1px solid #A7F3D0' }}>
+                        Translate ✓
+                      </span>
+                    </div>
+                  )}
+
+                  <p className="text-xs text-center" style={{ color: '#64748B' }}>{sentenceStage === 'translate' ? 'Stage 1/2: translation' : 'Stage 2/2: write sentence'}</p>
                 </div>
               )}
 
               {currentTask.taskType === 'describe' && (
                 <div className="space-y-5">
+                  {/* Title */}
+                  <div className="mb-4">
+                    <h3 className="text-lg font-semibold mb-3" style={{ color: 'var(--text)' }}>
+                      Opisz używając: {currentTask.prompt}
+                    </h3>
+                  </div>
+
+                  {/* Target word chip */}
+                  <div className="flex justify-center">
+                    <span className="inline-block font-semibold px-5 py-2 rounded-full text-base tracking-wide" style={{ background: 'var(--primaryBg)', color: '#3B82F6', border: '1px solid #BFDBFE' }}>
+                      {currentTask.prompt}
+                    </span>
+                  </div>
+
                   <textarea
                     ref={inputRef as React.RefObject<HTMLTextAreaElement>}
                     value={userAnswer}
@@ -1110,7 +1409,7 @@ export default function SessionPage() {
                     }}
                     placeholder="Napisz opis..."
                     autoFocus
-                    rows={3}
+                    rows={4}
                     className="w-full rounded-[var(--radiusSm)] px-4 py-3 text-sm focus:outline-none resize-none transition-colors"
                     style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
                     disabled={loading}
@@ -1135,12 +1434,12 @@ export default function SessionPage() {
                       }}
                       disabled={loading || !userAnswer.trim()}
                       className="flex-1 text-white py-3 rounded-[var(--radiusSm)] text-sm font-medium disabled:opacity-40 transition-colors"
-                      style={{ background: 'var(--primary)' }}
+                      style={{ background: '#3B82F6' }}
                     >
-                      {loading ? 'Checking…' : 'Check'}
+                      {loading ? 'Checking…' : 'Sprawdź'}
                     </button>
                   </div>
-                  <p className="text-xs text-center" style={{ color: 'var(--muted)' }}>Ctrl+Enter to submit</p>
+                  <p className="text-xs text-center" style={{ color: '#64748B' }}>Ctrl+Enter to submit</p>
                 </div>
               )}
             </>

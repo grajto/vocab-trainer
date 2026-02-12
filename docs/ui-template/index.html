@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vocab Trainer - UI Style Guide</title>
+    <style>
+        /* ==================== CSS VARIABLES ==================== */
+        :root {
+            /* Spacing system - 8px grid */
+            --space-1: 8px;
+            --space-2: 16px;
+            --space-3: 24px;
+            --space-4: 32px;
+            --space-5: 40px;
+            --space-6: 48px;
+            
+            /* Border radius */
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            --radius-pill: 999px;
+            
+            /* Typography */
+            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            --font-size-xs: 12px;
+            --font-size-sm: 14px;
+            --font-size-base: 16px;
+            --font-size-lg: 18px;
+            --font-size-xl: 20px;
+            --font-size-2xl: 24px;
+            --font-size-3xl: 32px;
+            --font-size-4xl: 40px;
+            
+            /* Shadows */
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        /* ==================== LIGHT THEME ==================== */
+        [data-theme="light"] {
+            /* Primary colors */
+            --color-primary: #4255ff;
+            --color-primary-light: #6b7eff;
+            --color-primary-dark: #3242cc;
+            
+            /* Status colors */
+            --color-success: #22C55E;
+            --color-error: #EF4444;
+            --color-warning: #F59E0B;
+            --color-info: #3B82F6;
+            
+            /* Neutral colors */
+            --color-neutral: #64748B;
+            --color-neutral-light: #94A3B8;
+            --color-neutral-dark: #475569;
+            
+            /* Background colors */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #f1f5f9;
+            --bg-elevated: #ffffff;
+            
+            /* Surface colors */
+            --surface-1: #ffffff;
+            --surface-2: #f8fafc;
+            --surface-3: #f1f5f9;
+            
+            /* Text colors */
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-tertiary: #94A3B8;
+            --text-inverse: #ffffff;
+            
+            /* Border colors */
+            --border-primary: #e2e8f0;
+            --border-secondary: #cbd5e1;
+            --border-focus: var(--color-primary);
+            
+            /* Gradient colors */
+            --gradient-start: #4255ff;
+            --gradient-end: #7c3aed;
+            
+            /* Shadows for light theme */
+            --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --shadow-elevated: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        /* ==================== DARK THEME ==================== */
+        [data-theme="dark"] {
+            /* Primary colors */
+            --color-primary: #4255ff;
+            --color-primary-light: #6b7eff;
+            --color-primary-dark: #3242cc;
+            
+            /* Status colors */
+            --color-success: #22C55E;
+            --color-error: #EF4444;
+            --color-warning: #F59E0B;
+            --color-info: #60a5fa;
+            
+            /* Neutral colors */
+            --color-neutral: #64748B;
+            --color-neutral-light: #94A3B8;
+            --color-neutral-dark: #475569;
+            
+            /* Background colors */
+            --bg-primary: #0b1220;
+            --bg-secondary: #0f172a;
+            --bg-tertiary: #1e293b;
+            --bg-elevated: #1e293b;
+            
+            /* Surface colors */
+            --surface-1: #0f172a;
+            --surface-2: #1e293b;
+            --surface-3: #334155;
+            
+            /* Text colors */
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-tertiary: #94A3B8;
+            --text-inverse: #0f172a;
+            
+            /* Border colors */
+            --border-primary: rgba(255, 255, 255, 0.08);
+            --border-secondary: rgba(255, 255, 255, 0.12);
+            --border-focus: var(--color-primary);
+            
+            /* Gradient colors - Navy to Blue */
+            --gradient-start: #0b1220;
+            --gradient-end: #1e3a8a;
+            
+            /* Neon accents for dark theme */
+            --neon-blue: #60a5fa;
+            --neon-purple: #a78bfa;
+            
+            /* Shadows for dark theme */
+            --shadow-card: 0 4px 6px rgba(0, 0, 0, 0.3);
+            --shadow-elevated: 0 20px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        /* ==================== BASE STYLES ==================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            font-size: var(--font-size-base);
+            line-height: 1.6;
+            color: var(--text-primary);
+            background: var(--bg-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* ==================== THEME TOGGLE CONTROL ==================== */
+        .theme-toggle-wrapper {
+            position: fixed;
+            top: var(--space-2);
+            right: var(--space-2);
+            z-index: 1000;
+            background: var(--surface-1);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-pill);
+            padding: var(--space-1);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: var(--space-1);
+        }
+
+        .theme-toggle-wrapper input[type="radio"] {
+            display: none;
+        }
+
+        .theme-toggle-wrapper label {
+            padding: var(--space-1) var(--space-2);
+            border-radius: var(--radius-pill);
+            cursor: pointer;
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .theme-toggle-wrapper input[type="radio"]:checked + label {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .theme-toggle-wrapper label:hover {
+            color: var(--text-primary);
+        }
+
+        /* ==================== APP BAR / NAVIGATION ==================== */
+        .app-bar {
+            background: var(--surface-1);
+            border-bottom: 1px solid var(--border-primary);
+            padding: var(--space-2) var(--space-4);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .app-bar-logo {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-size: var(--font-size-xl);
+            font-weight: 700;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--color-primary), var(--neon-purple, var(--color-primary-light)));
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .app-bar-search {
+            flex: 1;
+            max-width: 500px;
+            margin: 0 var(--space-4);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: var(--space-2);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-pill);
+            background: var(--surface-2);
+            color: var(--text-primary);
+            font-size: var(--font-size-sm);
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            border-color: var(--border-focus);
+            background: var(--surface-1);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .app-bar-actions {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-success));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: var(--font-size-sm);
+        }
+
+        /* ==================== HERO BANNER ==================== */
+        .hero-banner {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            padding: var(--space-6) var(--space-4);
+            margin-bottom: var(--space-4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        [data-theme="dark"] .hero-banner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, var(--neon-blue) 0%, transparent 70%);
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        [data-theme="dark"] .hero-banner::after {
+            content: '';
+            position: absolute;
+            bottom: -50%;
+            left: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, var(--neon-purple) 0%, transparent 70%);
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        .hero-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-title {
+            font-size: var(--font-size-4xl);
+            font-weight: 700;
+            color: white;
+            margin-bottom: var(--space-2);
+        }
+
+        .hero-subtitle {
+            font-size: var(--font-size-xl);
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: var(--space-4);
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: var(--space-4);
+            flex-wrap: wrap;
+        }
+
+        .hero-stat {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-lg);
+            padding: var(--space-2) var(--space-3);
+            color: white;
+        }
+
+        .hero-stat-value {
+            font-size: var(--font-size-2xl);
+            font-weight: 700;
+            display: block;
+        }
+
+        .hero-stat-label {
+            font-size: var(--font-size-sm);
+            opacity: 0.9;
+        }
+
+        /* ==================== CAPSULES / PILLS ==================== */
+        .capsule {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-1);
+            padding: 4px 12px;
+            border-radius: var(--radius-pill);
+            font-size: var(--font-size-xs);
+            font-weight: 600;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .capsule-primary {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .capsule-success {
+            background: var(--color-success);
+            color: white;
+        }
+
+        .capsule-error {
+            background: var(--color-error);
+            color: white;
+        }
+
+        .capsule-warning {
+            background: var(--color-warning);
+            color: white;
+        }
+
+        .capsule-neutral {
+            background: var(--surface-2);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-primary);
+        }
+
+        .capsule-outline {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-secondary);
+        }
+
+        /* ==================== CONTAINER / LAYOUT ==================== */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 var(--space-4);
+        }
+
+        .section {
+            margin-bottom: var(--space-6);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-3);
+        }
+
+        .section-title {
+            font-size: var(--font-size-2xl);
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .section-subtitle {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            margin-top: var(--space-1);
+        }
+
+        /* ==================== TABS ==================== */
+        .tabs-container {
+            background: var(--surface-1);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            padding: var(--space-2);
+            margin-bottom: var(--space-4);
+        }
+
+        .tabs {
+            display: flex;
+            gap: var(--space-1);
+        }
+
+        .tab {
+            flex: 1;
+            padding: var(--space-2) var(--space-3);
+            border-radius: var(--radius-md);
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: var(--font-size-base);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .tab:hover {
+            color: var(--text-primary);
+            background: var(--surface-2);
+        }
+
+        .tab.active {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        /* ==================== CARDS ==================== */
+        .card {
+            background: var(--surface-1);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+            box-shadow: var(--shadow-card);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-elevated);
+            border-color: var(--border-secondary);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-2);
+        }
+
+        .card-title {
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .card-subtitle {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-2);
+        }
+
+        .card-content {
+            color: var(--text-secondary);
+            font-size: var(--font-size-sm);
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: var(--space-3);
+            padding-top: var(--space-2);
+            border-top: 1px solid var(--border-primary);
+        }
+
+        /* ==================== STATS PANEL / CALCULATOR ==================== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-3);
+            margin-bottom: var(--space-4);
+        }
+
+        .stat-card {
+            background: var(--surface-1);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+            box-shadow: var(--shadow-card);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-elevated);
+        }
+
+        .stat-card-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            margin-bottom: var(--space-2);
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-xl);
+        }
+
+        .stat-icon.primary {
+            background: rgba(66, 85, 255, 0.1);
+            color: var(--color-primary);
+        }
+
+        .stat-icon.success {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--color-success);
+        }
+
+        .stat-icon.warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--color-warning);
+        }
+
+        .stat-icon.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--color-error);
+        }
+
+        .stat-label {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: var(--font-size-3xl);
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: var(--space-1);
+        }
+
+        .stat-change {
+            font-size: var(--font-size-xs);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .stat-change.positive {
+            color: var(--color-success);
+        }
+
+        .stat-change.negative {
+            color: var(--color-error);
+        }
+
+        /* ==================== LESSONS / DECK CARDS GRID ==================== */
+        .lessons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: var(--space-3);
+            margin-bottom: var(--space-4);
+        }
+
+        .lesson-card {
+            background: var(--surface-1);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            padding: var(--space-3);
+            box-shadow: var(--shadow-card);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .lesson-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-elevated);
+            border-color: var(--color-primary);
+        }
+
+        .lesson-card-header {
+            margin-bottom: var(--space-2);
+        }
+
+        .lesson-card-title {
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-1);
+        }
+
+        .lesson-card-meta {
+            display: flex;
+            gap: var(--space-2);
+            flex-wrap: wrap;
+            margin-bottom: var(--space-2);
+        }
+
+        .lesson-card-description {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-3);
+            line-height: 1.5;
+        }
+
+        .lesson-card-progress {
+            margin-bottom: var(--space-2);
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-1);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--surface-2);
+            border-radius: var(--radius-pill);
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light));
+            border-radius: var(--radius-pill);
+            transition: width 0.3s ease;
+        }
+
+        .progress-fill.success {
+            background: linear-gradient(90deg, var(--color-success), #4ade80);
+        }
+
+        .lesson-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .lesson-card-stats {
+            display: flex;
+            gap: var(--space-2);
+            font-size: var(--font-size-xs);
+            color: var(--text-tertiary);
+        }
+
+        /* ==================== CATEGORY CARDS WITH IMAGES ==================== */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: var(--space-3);
+        }
+
+        .category-card {
+            background: var(--surface-1);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-card);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .category-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-elevated);
+            border-color: var(--color-primary);
+        }
+
+        .category-card-image {
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-4xl);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .category-card-image::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent, rgba(0, 0, 0, 0.2));
+        }
+
+        .category-card-body {
+            padding: var(--space-3);
+        }
+
+        .category-card-title {
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-1);
+        }
+
+        .category-card-subtitle {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-2);
+        }
+
+        .category-card-progress {
+            margin-top: var(--space-2);
+        }
+
+        /* ==================== BUTTONS ==================== */
+        .button {
+            padding: var(--space-2) var(--space-3);
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-base);
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-1);
+            text-decoration: none;
+        }
+
+        .button-primary {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .button-primary:hover {
+            background: var(--color-primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .button-secondary {
+            background: var(--surface-2);
+            color: var(--text-primary);
+            border: 1px solid var(--border-primary);
+        }
+
+        .button-secondary:hover {
+            background: var(--surface-3);
+            border-color: var(--border-secondary);
+        }
+
+        .button-success {
+            background: var(--color-success);
+            color: white;
+        }
+
+        .button-success:hover {
+            background: #16a34a;
+        }
+
+        .button-small {
+            padding: 6px 12px;
+            font-size: var(--font-size-sm);
+        }
+
+        /* ==================== UTILITY CLASSES ==================== */
+        .flex {
+            display: flex;
+        }
+
+        .flex-center {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .flex-between {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .gap-1 { gap: var(--space-1); }
+        .gap-2 { gap: var(--space-2); }
+        .gap-3 { gap: var(--space-3); }
+        .gap-4 { gap: var(--space-4); }
+
+        .mb-1 { margin-bottom: var(--space-1); }
+        .mb-2 { margin-bottom: var(--space-2); }
+        .mb-3 { margin-bottom: var(--space-3); }
+        .mb-4 { margin-bottom: var(--space-4); }
+
+        .text-center {
+            text-align: center;
+        }
+
+        /* ==================== RESPONSIVE ==================== */
+        @media (max-width: 768px) {
+            .app-bar-search {
+                display: none;
+            }
+
+            .hero-title {
+                font-size: var(--font-size-3xl);
+            }
+
+            .hero-subtitle {
+                font-size: var(--font-size-lg);
+            }
+
+            .stats-grid,
+            .lessons-grid,
+            .category-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .theme-toggle-wrapper {
+                top: auto;
+                bottom: var(--space-2);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ==================== THEME TOGGLE CONTROL ==================== -->
+    <div class="theme-toggle-wrapper">
+        <input type="radio" id="theme-dark" name="theme" onchange="document.documentElement.setAttribute('data-theme', 'dark')" checked>
+        <label for="theme-dark">🌙 Dark</label>
+        
+        <input type="radio" id="theme-light" name="theme" onchange="document.documentElement.setAttribute('data-theme', 'light')">
+        <label for="theme-light">☀️ Light</label>
+    </div>
+
+    <!-- ==================== APP BAR / NAVIGATION ==================== -->
+    <nav class="app-bar">
+        <a href="#" class="app-bar-logo">
+            <div class="logo-icon">VT</div>
+            <span>Vocab Trainer</span>
+        </a>
+
+        <div class="app-bar-search">
+            <input type="text" class="search-input" placeholder="Search lessons, words, or decks...">
+        </div>
+
+        <div class="app-bar-actions">
+            <button class="button button-secondary button-small">➕ New Deck</button>
+            <div class="user-avatar">JD</div>
+        </div>
+    </nav>
+
+    <!-- ==================== HERO BANNER ==================== -->
+    <section class="hero-banner">
+        <div class="hero-content">
+            <h1 class="hero-title">Master Languages Faster</h1>
+            <p class="hero-subtitle">Smart vocabulary training with spaced repetition</p>
+            
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <span class="hero-stat-value">1,247</span>
+                    <span class="hero-stat-label">Words Learned</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="hero-stat-value">28</span>
+                    <span class="hero-stat-label">Day Streak</span>
+                </div>
+                <div class="hero-stat">
+                    <span class="hero-stat-value">89%</span>
+                    <span class="hero-stat-label">Accuracy</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="container">
+        <!-- ==================== CAPSULE / PILL ELEMENTS SHOWCASE ==================== -->
+        <section class="section">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Capsule Elements</h2>
+                    <p class="section-subtitle">Small rounded badges and tags for status, labels, and metadata</p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-content">
+                    <div class="flex gap-2 mb-3" style="flex-wrap: wrap;">
+                        <span class="capsule capsule-primary">PL → EN</span>
+                        <span class="capsule capsule-success">✓ Completed</span>
+                        <span class="capsule capsule-error">✗ Failed</span>
+                        <span class="capsule capsule-warning">⏰ Due Soon</span>
+                        <span class="capsule capsule-neutral">🎯 Beginner</span>
+                        <span class="capsule capsule-outline">📚 50 words</span>
+                    </div>
+                    <div class="flex gap-2" style="flex-wrap: wrap;">
+                        <span class="capsule capsule-primary">Translation ✓</span>
+                        <span class="capsule capsule-success">Mastered 🎉</span>
+                        <span class="capsule capsule-neutral">In Progress</span>
+                        <span class="capsule capsule-warning">Review</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== TABS SHOWCASE ==================== -->
+        <section class="section">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Tab Navigation</h2>
+                    <p class="section-subtitle">Horizontal tab controls for switching views</p>
+                </div>
+            </div>
+            
+            <div class="tabs-container">
+                <div class="tabs">
+                    <button class="tab active">All Lessons</button>
+                    <button class="tab">In Progress</button>
+                    <button class="tab">Completed</button>
+                    <button class="tab">Favorites</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== STATS PANEL / CALCULATOR ==================== -->
+        <section class="section">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Statistics Panel</h2>
+                    <p class="section-subtitle">Key metrics and performance indicators</p>
+                </div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div class="stat-icon primary">📚</div>
+                        <div class="stat-label">Total Words</div>
+                    </div>
+                    <div class="stat-value">1,247</div>
+                    <div class="stat-change positive">↑ 23 this week</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div class="stat-icon success">✓</div>
+                        <div class="stat-label">Mastered</div>
+                    </div>
+                    <div class="stat-value">892</div>
+                    <div class="stat-change positive">↑ 12% this month</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div class="stat-icon warning">⏰</div>
+                        <div class="stat-label">Due Today</div>
+                    </div>
+                    <div class="stat-value">34</div>
+                    <div class="stat-change">Review now</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div class="stat-icon error">🔥</div>
+                        <div class="stat-label">Streak</div>
+                    </div>
+                    <div class="stat-value">28</div>
+                    <div class="stat-change positive">↑ Best: 45 days</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== LESSONS / DECK CARDS ==================== -->
+        <section class="section">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Lesson Cards</h2>
+                    <p class="section-subtitle">Interactive cards for lessons and vocabulary decks</p>
+                </div>
+                <button class="button button-primary">+ Create New</button>
+            </div>
+            
+            <div class="lessons-grid">
+                <div class="lesson-card">
+                    <div class="lesson-card-header">
+                        <div class="lesson-card-title">Polish Basics</div>
+                        <div class="lesson-card-meta">
+                            <span class="capsule capsule-primary">PL → EN</span>
+                            <span class="capsule capsule-neutral">🎯 Beginner</span>
+                        </div>
+                    </div>
+                    <p class="lesson-card-description">
+                        Essential Polish vocabulary for everyday conversations including greetings, numbers, and common phrases.
+                    </p>
+                    <div class="lesson-card-progress">
+                        <div class="progress-label">
+                            <span>Progress</span>
+                            <span>75%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 75%"></div>
+                        </div>
+                    </div>
+                    <div class="lesson-card-footer">
+                        <div class="lesson-card-stats">
+                            <span>📚 150 words</span>
+                            <span>✓ 112 mastered</span>
+                        </div>
+                        <button class="button button-primary button-small">Continue</button>
+                    </div>
+                </div>
+
+                <div class="lesson-card">
+                    <div class="lesson-card-header">
+                        <div class="lesson-card-title">German Verbs</div>
+                        <div class="lesson-card-meta">
+                            <span class="capsule capsule-primary">DE → EN</span>
+                            <span class="capsule capsule-warning">⏰ Review</span>
+                        </div>
+                    </div>
+                    <p class="lesson-card-description">
+                        Master the most common German verbs and their conjugations with practical examples.
+                    </p>
+                    <div class="lesson-card-progress">
+                        <div class="progress-label">
+                            <span>Progress</span>
+                            <span>45%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 45%"></div>
+                        </div>
+                    </div>
+                    <div class="lesson-card-footer">
+                        <div class="lesson-card-stats">
+                            <span>📚 200 words</span>
+                            <span>⏰ 18 due</span>
+                        </div>
+                        <button class="button button-warning button-small">Review</button>
+                    </div>
+                </div>
+
+                <div class="lesson-card">
+                    <div class="lesson-card-header">
+                        <div class="lesson-card-title">Spanish Travel</div>
+                        <div class="lesson-card-meta">
+                            <span class="capsule capsule-primary">ES → EN</span>
+                            <span class="capsule capsule-success">✓ Completed</span>
+                        </div>
+                    </div>
+                    <p class="lesson-card-description">
+                        Everything you need for traveling in Spanish-speaking countries: directions, hotels, restaurants.
+                    </p>
+                    <div class="lesson-card-progress">
+                        <div class="progress-label">
+                            <span>Progress</span>
+                            <span>100%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill success" style="width: 100%"></div>
+                        </div>
+                    </div>
+                    <div class="lesson-card-footer">
+                        <div class="lesson-card-stats">
+                            <span>📚 120 words</span>
+                            <span>✓ All mastered</span>
+                        </div>
+                        <button class="button button-secondary button-small">Review</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== CATEGORY CARDS WITH IMAGES ==================== -->
+        <section class="section">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Category Cards</h2>
+                    <p class="section-subtitle">Visual cards with images and progress tracking</p>
+                </div>
+            </div>
+            
+            <div class="category-grid">
+                <div class="category-card">
+                    <div class="category-card-image" style="background: linear-gradient(135deg, #4255ff, #60a5fa);">
+                        🗣️
+                    </div>
+                    <div class="category-card-body">
+                        <h3 class="category-card-title">Conversation</h3>
+                        <p class="category-card-subtitle">Essential phrases for daily communication</p>
+                        <div class="flex gap-1 mb-2" style="flex-wrap: wrap;">
+                            <span class="capsule capsule-primary">PL → EN</span>
+                            <span class="capsule capsule-neutral">📚 180 words</span>
+                        </div>
+                        <div class="category-card-progress">
+                            <div class="progress-label">
+                                <span>Mastered</span>
+                                <span>68%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 68%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="category-card">
+                    <div class="category-card-image" style="background: linear-gradient(135deg, #22C55E, #4ade80);">
+                        🍽️
+                    </div>
+                    <div class="category-card-body">
+                        <h3 class="category-card-title">Food & Dining</h3>
+                        <p class="category-card-subtitle">Vocabulary for restaurants and cooking</p>
+                        <div class="flex gap-1 mb-2" style="flex-wrap: wrap;">
+                            <span class="capsule capsule-primary">PL → EN</span>
+                            <span class="capsule capsule-neutral">📚 240 words</span>
+                        </div>
+                        <div class="category-card-progress">
+                            <div class="progress-label">
+                                <span>Mastered</span>
+                                <span>52%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill success" style="width: 52%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="category-card">
+                    <div class="category-card-image" style="background: linear-gradient(135deg, #a78bfa, #c084fc);">
+                        ✈️
+                    </div>
+                    <div class="category-card-body">
+                        <h3 class="category-card-title">Travel & Tourism</h3>
+                        <p class="category-card-subtitle">Navigate foreign countries with confidence</p>
+                        <div class="flex gap-1 mb-2" style="flex-wrap: wrap;">
+                            <span class="capsule capsule-success">✓ Complete</span>
+                            <span class="capsule capsule-neutral">📚 200 words</span>
+                        </div>
+                        <div class="category-card-progress">
+                            <div class="progress-label">
+                                <span>Mastered</span>
+                                <span>100%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill success" style="width: 100%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="category-card">
+                    <div class="category-card-image" style="background: linear-gradient(135deg, #F59E0B, #fbbf24);">
+                        💼
+                    </div>
+                    <div class="category-card-body">
+                        <h3 class="category-card-title">Business</h3>
+                        <p class="category-card-subtitle">Professional vocabulary for the workplace</p>
+                        <div class="flex gap-1 mb-2" style="flex-wrap: wrap;">
+                            <span class="capsule capsule-primary">PL → EN</span>
+                            <span class="capsule capsule-neutral">📚 320 words</span>
+                        </div>
+                        <div class="category-card-progress">
+                            <div class="progress-label">
+                                <span>Mastered</span>
+                                <span>34%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 34%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== BUTTON SHOWCASE ==================== -->
+        <section class="section">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Buttons</h2>
+                    <p class="section-subtitle">Various button styles and states</p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-content">
+                    <div class="flex gap-2 mb-3" style="flex-wrap: wrap;">
+                        <button class="button button-primary">Primary Button</button>
+                        <button class="button button-secondary">Secondary Button</button>
+                        <button class="button button-success">Success Button</button>
+                    </div>
+                    <div class="flex gap-2" style="flex-wrap: wrap;">
+                        <button class="button button-primary button-small">Small Primary</button>
+                        <button class="button button-secondary button-small">Small Secondary</button>
+                        <button class="button button-success button-small">✓ Small Success</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== COLOR PALETTE ==================== -->
+        <section class="section" style="margin-bottom: var(--space-6); padding-bottom: var(--space-6);">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Color Palette</h2>
+                    <p class="section-subtitle">Primary colors used throughout the application</p>
+                </div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="card">
+                    <div style="width: 100%; height: 80px; background: #4255ff; border-radius: var(--radius-md); margin-bottom: var(--space-2);"></div>
+                    <div class="card-title">Primary Blue</div>
+                    <div class="card-content">#4255ff</div>
+                </div>
+
+                <div class="card">
+                    <div style="width: 100%; height: 80px; background: #22C55E; border-radius: var(--radius-md); margin-bottom: var(--space-2);"></div>
+                    <div class="card-title">Success Green</div>
+                    <div class="card-content">#22C55E</div>
+                </div>
+
+                <div class="card">
+                    <div style="width: 100%; height: 80px; background: #EF4444; border-radius: var(--radius-md); margin-bottom: var(--space-2);"></div>
+                    <div class="card-title">Error Red</div>
+                    <div class="card-content">#EF4444</div>
+                </div>
+
+                <div class="card">
+                    <div style="width: 100%; height: 80px; background: #F59E0B; border-radius: var(--radius-md); margin-bottom: var(--space-2);"></div>
+                    <div class="card-title">Warning Amber</div>
+                    <div class="card-content">#F59E0B</div>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+</html>

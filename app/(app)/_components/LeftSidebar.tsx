@@ -6,10 +6,17 @@ import { useEffect, useState } from 'react'
 import { useSound } from '@/src/lib/SoundProvider'
 import { BarChart3, Bell, BookOpen, CalendarDays, ClipboardCheck, FolderOpen, Home, PlayCircle, Plus, Settings, X } from 'lucide-react'
 import { SidebarSearch } from './SidebarSearch'
+import { useSettings } from '@/src/contexts/SettingsContext'
 
 interface FolderItem {
   id: string
   name: string
+}
+
+interface DailyProgress {
+  cardsCompleted: number
+  minutesSpent: number
+  sessionsCompleted: number
 }
 
 export function LeftSidebar({
@@ -26,8 +33,12 @@ export function LeftSidebar({
   const pathname = usePathname()
   const router = useRouter()
   const { unlock } = useSound()
+  const { settings } = useSettings()
   const [hasNewNotifications, setHasNewNotifications] = useState(false)
   const [dailyLoading, setDailyLoading] = useState(false)
+  const [progressLoading, setProgressLoading] = useState(false)
+  const [dailyProgress, setDailyProgress] = useState<DailyProgress | null>(null)
+  
   const active = (href: string) => pathname === href || pathname.startsWith(`${href}/`)
 
   useEffect(() => {
@@ -41,6 +52,28 @@ export function LeftSidebar({
     return () => { ignore = true }
   }, [pathname])
 
+  // Fetch daily progress
+  useEffect(() => {
+    let ignore = false
+    setProgressLoading(true)
+    fetch('/api/daily-progress', { credentials: 'include' })
+      .then((res) => res.json())
+      .then((data) => {
+        if (!ignore && data.cardsCompleted !== undefined) {
+          setDailyProgress({
+            cardsCompleted: data.cardsCompleted,
+            minutesSpent: data.minutesSpent || 0,
+            sessionsCompleted: data.sessionsCompleted || 0,
+          })
+        }
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        if (!ignore) setProgressLoading(false)
+      })
+    return () => { ignore = true }
+  }, [])
+
   const groupTitle = 'px-2 text-[13px] font-semibold'
   const itemClass = (isActive: boolean) =>
     `flex min-h-[40px] items-center gap-[10px] rounded-[var(--radiusSm)] border px-[10px] py-2 text-sm transition-colors ${
@@ -49,21 +82,35 @@ export function LeftSidebar({
         : 'border-transparent text-[var(--text)] hover:border-[var(--border)] hover:bg-[#f8fafc]'
     }`
 
-
   async function startDailySession() {
     if (dailyLoading) return
     setDailyLoading(true)
     try {
       unlock()
+      // Use settings defaults only (no quick overrides)
+      const direction = settings.defaultDirection
+      const mode = settings.defaultStudyMode
+      const targetCount = settings.dailyGoalWords
+      
       const res = await fetch('/api/session/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ mode: 'translate', targetCount: 20, shuffle: true, allowAll: true }),
+        body: JSON.stringify({ 
+          mode, 
+          targetCount, 
+          direction,
+          shuffle: settings.shuffleWords, 
+          allowAll: true 
+        }),
       })
       const data = await res.json()
       if (res.ok && data.sessionId) {
-        sessionStorage.setItem(`session-${data.sessionId}`, JSON.stringify({ tasks: data.tasks, mode: 'translate', returnDeckId: data.deckId ? String(data.deckId) : '' }))
+        sessionStorage.setItem(`session-${data.sessionId}`, JSON.stringify({ 
+          tasks: data.tasks, 
+          mode, 
+          returnDeckId: data.deckId ? String(data.deckId) : '' 
+        }))
         router.push(`/session/${data.sessionId}`)
         onClose?.()
       }
@@ -73,6 +120,10 @@ export function LeftSidebar({
       setDailyLoading(false)
     }
   }
+
+  const dailyGoal = settings.dailyGoalWords
+  const cardsCompleted = dailyProgress?.cardsCompleted || 0
+  const progressPercent = Math.min(100, Math.round((cardsCompleted / Math.max(1, dailyGoal)) * 100))
 
   const nav = (
     <aside className="flex h-full flex-col overflow-y-auto border-r px-[var(--sidebar-pad)] py-[var(--sidebar-pad)]" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
@@ -84,16 +135,45 @@ export function LeftSidebar({
       </div>
 
       <div className="space-y-5">
-        <button
-          type="button"
-          onClick={startDailySession}
-          disabled={dailyLoading}
-          className="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-[var(--radius)] px-4 text-sm font-semibold text-white transition-opacity disabled:opacity-60"
-          style={{ background: 'linear-gradient(135deg, var(--primary), #4f46e5)' }}
-        >
-          <PlayCircle size={18} />
-          {dailyLoading ? 'Uruchamianie…' : 'Codzienna sesja (20)'}
-        </button>
+        {/* Simplified Daily Session Section */}
+        <section className="space-y-3 rounded-[var(--radius)] border p-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Codzienna sesja</h3>
+          </div>
+          
+          {/* Progress Display */}
+          <div className="space-y-2">
+            <div className="flex items-baseline justify-between">
+              <span className="text-xs" style={{ color: 'var(--muted)' }}>Nowe słówka dzisiaj</span>
+              {progressLoading ? (
+                <span className="text-xs" style={{ color: 'var(--muted)' }}>...</span>
+              ) : (
+                <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
+                  {cardsCompleted}/{dailyGoal}
+                </span>
+              )}
+            </div>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-[#e2e8f0]">
+              <div 
+                className="h-full transition-all duration-500" 
+                style={{ width: `${progressPercent}%`, background: 'var(--primary)' }}
+              />
+            </div>
+          </div>
+
+          {/* Start Button */}
+          <button
+            type="button"
+            onClick={startDailySession}
+            disabled={dailyLoading}
+            className="w-full flex min-h-[42px] items-center justify-center gap-2 rounded-[var(--radius)] px-4 text-sm font-semibold text-white transition-opacity disabled:opacity-60"
+            style={{ background: 'linear-gradient(135deg, var(--primary), #4f46e5)' }}
+          >
+            <PlayCircle size={18} />
+            {dailyLoading ? 'Uruchamianie…' : 'Rozpocznij'}
+          </button>
+        </section>
+
         <section className="space-y-2">
           <p className={groupTitle}>Główne</p>
           <div className="space-y-1">
