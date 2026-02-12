@@ -10,7 +10,7 @@ type StudyMode = 'translate' | 'abcd' | 'sentence' | 'describe' | 'mixed' | 'tes
 type TestMode = 'abcd' | 'translate' | 'sentence' | 'describe'
 
 const DEFAULT_TEST_MODE: TestMode = 'abcd'
-const allowedTestModes: TestMode[] = [DEFAULT_TEST_MODE, 'translate']
+const allowedTestModes: TestMode[] = ['abcd', 'translate']
 
 const normalizeTestModes = (modes: unknown): TestMode[] => {
   if (!Array.isArray(modes)) return [DEFAULT_TEST_MODE]
@@ -230,7 +230,7 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
     const target = useAllWords ? cardCount : Math.min(cardCount, clampedCount)
     const selectedModes = normalizeTestModes(enabledModes)
     const settings = {
-      modes: selectedModes.length ? selectedModes : [DEFAULT_TEST_MODE],
+      modes: selectedModes,
       starredOnly,
       randomizeQuestions,
       randomizeAnswers,

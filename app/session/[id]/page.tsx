@@ -444,7 +444,6 @@ export default function SessionPage() {
   const acknowledgeTranslateFeedback = useCallback(() => {
     resetFeedbackState()
     setTranslateNeedsAdvance(false)
-    setSentenceNeedsAcknowledge(false)
     advanceToNext(50)
   }, [advanceToNext, resetFeedbackState])
 
