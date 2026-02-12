@@ -46,6 +46,7 @@ interface TaskState {
   usedHint: boolean
   wasWrongBefore: boolean
   translatedDone?: boolean
+  describeTranslated?: boolean
 }
 
 function saveAnswerInBackground(data: {
@@ -87,6 +88,7 @@ export default function SessionPage() {
   const [feedback, setFeedback] = useState<{ correct: boolean; message: string } | null>(null)
   const [sentenceNeedsAcknowledge, setSentenceNeedsAcknowledge] = useState(false)
   const [sentenceStage, setSentenceStage] = useState<'translate' | 'sentence'>('translate')
+  const [describeStage, setDescribeStage] = useState<'translate' | 'describe'>('translate')
   const [loading, setLoading] = useState(false)
   const [sessionDone, setSessionDone] = useState(false)
   const [returnDeckId, setReturnDeckId] = useState('')
@@ -208,6 +210,12 @@ export default function SessionPage() {
     } else {
       setSentenceStage('translate')
     }
+    if (task?.taskType === 'describe') {
+      const state = getTaskState(task.cardId)
+      setDescribeStage(state.describeTranslated ? 'describe' : 'translate')
+    } else {
+      setDescribeStage('translate')
+    }
     setQuestionStartedAt(Date.now())
   }, [currentIndex, tasks])
 
@@ -227,7 +235,7 @@ export default function SessionPage() {
 
   function getTaskState(cardId: string): TaskState {
     if (!taskStatesRef.current.has(cardId)) {
-      taskStatesRef.current.set(cardId, { attempts: 0, usedHint: false, wasWrongBefore: false, translatedDone: false })
+      taskStatesRef.current.set(cardId, { attempts: 0, usedHint: false, wasWrongBefore: false, translatedDone: false, describeTranslated: false })
     }
     return taskStatesRef.current.get(cardId)!
   }
@@ -583,8 +591,30 @@ export default function SessionPage() {
   async function handleDescribeSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!userAnswer.trim() || !currentTask) return
-
     const state = getTaskState(currentTask.cardId)
+
+    if (describeStage === 'translate') {
+      const expected = currentTask.expectedAnswer || currentTask.answer
+      const result = checkAnswerWithTypo(userAnswer, expected)
+      const correct = result === 'correct' || result === 'typo'
+      if (!correct) {
+        setStreak(0)
+        setFeedback({ correct: false, message: `Najpierw poprawnie przetłumacz słowo. Poprawna odpowiedź: ${expected}` })
+        playWrong()
+        return
+      }
+      state.describeTranslated = true
+      setAnsweredCount(prev => prev + 1)
+      setCorrectCount(prev => prev + 1)
+      setStreak(prev => prev + 1)
+      setDescribeStage('describe')
+      setUserAnswer('')
+      setShowHint(false)
+      setFeedback(null)
+      playCorrect()
+      return
+    }
+
     state.attempts++
 
     setLoading(true)
@@ -1386,27 +1416,49 @@ export default function SessionPage() {
 
               {currentTask.taskType === 'describe' && (
                 <div className="space-y-5">
-                  <textarea
-                    ref={inputRef as React.RefObject<HTMLTextAreaElement>}
-                    value={userAnswer}
-                    onChange={e => setUserAnswer(e.target.value)}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-                        e.preventDefault()
-                        if (userAnswer.trim() && !loading) {
-                          handleDescribeSubmit(e as unknown as React.FormEvent)
+                  {describeStage === 'translate' ? (
+                    <input
+                      ref={inputRef as React.RefObject<HTMLInputElement>}
+                      type="text"
+                      value={userAnswer}
+                      onChange={e => setUserAnswer(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          if (userAnswer.trim() && !loading) {
+                            handleDescribeSubmit(e as unknown as React.FormEvent)
+                          }
                         }
-                      }
-                    }}
-                    placeholder="Napisz opis..."
-                    autoFocus
-                    rows={4}
-                    className="w-full rounded-[var(--radiusSm)] px-4 py-3 text-sm focus:outline-none resize-none transition-colors"
-                    style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
-                    disabled={loading}
-                  />
+                      }}
+                      placeholder="Przetłumacz to słowo..."
+                      autoFocus
+                      className="w-full rounded-[var(--radiusSm)] px-4 py-3 text-center text-lg focus:outline-none transition-colors"
+                      style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
+                      disabled={loading}
+                    />
+                  ) : (
+                    <textarea
+                      ref={inputRef as React.RefObject<HTMLTextAreaElement>}
+                      value={userAnswer}
+                      onChange={e => setUserAnswer(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                          e.preventDefault()
+                          if (userAnswer.trim() && !loading) {
+                            handleDescribeSubmit(e as unknown as React.FormEvent)
+                          }
+                        }
+                      }}
+                      placeholder="Napisz definicję własnymi słowami..."
+                      autoFocus
+                      rows={4}
+                      className="w-full rounded-[var(--radiusSm)] px-4 py-3 text-sm focus:outline-none resize-none transition-colors"
+                      style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
+                      disabled={loading}
+                    />
+                  )}
                   <div className="flex gap-2">
-                    {!showHint && (
+                    {!showHint && describeStage === 'translate' && (
                       <button
                         type="button"
                         onClick={handleHintClick}
@@ -1423,11 +1475,11 @@ export default function SessionPage() {
                           handleDescribeSubmit(e as unknown as React.FormEvent)
                         }
                       }}
-                      disabled={loading || !userAnswer.trim()}
+                      disabled={loading || (!userAnswer.trim())}
                       className="flex-1 text-white py-3 rounded-[var(--radiusSm)] text-sm font-medium disabled:opacity-40 transition-colors"
                       style={{ background: '#3B82F6' }}
                     >
-                      {loading ? 'Checking…' : 'Sprawdź'}
+                      {loading ? 'Checking…' : describeStage === 'translate' ? 'Sprawdź' : 'Sprawdź opis'}
                     </button>
                     {!feedback && (
                       <button
@@ -1458,6 +1510,7 @@ export default function SessionPage() {
                           })
                           setUserAnswer('')
                           setShowHint(false)
+                          setDescribeStage('translate')
                           advanceToNext(FEEDBACK_DELAY_WRONG_SLOW)
                         }}
                         className="px-4 py-3 rounded-[var(--radiusSm)] text-sm font-medium transition-colors"
