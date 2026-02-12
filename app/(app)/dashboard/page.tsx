@@ -336,65 +336,9 @@ export default async function DashboardPage() {
           </Card>
         </section>
 
-      {/* Section - Co powtórzyć dziś */}
-      <section>
-        <h2 className="section-heading mb-3 text-lg" style={{ color: 'var(--text)', fontWeight: 700 }}>Co powtórzyć dziś</h2>
-        {recommendedDecks.length === 0 ? (
-          <Card compact>
-            <p className="text-sm text-center py-4" style={{ color: 'var(--text-muted)' }}>Wszystko aktualne! Możesz rozpocząć nową sesję.</p>
-          </Card>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {recommendedDecks.map((item) => (
-              <Card key={item.id} className="relative">
-                <div className="space-y-4">
-                  {/* Header with deck name and mode badge */}
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="text-base font-bold truncate" style={{ color: 'var(--text)' }}>{item.title}</h3>
-                    <span className="rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap" style={{ background: 'var(--primary-soft)', color: 'var(--primary)' }}>
-                      {item.modeLabel}
-                    </span>
-                  </div>
-                  
-                  {/* Quick stats */}
-                  <div className="flex items-center gap-3 text-sm" style={{ color: 'var(--text-muted)' }}>
-                    <div className="flex items-center gap-1">
-                      <BookOpen size={14} />
-                      <span className="font-medium" style={{ color: 'var(--text)' }}>{item.targetCount}</span> kart
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock size={14} />
-                      <span className="font-medium" style={{ color: 'var(--text)' }}>{item.estimatedMinutes}</span> min
-                    </div>
-                  </div>
+      {/* Section - Co powtórzyć dziś (removed as requested) */}
 
-                  {/* Start button */}
-                  <StartSessionButton
-                    deckId={item.id}
-                    mode={item.mode}
-                    targetCount={item.targetCount}
-                    direction={item.direction}
-                  />
-                </div>
-              </Card>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* Section B - Jump back in */}
-      <section>
-        <h2 className="section-heading mb-3 text-lg" style={{ color: 'var(--text)', fontWeight: 700 }}>Jump back in</h2>
-        {jumpBackIn.length === 0 ? (
-          <Card compact>
-            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Brak przerwanych sesji.</p>
-          </Card>
-        ) : (
-          <JumpBackInCarousel items={jumpBackIn} />
-        )}
-      </section>
-
-      {/* Section C - Recents */}
+      {/* Section B - Recents */}
       <section>
         <h2 className="section-heading mb-3 text-lg" style={{ color: 'var(--text)', fontWeight: 700 }}>Recents</h2>
         {recents.length === 0 ? (
@@ -423,124 +367,19 @@ export default async function DashboardPage() {
         )}
       </section>
 
-      {/* Section D - Bottom row (two cards) */}
-      <section className="grid gap-4 lg:grid-cols-2">
-        {/* D1: Twoja aktywność */}
-        <Card>
-          <h3 className="flex items-center gap-2 text-base font-bold mb-4" style={{ color: 'var(--text)' }}>
-            <BarChart3 size={18} style={{ color: 'var(--primary)' }} />
-            Twoja aktywność
-          </h3>
-
-          <div className="grid grid-cols-3 gap-3 mb-5">
-            {[
-              { label: 'Sesje dziś', value: sessionsToday.totalDocs },
-              { label: 'Seria (dni)', value: streakDays },
-              { label: 'Łącznie', value: allSessionsYear.totalDocs },
-            ].map((item) => (
-              <div key={item.label} className="rounded-lg border p-3 text-center" style={{ borderColor: 'var(--border)' }}>
-                <p className="text-lg font-bold" style={{ color: 'var(--text)' }}>{item.value}</p>
-                <p className="text-[11px] font-medium mt-0.5" style={{ color: 'var(--text-muted)' }}>{item.label}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="mb-5">
-            <p className="text-xs font-semibold mb-2.5" style={{ color: 'var(--text)' }}>Ostatnie 5 dni</p>
-            <div className="grid grid-cols-5 gap-2">
-              {last5Days.map((day) => {
-                const stateColor = day.met ? 'var(--success)' : day.sessions > 0 ? 'var(--warning-dark)' : 'var(--danger)'
-                const bgColor = day.met ? 'var(--success-soft)' : day.sessions > 0 ? 'var(--warning-soft)' : 'var(--danger-soft)'
-
-                return (
-                  <div
-                    key={day.label}
-                    className="rounded-xl p-2.5 text-center transition-all hover:scale-105"
-                    style={{ background: bgColor, border: `1px solid ${stateColor}` }}
-                  >
-                    <p className="text-[10px] font-medium" style={{ color: 'var(--text-muted)' }}>{day.label}</p>
-                    <p className="mt-1 text-base font-bold" style={{ color: stateColor }}>{day.sessions}</p>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-
-          <div className="grid gap-3 lg:grid-cols-2">
-            <div className="space-y-2">
-              <p className="text-xs font-bold" style={{ color: 'var(--text)' }}>Obszary problemowe</p>
-              {hardestSets.slice(0, 3).map((set) => (
-                <div key={set.id} className="flex items-center justify-between rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
-                  <span className="text-xs font-semibold truncate" style={{ color: 'var(--text)' }}>{set.name}</span>
-                  <span className="text-[11px] font-bold px-2 py-1 rounded-full" style={{ background: 'var(--danger-soft)', color: 'var(--danger-dark)' }}>
-                    {set.accuracy}%
-                  </span>
-                </div>
-              ))}
-              {hardestSets.length === 0 && (
-                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Brak problematycznych zestawów.</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <p className="text-xs font-bold" style={{ color: 'var(--text)' }}>Najlepsze zestawy</p>
-              {easiestSets.slice(0, 3).map((set) => (
-                <div key={set.id} className="flex items-center justify-between rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
-                  <span className="text-xs font-semibold truncate" style={{ color: 'var(--text)' }}>{set.name}</span>
-                  <span className="text-[11px] font-bold px-2 py-1 rounded-full" style={{ background: 'var(--success-soft)', color: 'var(--success-dark)' }}>
-                    {set.accuracy}%
-                  </span>
-                </div>
-              ))}
-              {easiestSets.length === 0 && (
-                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Brak danych.</p>
-              )}
-            </div>
-          </div>
-        </Card>
-
-        {/* D2: Rozpocznij */}
-        <Card>
-          <h3 className="flex items-center gap-2 text-base font-bold mb-4" style={{ color: 'var(--text)' }}>
-            <Play size={18} />
-            Rozpocznij
-          </h3>
-
-          <div className="space-y-3">
-            <Link href="/study" className="flex items-center gap-3 p-4 rounded-xl transition-colors" style={{ background: 'var(--primary-soft)', border: '1px solid transparent' }}>
-              <IconSquare variant="primary" size={36}>
-                <BookOpen size={18} />
-              </IconSquare>
-              <div className="flex-1">
-                <p className="text-sm font-semibold" style={{ color: 'var(--primary)' }}>Ucz się</p>
-                <p className="text-xs" style={{ color: 'var(--primary)' }}>Rozpocznij nową sesję nauki</p>
-              </div>
-              <ArrowRight size={18} style={{ color: 'var(--primary)' }} />
-            </Link>
-
-            <Link href="/learn" className="flex items-center gap-3 p-4 rounded-xl transition-colors hover:bg-[var(--hover-bg)]" style={{ border: '1px solid var(--border)' }}>
-              <IconSquare variant="muted" size={36}>
-                <AlertCircle size={18} />
-              </IconSquare>
-              <div className="flex-1">
-                <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Wykonaj test</p>
-                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Sprawdź swoją wiedzę</p>
-              </div>
-              <ArrowRight size={18} style={{ color: 'var(--text-muted)' }} />
-            </Link>
-
-            <Link href="/create" className="flex items-center gap-3 p-4 rounded-xl transition-colors hover:bg-[var(--hover-bg)]" style={{ border: '1px solid var(--border)' }}>
-              <IconSquare variant="muted" size={36}>
-                <Calendar size={18} />
-              </IconSquare>
-              <div className="flex-1">
-                <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Kreator zestawów</p>
-                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Twórz nowe materiały</p>
-              </div>
-              <ArrowRight size={18} style={{ color: 'var(--text-muted)' }} />
-            </Link>
-          </div>
-        </Card>
+      {/* Section C - Jump back in */}
+      <section>
+        <h2 className="section-heading mb-3 text-lg" style={{ color: 'var(--text)', fontWeight: 700 }}>Jump back in</h2>
+        {jumpBackIn.length === 0 ? (
+          <Card compact>
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Brak przerwanych sesji.</p>
+          </Card>
+        ) : (
+          <JumpBackInCarousel items={jumpBackIn} />
+        )}
       </section>
+
+      {/* Additional sections removed as requested */}
     </PageContainer>
   )
 }
