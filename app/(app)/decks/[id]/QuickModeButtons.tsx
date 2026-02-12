@@ -437,28 +437,6 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
                 />
 
                 <Section
-                  title="Języki odpowiedzi"
-                  items={[
-                    {
-                      label: 'Preferuj odpowiedzi w',
-                      control: (
-                        <select
-                          value={answerLang}
-                          onChange={(e) => setAnswerLang(e.target.value)}
-                          className="h-9 rounded-lg border px-3 text-sm focus:outline-none"
-                          style={{ borderColor: 'var(--border)', color: 'var(--text)', background: 'var(--surface)' }}
-                        >
-                          <option value="auto">Auto</option>
-                          <option value="pl">Polski</option>
-                          <option value="en">Angielski</option>
-                          <option value="mix">Oba</option>
-                        </select>
-                      ),
-                    },
-                  ]}
-                />
-
-                <Section
                   title="Opcje korekty"
                   items={[
                     {

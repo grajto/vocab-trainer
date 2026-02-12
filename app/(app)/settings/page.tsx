@@ -148,8 +148,7 @@ export default function SettingsPage() {
             <button
               type="button"
               onClick={() => handleSessionLengthChange(Math.max(5, sessionLength - 5))}
-              className="px-3 py-2 rounded-lg border"
-              style={{ borderColor: 'var(--border)', background: 'var(--card)' }}
+              className="settings-stepper-btn"
             >
               -
             </button>
@@ -160,13 +159,12 @@ export default function SettingsPage() {
               step={5}
               value={sessionLength}
               onChange={(e) => handleSessionLengthChange(Number(e.target.value))}
-              className="flex-1"
+              className="settings-slider flex-1"
             />
             <button
               type="button"
               onClick={() => handleSessionLengthChange(Math.min(50, sessionLength + 5))}
-              className="px-3 py-2 rounded-lg border"
-              style={{ borderColor: 'var(--border)', background: 'var(--card)' }}
+              className="settings-stepper-btn"
             >
               +
             </button>
@@ -182,8 +180,7 @@ export default function SettingsPage() {
             <button
               type="button"
               onClick={() => handleChange({ dailyGoalWords: Math.max(10, settings.dailyGoalWords - 10) })}
-              className="px-3 py-2 rounded-lg border"
-              style={{ borderColor: 'var(--border)', background: 'var(--card)' }}
+              className="settings-stepper-btn"
             >
               -
             </button>
@@ -191,8 +188,7 @@ export default function SettingsPage() {
             <button
               type="button"
               onClick={() => handleChange({ dailyGoalWords: Math.min(100, settings.dailyGoalWords + 10) })}
-              className="px-3 py-2 rounded-lg border"
-              style={{ borderColor: 'var(--border)', background: 'var(--card)' }}
+              className="settings-stepper-btn"
             >
               +
             </button>
@@ -223,7 +219,7 @@ export default function SettingsPage() {
             step={5}
             value={settings.minMinutesPerDay}
             onChange={(e) => handleChange({ minMinutesPerDay: Number(e.target.value) })}
-            className="w-full"
+            className="settings-slider w-full"
           />
         </div>
 
@@ -239,7 +235,7 @@ export default function SettingsPage() {
             step={1}
             value={settings.minSessionsPerDay}
             onChange={(e) => handleChange({ minSessionsPerDay: Number(e.target.value) })}
-            className="w-full"
+            className="settings-slider w-full"
           />
         </div>
       </section>
@@ -295,7 +291,7 @@ export default function SettingsPage() {
             max={100}
             value={50}
             disabled
-            className="w-full opacity-50 cursor-not-allowed"
+            className="settings-slider w-full opacity-50 cursor-not-allowed"
           />
           <p className="text-xs opacity-60 mt-1">Funkcja będzie dostępna w przyszłych wersjach</p>
         </div>

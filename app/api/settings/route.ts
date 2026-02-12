@@ -38,7 +38,7 @@ export async function GET() {
   const user = await getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const settings = getStudySettings(user as Record<string, unknown>)
+  const settings = getStudySettings(user as unknown as Record<string, unknown>)
   return NextResponse.json({ settings })
 }
 
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
       overrideLock: true,
     })
 
-    const merged = getStudySettings({ ...(user as Record<string, unknown>), studySettings: settings })
+    const merged = getStudySettings({ ...(user as unknown as Record<string, unknown>), studySettings: settings })
     return NextResponse.json({ settings: merged })
   } catch (error) {
     console.error('Settings POST error:', error)

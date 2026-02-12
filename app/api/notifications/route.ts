@@ -41,7 +41,7 @@ async function buildGenerated(userId: string | number) {
     payload.findByID({ collection: 'users', id: userId, depth: 0 }),
   ])
 
-  const settings = getStudySettings(userFull as Record<string, unknown>)
+  const settings = getStudySettings(userFull as unknown as Record<string, unknown>)
   const lastSessionPerDeck = new Map<string, Date>()
   for (const s of sessions.docs) {
     const did = String(s.deck)

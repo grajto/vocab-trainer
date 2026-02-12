@@ -592,6 +592,7 @@ export default function SessionPage() {
     e.preventDefault()
     if (!userAnswer.trim() || !currentTask) return
     const state = getTaskState(currentTask.cardId)
+    state.attempts++
 
     if (describeStage === 'translate') {
       const expected = currentTask.expectedAnswer || currentTask.answer
@@ -615,8 +616,6 @@ export default function SessionPage() {
       return
     }
 
-    state.attempts++
-
     setLoading(true)
     try {
       const res = await fetch('/api/check-describe', {
@@ -624,9 +623,9 @@ export default function SessionPage() {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          word: currentTask.prompt,
+          word: currentTask.requiredEn || currentTask.answer,
           description: userAnswer,
-          meaningPl: currentTask.answer,
+          meaningPl: currentTask.prompt,
         }),
       })
       const data = await res.json().catch(() => ({}))
@@ -1033,7 +1032,9 @@ export default function SessionPage() {
             </p>
           )}
           {currentTask.taskType === 'describe' && (
-            <p className="text-sm mb-8" style={{ color: '#64748B' }}>Opisz to słowo własnymi słowami.</p>
+            <p className="text-sm mb-8" style={{ color: '#64748B' }}>
+              {describeStage === 'translate' ? 'Przetłumacz to słowo.' : 'Opisz znaczenie tego słowa.'}
+            </p>
           )}
           {currentTask.taskType === 'abcd' && (
             <p className="text-sm mb-8" style={{ color: '#64748B' }}>Wybierz poprawną odpowiedź.</p>
@@ -1520,7 +1521,12 @@ export default function SessionPage() {
                       </button>
                     )}
                   </div>
-                  <p className="text-xs text-center" style={{ color: '#64748B' }}>Ctrl+Enter to submit</p>
+                  <p className="text-xs text-center" style={{ color: '#64748B' }}>
+                    {describeStage === 'translate' ? 'Stage 1/2: translation' : 'Stage 2/2: description'}
+                  </p>
+                  {describeStage === 'describe' && (
+                    <p className="text-xs text-center" style={{ color: '#64748B' }}>Ctrl+Enter to submit</p>
+                  )}
                 </div>
               )}
             </>

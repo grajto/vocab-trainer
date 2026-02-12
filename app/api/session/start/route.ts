@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
 
     const count = Math.min(Math.max(Number(targetCount), 5), 35)
     const payload = await getPayload()
-    const settings = getStudySettings(user as Record<string, unknown>)
+    const settings = getStudySettings(user as unknown as Record<string, unknown>)
 
     let linkedTestId: string | number | null = testId || null
 
@@ -238,13 +238,6 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    // Determine direction for each task
-    function getDirection(): 'normal' | 'reverse' {
-      if (selectedDirection === 'en-pl') return 'reverse'
-      if (selectedDirection === 'both') return Math.random() > 0.5 ? 'reverse' : 'normal'
-      return 'normal'
-    }
-
     // Build tasks
     type TaskType = Exclude<Mode, 'mixed' | 'test'>
     type MixedTaskType = Exclude<TaskType, 'describe'>
@@ -285,9 +278,9 @@ export async function POST(req: NextRequest) {
       }
 
       const cardIdValue = cardIdMap.get(String(card.cardId))!
-      const dir = getDirection()
-      const prompt = dir === 'reverse' ? card.back : card.front
-      const answer = dir === 'reverse' ? card.front : card.back
+      const isAbcd = taskType === 'abcd'
+      const prompt = isAbcd ? card.front : card.back
+      const answer = isAbcd ? card.back : card.front
 
       const task: Task = {
         cardId: cardIdValue,
@@ -301,8 +294,10 @@ export async function POST(req: NextRequest) {
       }
 
       if (taskType === 'describe') {
-        task.prompt = card.front
-        task.answer = card.back
+        task.prompt = card.back
+        task.answer = card.front
+        task.expectedAnswer = card.front
+        task.requiredEn = card.front
       }
 
       // Sentence mode: stage 1 = translate PL->EN, stage 2 = write sentence using EN word
@@ -317,7 +312,7 @@ export async function POST(req: NextRequest) {
       if (taskType === 'abcd') {
         const otherCards = allCards.docs.filter(c => String(c.id) !== String(card.cardId))
         const shuffled = otherCards.sort(() => Math.random() - 0.5).slice(0, 3)
-        const options = shuffled.map(c => dir === 'reverse' ? c.front : c.back)
+        const options = shuffled.map(c => c.back)
         options.push(answer)
         const finalOptions = randomAnswerOrder ? options.sort(() => Math.random() - 0.5) : options
         task.options = finalOptions
