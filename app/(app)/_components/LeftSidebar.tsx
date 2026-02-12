@@ -2,12 +2,11 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { useSound } from '@/src/lib/SoundProvider'
-import { BarChart3, Bell, BookOpen, CalendarDays, ClipboardCheck, FolderOpen, Home, PlayCircle, Plus, Settings, X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { BarChart3, Bell, BookOpen, CalendarDays, ClipboardCheck, FolderOpen, Home, PlayCircle, Plus, Settings, X } from 'lucide-react'
 import { SidebarSearch } from './SidebarSearch'
 import { useSettings } from '@/src/contexts/SettingsContext'
-import type { DefaultDirection, StudyMode } from '@/src/lib/userSettings'
 
 interface FolderItem {
   id: string
@@ -18,13 +17,6 @@ interface DailyProgress {
   cardsCompleted: number
   minutesSpent: number
   sessionsCompleted: number
-}
-
-interface ActiveSession {
-  sessionId: string
-  deckName: string
-  progress: string
-  progressRatio: number
 }
 
 export function LeftSidebar({
@@ -45,14 +37,7 @@ export function LeftSidebar({
   const [hasNewNotifications, setHasNewNotifications] = useState(false)
   const [dailyLoading, setDailyLoading] = useState(false)
   const [progressLoading, setProgressLoading] = useState(false)
-  const [activeSessionLoading, setActiveSessionLoading] = useState(false)
   const [dailyProgress, setDailyProgress] = useState<DailyProgress | null>(null)
-  const [activeSession, setActiveSession] = useState<ActiveSession | null>(null)
-  
-  // Quick settings overrides (one-time use, not persisted)
-  const [quickDirection, setQuickDirection] = useState<DefaultDirection | null>(null)
-  const [quickMode, setQuickMode] = useState<StudyMode | null>(null)
-  const [quickLength, setQuickLength] = useState<number | null>(null)
   
   const active = (href: string) => pathname === href || pathname.startsWith(`${href}/`)
 
@@ -89,29 +74,6 @@ export function LeftSidebar({
     return () => { ignore = true }
   }, [])
 
-  // Check for active session
-  useEffect(() => {
-    let ignore = false
-    setActiveSessionLoading(true)
-    fetch('/api/sessions/active', { credentials: 'include' })
-      .then((res) => res.json())
-      .then((data) => {
-        if (!ignore && data.session) {
-          setActiveSession({
-            sessionId: data.session.id,
-            deckName: data.session.deckName || 'Sesja',
-            progress: data.session.progress || '0/0',
-            progressRatio: data.session.progressRatio || 0,
-          })
-        }
-      })
-      .catch(() => undefined)
-      .finally(() => {
-        if (!ignore) setActiveSessionLoading(false)
-      })
-    return () => { ignore = true }
-  }, [])
-
   const groupTitle = 'px-2 text-[13px] font-semibold'
   const itemClass = (isActive: boolean) =>
     `flex min-h-[40px] items-center gap-[10px] rounded-[var(--radiusSm)] border px-[10px] py-2 text-sm transition-colors ${
@@ -120,25 +82,15 @@ export function LeftSidebar({
         : 'border-transparent text-[var(--text)] hover:border-[var(--border)] hover:bg-[#f8fafc]'
     }`
 
-  const chipClass = (isActive: boolean) =>
-    `px-3 py-1.5 rounded-[var(--radiusSm)] text-xs font-medium transition-colors cursor-pointer ${
-      isActive
-        ? 'bg-[var(--primary)] text-white'
-        : 'bg-[#f1f5f9] text-[var(--muted)] hover:bg-[#e2e8f0]'
-    }`
-
-  const toggleChip = useCallback(<T extends string>(currentValue: T | null, newValue: T): T | null => 
-    currentValue === newValue ? null : newValue, [])
-
   async function startDailySession() {
     if (dailyLoading) return
     setDailyLoading(true)
     try {
       unlock()
-      // Use quick overrides if set, otherwise use settings defaults
-      const direction = quickDirection || settings.defaultDirection
-      const mode = quickMode || settings.defaultStudyMode
-      const targetCount = quickLength || settings.dailyGoalWords
+      // Use settings defaults only (no quick overrides)
+      const direction = settings.defaultDirection
+      const mode = settings.defaultStudyMode
+      const targetCount = settings.dailyGoalWords
       
       const res = await fetch('/api/session/start', {
         method: 'POST',
@@ -169,17 +121,9 @@ export function LeftSidebar({
     }
   }
 
-  async function continueSession() {
-    if (!activeSession || dailyLoading) return
-    unlock()
-    router.push(`/session/${activeSession.sessionId}`)
-    onClose?.()
-  }
-
   const dailyGoal = settings.dailyGoalWords
   const cardsCompleted = dailyProgress?.cardsCompleted || 0
   const progressPercent = Math.min(100, Math.round((cardsCompleted / Math.max(1, dailyGoal)) * 100))
-  const effectiveLength = quickLength || settings.dailyGoalWords
 
   const nav = (
     <aside className="flex h-full flex-col overflow-y-auto border-r px-[var(--sidebar-pad)] py-[var(--sidebar-pad)]" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
@@ -191,7 +135,7 @@ export function LeftSidebar({
       </div>
 
       <div className="space-y-5">
-        {/* Daily Progress Section */}
+        {/* Simplified Daily Session Section */}
         <section className="space-y-3 rounded-[var(--radius)] border p-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Codzienna sesja</h3>
@@ -200,12 +144,12 @@ export function LeftSidebar({
           {/* Progress Display */}
           <div className="space-y-2">
             <div className="flex items-baseline justify-between">
-              <span className="text-xs" style={{ color: 'var(--muted)' }}>Postęp dzisiaj</span>
+              <span className="text-xs" style={{ color: 'var(--muted)' }}>Nowe słówka dzisiaj</span>
               {progressLoading ? (
                 <span className="text-xs" style={{ color: 'var(--muted)' }}>...</span>
               ) : (
                 <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
-                  {cardsCompleted}/{dailyGoal} fiszek
+                  {cardsCompleted}/{dailyGoal}
                 </span>
               )}
             </div>
@@ -217,136 +161,17 @@ export function LeftSidebar({
             </div>
           </div>
 
-          {/* Quick Settings Overrides */}
-          <div className="space-y-2.5 border-t pt-3" style={{ borderColor: 'var(--border)' }}>
-            {/* Direction chips */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium" style={{ color: 'var(--muted)' }}>Kierunek</label>
-              <div className="flex flex-wrap gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => setQuickDirection(toggleChip(quickDirection, 'pl-en'))}
-                  className={chipClass(quickDirection === 'pl-en')}
-                >
-                  PL→EN
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setQuickDirection(toggleChip(quickDirection, 'en-pl'))}
-                  className={chipClass(quickDirection === 'en-pl')}
-                >
-                  EN→PL
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setQuickDirection(toggleChip(quickDirection, 'both'))}
-                  className={chipClass(quickDirection === 'both')}
-                >
-                  Oba
-                </button>
-              </div>
-            </div>
-
-            {/* Mode chips */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium" style={{ color: 'var(--muted)' }}>Tryb</label>
-              <div className="flex flex-wrap gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => setQuickMode(toggleChip(quickMode, 'translate'))}
-                  className={chipClass(quickMode === 'translate')}
-                >
-                  Tłumaczenie
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setQuickMode(toggleChip(quickMode, 'sentence'))}
-                  className={chipClass(quickMode === 'sentence')}
-                >
-                  Zdania
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setQuickMode(toggleChip(quickMode, 'describe'))}
-                  className={chipClass(quickMode === 'describe')}
-                >
-                  Opis
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setQuickMode(toggleChip(quickMode, 'abcd'))}
-                  className={chipClass(quickMode === 'abcd')}
-                >
-                  ABCD
-                </button>
-              </div>
-            </div>
-
-            {/* Session length stepper */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium" style={{ color: 'var(--muted)' }}>Długość sesji</label>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setQuickLength(Math.max(5, effectiveLength - 5))}
-                  className="flex h-8 w-8 items-center justify-center rounded-[var(--radiusSm)] bg-[#f1f5f9] text-[var(--muted)] hover:bg-[#e2e8f0] transition-colors"
-                  aria-label="Zmniejsz"
-                >
-                  <ChevronLeft size={16} />
-                </button>
-                <div className="flex-1 text-center">
-                  <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
-                    {effectiveLength}
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setQuickLength(Math.min(50, effectiveLength + 5))}
-                  className="flex h-8 w-8 items-center justify-center rounded-[var(--radiusSm)] bg-[#f1f5f9] text-[var(--muted)] hover:bg-[#e2e8f0] transition-colors"
-                  aria-label="Zwiększ"
-                >
-                  <ChevronRight size={16} />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex gap-2 pt-2">
-            {activeSession && !activeSessionLoading ? (
-              <>
-                <button
-                  type="button"
-                  onClick={continueSession}
-                  disabled={dailyLoading}
-                  className="flex-1 flex min-h-[42px] items-center justify-center gap-2 rounded-[var(--radius)] px-3 text-sm font-semibold transition-opacity disabled:opacity-60"
-                  style={{ background: 'var(--primary)', color: 'white' }}
-                >
-                  Kontynuuj
-                </button>
-                <button
-                  type="button"
-                  onClick={startDailySession}
-                  disabled={dailyLoading}
-                  className="flex-1 flex min-h-[42px] items-center justify-center gap-2 rounded-[var(--radius)] border px-3 text-sm font-semibold transition-opacity disabled:opacity-60"
-                  style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
-                >
-                  Nowa
-                </button>
-              </>
-            ) : (
-              <button
-                type="button"
-                onClick={startDailySession}
-                disabled={dailyLoading || activeSessionLoading}
-                className="w-full flex min-h-[42px] items-center justify-center gap-2 rounded-[var(--radius)] px-4 text-sm font-semibold text-white transition-opacity disabled:opacity-60"
-                style={{ background: 'linear-gradient(135deg, var(--primary), #4f46e5)' }}
-              >
-                <PlayCircle size={18} />
-                {dailyLoading ? 'Uruchamianie…' : 'Rozpocznij'}
-              </button>
-            )}
-          </div>
+          {/* Start Button */}
+          <button
+            type="button"
+            onClick={startDailySession}
+            disabled={dailyLoading}
+            className="w-full flex min-h-[42px] items-center justify-center gap-2 rounded-[var(--radius)] px-4 text-sm font-semibold text-white transition-opacity disabled:opacity-60"
+            style={{ background: 'linear-gradient(135deg, var(--primary), #4f46e5)' }}
+          >
+            <PlayCircle size={18} />
+            {dailyLoading ? 'Uruchamianie…' : 'Rozpocznij'}
+          </button>
         </section>
 
         <section className="space-y-2">

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { Target, Clock, Languages, Shuffle, Monitor, Globe2, TrendingUp, Save, Check, Settings2, Sliders } from 'lucide-react'
+import { Target, Clock, Languages, Shuffle, Monitor, Globe2, TrendingUp, Save, Check, Settings2, Sliders, PlayCircle } from 'lucide-react'
 import { PageHeader } from '../_components/PageHeader'
 import { PageContainer } from '../_components/PageContainer'
 import { useSettings } from '@/src/contexts/SettingsContext'
@@ -80,11 +80,11 @@ export default function SettingsPage() {
         icon={Settings2}
       />
 
-      {/* Section 1: Tryb nauki i język */}
+      {/* Section 1: Codzienna sesja */}
       <section className="settings-section">
         <div className="settings-section-header">
-          <Languages size={20} />
-          <h2>Tryb nauki i język</h2>
+          <PlayCircle size={20} />
+          <h2>Codzienna sesja</h2>
         </div>
         
         <div className="settings-field">
@@ -140,14 +140,6 @@ export default function SettingsPage() {
             ))}
           </div>
         </div>
-      </section>
-
-      {/* Section 2: Długość sesji */}
-      <section className="settings-section">
-        <div className="settings-section-header">
-          <Clock size={20} />
-          <h2>Długość sesji</h2>
-        </div>
         
         <div className="settings-field">
           <label>
@@ -182,19 +174,11 @@ export default function SettingsPage() {
             </button>
           </div>
         </div>
-      </section>
 
-      {/* Section 3: Codzienny cel */}
-      <section className="settings-section">
-        <div className="settings-section-header">
-          <Target size={20} />
-          <h2>Codzienny cel</h2>
-        </div>
-        
         <div className="settings-field">
           <label>
             <Target size={16} />
-            <span>Liczba słówek dziennie: {settings.dailyGoalWords}</span>
+            <span>Cel - liczba nowych słówek dziennie: {settings.dailyGoalWords}</span>
           </label>
           <div className="flex items-center gap-3">
             <button
@@ -208,7 +192,7 @@ export default function SettingsPage() {
             <span className="min-w-[60px] text-center font-semibold">{settings.dailyGoalWords}</span>
             <button
               type="button"
-              onClick={() => handleChange({ dailyGoalWords: Math.min(50, settings.dailyGoalWords + 10) })}
+              onClick={() => handleChange({ dailyGoalWords: Math.min(100, settings.dailyGoalWords + 10) })}
               className="px-3 py-2 rounded-lg border"
               style={{ borderColor: 'var(--border)', background: 'var(--card)' }}
             >
@@ -216,7 +200,19 @@ export default function SettingsPage() {
             </button>
           </div>
         </div>
+      </section>
 
+      {/* Section 2: Tryb nauki i język (removed - moved to Codzienna sesja) */}
+
+      {/* Section 3: Długość sesji (removed - moved to Codzienna sesja) */}
+
+      {/* Section 4: Codzienny cel */}
+      <section className="settings-section">
+        <div className="settings-section-header">
+          <Target size={20} />
+          <h2>Codzienny cel</h2>
+        </div>
+        
         <div className="settings-field">
           <label>
             <Clock size={16} />
@@ -234,7 +230,7 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      {/* Section 4: Wygląd */}
+      {/* Section 5: Wygląd */}
       <section className="settings-section">
         <div className="settings-section-header">
           <Monitor size={20} />
