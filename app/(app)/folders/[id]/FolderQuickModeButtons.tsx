@@ -26,8 +26,12 @@ export function FolderQuickModeButtons({ folderId, cardCount }: { folderId: stri
   const [selectedCount, setSelectedCount] = useState<number | null>(null)
   const [showTestModal, setShowTestModal] = useState(false)
   const [testCount, setTestCount] = useState(20)
+  const [enabledModes, setEnabledModes] = useState<string[]>(['abcd', 'translate', 'sentence', 'describe'])
+  const [randomQuestionOrder, setRandomQuestionOrder] = useState(true)
+  const [randomAnswerOrder, setRandomAnswerOrder] = useState(true)
+  const [useAllWords, setUseAllWords] = useState(false)
 
-  async function startSession(mode: StudyMode, target: number) {
+  async function startSession(mode: StudyMode, target: number, extra?: Record<string, unknown>) {
     setLoading(true)
     unlock()
     try {
@@ -35,7 +39,7 @@ export function FolderQuickModeButtons({ folderId, cardCount }: { folderId: stri
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ folderId, mode, targetCount: target }),
+        body: JSON.stringify({ folderId, mode, targetCount: target, ...extra }),
       })
       const data = await res.json()
       if (res.ok && data.sessionId) {
@@ -165,27 +169,77 @@ export function FolderQuickModeButtons({ folderId, cardCount }: { folderId: stri
               <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Ustawienia testu</p>
               <button onClick={() => setShowTestModal(false)} className="text-xs" style={{ color: 'var(--text-muted)' }}>Zamknij</button>
             </div>
-            <label className="space-y-1 text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
-              Liczba pytań
-              <input
-                type="number"
-                min={5}
-                max={35}
-                value={testCount}
-                onChange={(e) => setTestCount(Number(e.target.value))}
-                className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
-                style={{ borderColor: 'var(--border)' }}
-              />
-            </label>
-            <button
-              type="button"
-              onClick={() => router.push(`/test?source=folder&folderId=${folderId}`)}
-              className="w-full rounded-full py-2 text-sm font-semibold text-white"
-              style={{ background: 'var(--primary)' }}
-              disabled={loading}
-            >
-              Przejdź do kreatora testu
-            </button>
+            <div className="space-y-3 text-xs" style={{ color: 'var(--text)' }}>
+              <label className="space-y-1 font-medium">
+                Liczba pytań
+                <input
+                  type="number"
+                  min={5}
+                  max={35}
+                  value={testCount}
+                  onChange={(e) => setTestCount(Number(e.target.value))}
+                  className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
+                  style={{ borderColor: 'var(--border)' }}
+                  disabled={useAllWords}
+                />
+              </label>
+              <label className="flex items-center gap-2 font-medium">
+                <input type="checkbox" checked={useAllWords} onChange={(e) => setUseAllWords(e.target.checked)} />
+                Wszystkie słowa w folderze
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {['abcd', 'translate', 'sentence', 'describe'].map(mode => (
+                  <label key={mode} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={enabledModes.includes(mode)}
+                      onChange={(e) => setEnabledModes(prev => e.target.checked ? [...new Set([...prev, mode])] : prev.filter(m => m !== mode))}
+                    />
+                    <span>{mode === 'abcd' ? 'ABCD' : mode === 'translate' ? 'Tłumaczenie' : mode === 'sentence' ? 'Zdanie' : 'Opis'}</span>
+                  </label>
+                ))}
+              </div>
+              <label className="flex items-center gap-2">
+                <input type="checkbox" checked={randomQuestionOrder} onChange={(e) => setRandomQuestionOrder(e.target.checked)} />
+                Losowa kolejność pytań
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={randomAnswerOrder}
+                  onChange={(e) => setRandomAnswerOrder(e.target.checked)}
+                  disabled={!enabledModes.includes('abcd')}
+                />
+                Losowa kolejność odpowiedzi (ABCD)
+              </label>
+            </div>
+            <div className="grid gap-2">
+              <button
+                type="button"
+                onClick={async () => {
+                  const target = useAllWords ? cardCount : Math.max(5, Math.min(35, testCount))
+                  await startSession('test', target, {
+                    enabledModes,
+                    shuffle: randomQuestionOrder,
+                    randomAnswerOrder,
+                  })
+                }}
+                className="w-full rounded-full py-2 text-sm font-semibold text-white"
+                style={{ background: 'var(--primary)' }}
+                disabled={loading || !enabledModes.length}
+              >
+                {loading ? 'Ładowanie…' : 'Szybki test'}
+              </button>
+              <button
+                type="button"
+                onClick={() => router.push(`/test?source=folder&folderId=${folderId}`)}
+                className="w-full rounded-full py-2 text-sm font-semibold"
+                style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)' }}
+                disabled={loading}
+              >
+                Pełny kreator
+              </button>
+            </div>
           </div>
         </div>
       )}

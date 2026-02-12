@@ -31,6 +31,7 @@ export function TestList({ decks, folders }: { decks: Item[]; folders: Item[] })
   const [folderId, setFolderId] = useState(folders[0]?.id || '')
   const [questionCount, setQuestionCount] = useState(20)
   const [customCount, setCustomCount] = useState('')
+  const [useAllWords, setUseAllWords] = useState(false)
   const [enabledModes, setEnabledModes] = useState<string[]>(['abcd', 'translate'])
   const [randomQuestionOrder, setRandomQuestionOrder] = useState(true)
   const [randomAnswerOrder, setRandomAnswerOrder] = useState(true)
@@ -73,13 +74,13 @@ export function TestList({ decks, folders }: { decks: Item[]; folders: Item[] })
 
   useEffect(() => { void loadResults() }, [range, sourceFilter, modeFilter])
 
-  const canStart = Boolean(sourceId) && enabledModes.length > 0
+    const canStart = Boolean(sourceId) && enabledModes.length > 0
 
   async function startTest() {
     if (!canStart) return
     setLoadingStart(true)
     try {
-      const count = customCount ? Number(customCount) : questionCount
+      const count = useAllWords ? 9999 : (customCount ? Number(customCount) : questionCount)
       const create = await fetch('/api/tests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -88,11 +89,12 @@ export function TestList({ decks, folders }: { decks: Item[]; folders: Item[] })
           sourceType,
           deckId: sourceType === 'set' ? deckId : null,
           folderId: sourceType === 'folder' ? folderId : null,
-          questionCount: count,
-          enabledModes,
-          randomQuestionOrder,
-          randomAnswerOrder,
-        }),
+           questionCount: count,
+           enabledModes,
+           randomQuestionOrder,
+           randomAnswerOrder,
+           allowAll: useAllWords,
+         }),
       })
       const created = await create.json()
       const testId = created.testId || undefined
@@ -109,6 +111,7 @@ export function TestList({ decks, folders }: { decks: Item[]; folders: Item[] })
           enabledModes,
           shuffle: randomQuestionOrder,
           randomAnswerOrder,
+          allowAll: useAllWords,
           testId,
         }),
       })
@@ -148,6 +151,10 @@ export function TestList({ decks, folders }: { decks: Item[]; folders: Item[] })
             <option value="0">custom</option>
           </select>
           <input value={customCount} onChange={(e) => setCustomCount(e.target.value)} placeholder="custom" className="rounded-lg border px-3 py-2 text-sm" style={{ borderColor: 'var(--border)' }} />
+          <label className="flex items-center gap-2 text-xs font-semibold" style={{ color: 'var(--text)' }}>
+            <input type="checkbox" checked={useAllWords} onChange={(e) => setUseAllWords(e.target.checked)} />
+            Wszystkie słowa z wybranego źródła
+          </label>
         </div>
 
         <div className="mt-4 grid gap-3 md:grid-cols-2">
