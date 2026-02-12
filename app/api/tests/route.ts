@@ -85,7 +85,8 @@ export async function POST(req: NextRequest) {
   const payload = await getPayload()
 
   const questionCount = Math.max(5, Math.min(100, Number(body.questionCount || 20)))
-  const sourceType = body.sourceType === 'folder' ? 'folder' : 'set'
+  const allowAll = Boolean(body.allowAll)
+  const sourceType = allowAll ? 'all' : (body.sourceType === 'folder' ? 'folder' : 'set')
   const enabledModes = Array.isArray(body.enabledModes) && body.enabledModes.length > 0
     ? body.enabledModes.filter((m: string) => ['abcd', 'translate', 'sentence', 'describe'].includes(m))
     : ['abcd', 'translate']
@@ -95,7 +96,7 @@ export async function POST(req: NextRequest) {
   const sourceDeck = sourceDeckRaw != null ? parseNumericId(sourceDeckRaw) : null
   const sourceFolder = sourceFolderRaw != null ? parseNumericId(sourceFolderRaw) : null
 
-  if ((sourceType === 'set' && sourceDeck === null) || (sourceType === 'folder' && sourceFolder === null)) {
+  if (!allowAll && ((sourceType === 'set' && sourceDeck === null) || (sourceType === 'folder' && sourceFolder === null))) {
     return NextResponse.json({ error: 'Missing or invalid source id' }, { status: 400 })
   }
 

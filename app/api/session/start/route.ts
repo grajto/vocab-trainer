@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
       })
       deckIds = folderDecks.docs.map((d: any) => Number(d.id))
     }
-    if (allowAll && !numericDeckId && !numericFolderId) {
+    if (allowAll) {
       const ownedDecks = await payload.find({
         collection: 'decks',
         where: { owner: { equals: user.id } },
