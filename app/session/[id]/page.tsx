@@ -45,6 +45,7 @@ interface TaskState {
   attempts: number
   usedHint: boolean
   wasWrongBefore: boolean
+  translatedDone?: boolean
 }
 
 function saveAnswerInBackground(data: {
@@ -200,9 +201,15 @@ export default function SessionPage() {
   const currentTask = tasks[currentIndex]
 
   useEffect(() => {
-    setSentenceStage('translate')
+    const task = tasks[currentIndex]
+    if (task?.taskType === 'sentence') {
+      const state = getTaskState(task.cardId)
+      setSentenceStage(state.translatedDone ? 'sentence' : 'translate')
+    } else {
+      setSentenceStage('translate')
+    }
     setQuestionStartedAt(Date.now())
-  }, [currentIndex])
+  }, [currentIndex, tasks])
 
 
   async function handleStopSession() {
@@ -220,7 +227,7 @@ export default function SessionPage() {
 
   function getTaskState(cardId: string): TaskState {
     if (!taskStatesRef.current.has(cardId)) {
-      taskStatesRef.current.set(cardId, { attempts: 0, usedHint: false, wasWrongBefore: false })
+      taskStatesRef.current.set(cardId, { attempts: 0, usedHint: false, wasWrongBefore: false, translatedDone: false })
     }
     return taskStatesRef.current.get(cardId)!
   }
@@ -499,6 +506,7 @@ export default function SessionPage() {
       setAnsweredCount(prev => prev + 1)
       setCorrectCount(prev => prev + 1)
       setStreak(prev => prev + 1)
+      state.translatedDone = true
       setSentenceStage('sentence')
       setUserAnswer('')
       setFeedback(null)
