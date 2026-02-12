@@ -1352,7 +1352,7 @@ export default function SessionPage() {
                         className="px-4 py-3 rounded-[var(--radiusSm)] text-sm font-medium transition-colors"
                         style={{ border: '1px solid var(--border)', color: '#64748B', background: 'var(--surface)' }}
                       >
-                        Skip
+                        Pomiń
                       </button>
                     )}
                   </div>
