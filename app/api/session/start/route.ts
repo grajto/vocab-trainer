@@ -300,13 +300,13 @@ export async function POST(req: NextRequest) {
         task.answer = card.back
       }
 
-      // Sentence mode: stage 1 = translate EN->PL, stage 2 handled on client
+      // Sentence mode: stage 1 = translate PL->EN, stage 2 = write sentence using EN word
       if (taskType === 'sentence') {
-        task.promptPl = card.back
-        task.requiredEn = card.front
-        task.prompt = card.front
-        task.answer = card.back
-        task.expectedAnswer = card.back
+        task.promptPl = card.back       // PL meaning (for reference)
+        task.requiredEn = card.front    // EN word (used in sentence stage 2)
+        task.prompt = card.back         // Main display: PL word (e.g., "noc")
+        task.answer = card.front        // Expected in stage 1: EN translation (e.g., "night")
+        task.expectedAnswer = card.front // Stage 1 validation expects EN translation
       }
 
       if (taskType === 'abcd') {
