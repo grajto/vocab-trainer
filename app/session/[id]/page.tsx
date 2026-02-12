@@ -1085,7 +1085,9 @@ export default function SessionPage() {
                     onKeyDown={e => {
                       if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
                         e.preventDefault()
-                        if ((!feedback && userAnswer.trim() && !loading) || (feedback && sentenceNeedsAcknowledge && !loading)) {
+                        // Allow submission if: user has typed, not loading, and (no feedback OR it's ack feedback OR it's stage transition feedback)
+                        const canSubmit = userAnswer.trim() && !loading && (!feedback || sentenceNeedsAcknowledge || sentenceStage === 'sentence')
+                        if (canSubmit) {
                           handleSentenceSubmit(e as unknown as React.FormEvent)
                         }
                       }
@@ -1113,7 +1115,9 @@ export default function SessionPage() {
                     <button
                       type="button"
                       onClick={e => {
-                        if ((!feedback && userAnswer.trim() && !loading) || (feedback && sentenceNeedsAcknowledge && !loading)) {
+                        // Allow submission if: user has typed, not loading, and (no feedback OR it's ack feedback OR it's stage transition feedback)
+                        const canSubmit = userAnswer.trim() && !loading && (!feedback || sentenceNeedsAcknowledge || sentenceStage === 'sentence')
+                        if (canSubmit) {
                           handleSentenceSubmit(e as unknown as React.FormEvent)
                         }
                       }}
