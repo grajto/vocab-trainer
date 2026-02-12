@@ -5,6 +5,8 @@ import { requireAppToken } from '@/src/lib/requireAppToken'
 import { processCorrectAnswer, processWrongAnswer } from '@/src/lib/srs'
 import { normalizeAnswer } from '@/src/lib/answerCheck'
 
+const DEFAULT_TASK_TYPE = 'translate'
+
 export async function POST(req: NextRequest) {
   try {
     if (!requireAppToken(req)) {
@@ -138,12 +140,12 @@ export async function POST(req: NextRequest) {
         data: {
           session: sessionId,
           card: cardId,
-          taskType: taskType || 'translate',
+          taskType: taskType || DEFAULT_TASK_TYPE,
           promptShown,
         },
       })
       sessionItemId = newItem.id
-      existingTaskType = taskType || 'translate'
+      existingTaskType = taskType || DEFAULT_TASK_TYPE
     }
 
     const itemUpdate: Record<string, unknown> = {
@@ -218,7 +220,7 @@ export async function POST(req: NextRequest) {
             owner: user.id,
             test: linkedTestId,
             card: cardId,
-            modeUsed: taskType || 'translate',
+            modeUsed: taskType || DEFAULT_TASK_TYPE,
             promptShown: promptForTest,
             userAnswer: userAnswer || '',
             isCorrect,

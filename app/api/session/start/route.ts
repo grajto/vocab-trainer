@@ -13,7 +13,7 @@ async function createSessionItemsBatch(
   tasks: Array<{ cardId: number; taskType: string; prompt: string }>,
   concurrency = 10
 ): Promise<void> {
-  const results: Array<{ status: 'fulfilled' | 'rejected'; value?: unknown; reason?: unknown }> = []
+  const results: PromiseSettledResult<unknown>[] = []
   
   for (let i = 0; i < tasks.length; i += concurrency) {
     const batch = tasks.slice(i, i + concurrency)
@@ -34,7 +34,8 @@ async function createSessionItemsBatch(
   
   const failed = results.filter(r => r.status === 'rejected')
   if (failed.length > 0) {
-    console.error(`Failed to create ${failed.length}/${tasks.length} session items`)
+    console.error(`Failed to create ${failed.length}/${tasks.length} session items:`, 
+      failed.map((r, idx) => ({ index: idx, reason: r.reason })))
     // Continue execution - items can be created on-demand in answer endpoint
   }
 }
