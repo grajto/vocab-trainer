@@ -70,6 +70,7 @@ export default function SessionPage() {
   const [feedback, setFeedback] = useState<{ correct: boolean; message: string } | null>(null)
   const [sentenceNeedsAcknowledge, setSentenceNeedsAcknowledge] = useState(false)
   const [sentenceStage, setSentenceStage] = useState<'translate' | 'sentence'>('translate')
+  const [describeStage, setDescribeStage] = useState<'translate' | 'describe'>('translate')
   const [loading, setLoading] = useState(false)
   const [sessionDone, setSessionDone] = useState(false)
   const [returnDeckId, setReturnDeckId] = useState('')
@@ -218,6 +219,8 @@ export default function SessionPage() {
         setAiInfo(null)
         setSelectedOption(null)
         setSentenceNeedsAcknowledge(false)
+        setSentenceStage('translate')
+        setDescribeStage('translate')
         setCurrentIndex(prev => prev + 1)
         setQuestionStartedAt(Date.now())
       }, delay)
@@ -557,6 +560,28 @@ export default function SessionPage() {
     const state = getTaskState(currentTask.cardId)
     state.attempts++
 
+    // Stage 1: Translate the word first
+    if (describeStage === 'translate') {
+      const expected = currentTask.expectedAnswer || currentTask.answer
+      const result = checkAnswerWithTypo(userAnswer, expected)
+      const correct = result === 'correct' || result === 'typo'
+      if (!correct) {
+        setStreak(0)
+        setFeedback({ correct: false, message: `Najpierw poprawnie przetłumacz słowo. Poprawna odpowiedź: ${expected}` })
+        playWrong()
+        return
+      }
+      setAnsweredCount(prev => prev + 1)
+      setCorrectCount(prev => prev + 1)
+      setStreak(prev => prev + 1)
+      setFeedback({ correct: true, message: 'Tłumaczenie poprawne. Teraz opisz znaczenie tego słowa.' })
+      setDescribeStage('describe')
+      setUserAnswer('')
+      playCorrect()
+      return
+    }
+
+    // Stage 2: Check the description
     setLoading(true)
     try {
       const res = await fetch('/api/check-describe', {
@@ -865,12 +890,12 @@ export default function SessionPage() {
             {currentTask.prompt}
           </h2>
           {currentTask.taskType === 'sentence' && (
-            <p className="text-sm mt-3 mb-8" style={{ color: 'var(--muted)' }}>Create a sentence with this word.</p>
+            <p className="text-sm mt-3 mb-8" style={{ color: 'var(--muted)' }}>Napisz zdanie używając tego słowa (sentence mode).</p>
           )}
           {currentTask.taskType === 'describe' && (
-            <p className="text-sm mt-3 mb-8" style={{ color: 'var(--muted)' }}>Opisz to słowo własnymi słowami.</p>
+            <p className="text-sm mt-3 mb-8" style={{ color: 'var(--muted)' }}>Opisz to słowo - jego definicja, znaczenie (describe mode).</p>
           )}
-          {currentTask.taskType !== 'sentence' && <div className="mb-8" />}
+          {currentTask.taskType !== 'sentence' && currentTask.taskType !== 'describe' && <div className="mb-8" />}
 
           {showHint && !feedback && !typoState && (
             <div className="mb-6 text-sm font-mono tracking-widest rounded-full px-5 py-2 inline-block" style={{ color: '#d97706', background: '#fffbeb', border: '1px solid #fde68a' }}>
@@ -1097,6 +1122,18 @@ export default function SessionPage() {
 
               {currentTask.taskType === 'describe' && (
                 <div className="space-y-5">
+                  {/* Word to translate/describe shown as pill */}
+                  <div className="flex justify-center">
+                    <span className="inline-block font-semibold px-5 py-2 rounded-full text-base tracking-wide" style={{ background: 'var(--primaryBg)', color: 'var(--primary)' }}>
+                      {describeStage === 'translate' ? currentTask.prompt : (currentTask.answer)}
+                    </span>
+                  </div>
+
+                  {describeStage === 'describe' && (
+                    <p className="text-sm text-center" style={{ color: 'var(--muted)' }}>Opisz znaczenie tego słowa (definicja, co to jest, jak wygląda, do czego służy).</p>
+                  )}
+
+                  {/* Textarea */}
                   <textarea
                     ref={inputRef as React.RefObject<HTMLTextAreaElement>}
                     value={userAnswer}
@@ -1109,15 +1146,17 @@ export default function SessionPage() {
                         }
                       }
                     }}
-                    placeholder="Napisz opis..."
+                    placeholder={describeStage === 'translate' ? 'Najpierw wpisz tłumaczenie…' : 'Napisz opis/definicję tego słowa…'}
                     autoFocus
                     rows={3}
                     className="w-full rounded-[var(--radiusSm)] px-4 py-3 text-sm focus:outline-none resize-none transition-colors"
                     style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
                     disabled={loading}
                   />
+
+                  {/* Hint + Check buttons */}
                   <div className="flex gap-2">
-                    {!showHint && (
+                    {!showHint && describeStage === 'translate' && (
                       <button
                         type="button"
                         onClick={handleHintClick}
@@ -1138,10 +1177,12 @@ export default function SessionPage() {
                       className="flex-1 text-white py-3 rounded-[var(--radiusSm)] text-sm font-medium disabled:opacity-40 transition-colors"
                       style={{ background: 'var(--primary)' }}
                     >
-                      {loading ? 'Checking…' : 'Check'}
+                      {loading ? 'Checking…' : describeStage === 'translate' ? 'Sprawdź tłumaczenie' : 'Sprawdź opis'}
                     </button>
                   </div>
-                  <p className="text-xs text-center" style={{ color: 'var(--muted)' }}>Ctrl+Enter to submit</p>
+                  <p className="text-xs text-center" style={{ color: 'var(--muted)' }}>
+                    {describeStage === 'translate' ? 'Etap 1/2: tłumaczenie' : 'Etap 2/2: opisz słowo'}
+                  </p>
                 </div>
               )}
             </>
