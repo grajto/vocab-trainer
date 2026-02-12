@@ -904,11 +904,9 @@ export default function SessionPage() {
       <div className="px-6 py-3" style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between gap-4 mb-3">
-            {/* Left: Mode badge */}
+            {/* Left: Mode badge - removed as per user request */}
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider" style={{ background: '#EFF6FF', color: '#3B82F6', border: '1px solid #BFDBFE' }}>
-                {getModeLabel()}
-              </span>
+              {/* Mode badge removed */}
             </div>
 
             {/* Center: Progress */}
@@ -1126,12 +1124,7 @@ export default function SessionPage() {
             <>
               {currentTask.taskType === 'translate' && (
                 <form onSubmit={handleTranslateSubmit} className="space-y-4">
-                  {/* Direction chip */}
-                  <div className="flex justify-center mb-2">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" style={{ background: '#F1F5F9', color: '#64748B', border: '1px solid #E2E8F0' }}>
-                      {getDirectionLabel()}
-                    </span>
-                  </div>
+                  {/* Direction chip removed as per user request */}
                   <input
                     ref={inputRef as React.RefObject<HTMLInputElement>}
                     type="text"

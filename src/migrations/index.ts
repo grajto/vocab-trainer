@@ -12,6 +12,7 @@ import * as migration_20260211_150000_add_user_test_preferences from './20260211
 import * as migration_20260211_180000_perf_indexes from './20260211_180000_perf_indexes.ts';
 import * as migration_20260211_210000_extend_user_settings from './20260211_210000_extend_user_settings.ts';
 import * as migration_20260212_160000_add_starred_to_cards from './20260212_160000_add_starred_to_cards.ts';
+import * as migration_20260212_170000_add_locked_docs_rel_columns from './20260212_170000_add_locked_docs_rel_columns.ts';
 
 export const migrations = [
   {
@@ -83,5 +84,10 @@ export const migrations = [
     up: migration_20260212_160000_add_starred_to_cards.up,
     down: migration_20260212_160000_add_starred_to_cards.down,
     name: '20260212_160000_add_starred_to_cards'
+  },
+  {
+    up: migration_20260212_170000_add_locked_docs_rel_columns.up,
+    down: migration_20260212_170000_add_locked_docs_rel_columns.down,
+    name: '20260212_170000_add_locked_docs_rel_columns'
   },
 ];
