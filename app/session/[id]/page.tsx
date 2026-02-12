@@ -1152,9 +1152,6 @@ export default function SessionPage() {
                     >
                       Sprawdź
                     </button>
-                  </div>
-                  {/* Skip link */}
-                  <div className="text-center">
                     <button
                       type="button"
                       onClick={() => {
@@ -1180,10 +1177,10 @@ export default function SessionPage() {
                         })
                         advanceToNext(FEEDBACK_DELAY_WRONG)
                       }}
-                      className="text-xs transition-colors hover:opacity-70"
-                      style={{ color: '#64748B' }}
+                      className="px-4 py-3 rounded-[var(--radiusSm)] text-sm font-medium transition-colors"
+                      style={{ border: '1px solid var(--border)', color: '#64748B', background: 'var(--surface)' }}
                     >
-                      Pomiń
+                      Skip
                     </button>
                   </div>
                 </form>
@@ -1261,28 +1258,50 @@ export default function SessionPage() {
                     </span>
                   </div>
 
-                  {/* Textarea */}
-                  <textarea
-                    ref={inputRef as React.RefObject<HTMLTextAreaElement>}
-                    value={userAnswer}
-                    onChange={e => setUserAnswer(e.target.value)}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-                        e.preventDefault()
-                        if ((!feedback && userAnswer.trim() && !loading) || (feedback && sentenceNeedsAcknowledge && !loading)) {
-                          handleSentenceSubmit(e as unknown as React.FormEvent)
+                  {/* Input field - single line for translate, textarea for sentence */}
+                  {sentenceStage === 'translate' ? (
+                    <input
+                      ref={inputRef as React.RefObject<HTMLInputElement>}
+                      type="text"
+                      value={userAnswer}
+                      onChange={e => setUserAnswer(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          if (userAnswer.trim() && !loading) {
+                            handleSentenceSubmit(e as unknown as React.FormEvent)
+                          }
                         }
-                      }
-                    }}
-                    placeholder={sentenceStage === 'translate' ? 'Najpierw wpisz tłumaczenie…' : 'Napisz zdanie z użyciem tego słowa…'}
-                    autoFocus
-                    rows={4}
-                    className="w-full rounded-[var(--radiusSm)] px-4 py-3 text-sm focus:outline-none resize-none transition-colors"
-                    style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
-                    disabled={loading}
-                  />
+                      }}
+                      placeholder="Type translation..."
+                      autoFocus
+                      className="w-full rounded-[var(--radiusSm)] px-4 py-3 text-center text-lg focus:outline-none transition-colors"
+                      style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
+                      disabled={loading}
+                    />
+                  ) : (
+                    <textarea
+                      ref={inputRef as React.RefObject<HTMLTextAreaElement>}
+                      value={userAnswer}
+                      onChange={e => setUserAnswer(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                          e.preventDefault()
+                          if ((!feedback && userAnswer.trim() && !loading) || (feedback && sentenceNeedsAcknowledge && !loading)) {
+                            handleSentenceSubmit(e as unknown as React.FormEvent)
+                          }
+                        }
+                      }}
+                      placeholder="Write a sentence using this word..."
+                      autoFocus
+                      rows={4}
+                      className="w-full rounded-[var(--radiusSm)] px-4 py-3 text-sm focus:outline-none resize-none transition-colors"
+                      style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
+                      disabled={loading}
+                    />
+                  )}
 
-                  {/* Hint + Check buttons */}
+                  {/* Hint + Check + Skip buttons */}
                   <div className="flex gap-2">
                     {!showHint && sentenceStage === 'translate' && (
                       <button
@@ -1305,8 +1324,44 @@ export default function SessionPage() {
                       className="flex-1 text-white py-3 rounded-[var(--radiusSm)] text-sm font-medium disabled:opacity-40 transition-colors"
                       style={{ background: '#3B82F6' }}
                     >
-                      {loading ? 'Checking…' : sentenceNeedsAcknowledge ? 'Dalej' : sentenceStage === 'translate' ? 'Sprawdź' : 'Sprawdź'}
+                      {loading ? 'Checking…' : sentenceNeedsAcknowledge ? 'Dalej' : 'Sprawdź'}
                     </button>
+                    {!feedback && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!currentTask) return
+                          const state = getTaskState(currentTask.cardId)
+                          state.attempts++
+                          state.wasWrongBefore = true
+                          setStreak(0)
+                          playWrong()
+                          
+                          // Save as wrong answer
+                          saveAnswerInBackground({
+                            sessionId,
+                            cardId: currentTask.cardId,
+                            taskType: 'sentence',
+                            userAnswer: '',
+                            isCorrect: false,
+                            expectedAnswer: currentTask.expectedAnswer || currentTask.answer,
+                            attemptsCount: state.attempts,
+                            wasWrongBeforeCorrect: state.wasWrongBefore,
+                            usedHint: state.usedHint,
+                          })
+                          
+                          // Skip entire word - don't enter sentence stage
+                          setUserAnswer('')
+                          setShowHint(false)
+                          setSentenceStage('translate')
+                          advanceToNext(FEEDBACK_DELAY_WRONG)
+                        }}
+                        className="px-4 py-3 rounded-[var(--radiusSm)] text-sm font-medium transition-colors"
+                        style={{ border: '1px solid var(--border)', color: '#64748B', background: 'var(--surface)' }}
+                      >
+                        Skip
+                      </button>
+                    )}
                   </div>
 
                   {/* Completion badges */}
@@ -1318,7 +1373,7 @@ export default function SessionPage() {
                     </div>
                   )}
 
-                  <p className="text-xs text-center" style={{ color: '#64748B' }}>{sentenceStage === 'translate' ? 'Etap 1/2: tłumaczenie' : 'Etap 2/2: napisz zdanie'}</p>
+                  <p className="text-xs text-center" style={{ color: '#64748B' }}>{sentenceStage === 'translate' ? 'Stage 1/2: translation' : 'Stage 2/2: write sentence'}</p>
                 </div>
               )}
 
