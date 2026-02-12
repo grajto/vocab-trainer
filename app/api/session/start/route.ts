@@ -268,8 +268,8 @@ export async function POST(req: NextRequest) {
       let taskType: TaskType
       if (mode === 'test') {
         const types = (Array.isArray(enabledModes) && enabledModes.length > 0
-          ? enabledModes.filter((m: string) => ['translate', 'abcd', 'sentence', 'describe'].includes(m))
-          : ['translate', 'abcd']) as Array<'translate' | 'abcd' | 'sentence' | 'describe'>
+          ? enabledModes.filter((m: string) => ['translate', 'abcd'].includes(m))
+          : ['translate', 'abcd']) as Array<'translate' | 'abcd'>
         taskType = types[Math.floor(Math.random() * types.length)] || 'translate'
       } else if (mode === 'mixed') {
         const types: MixedTaskType[] = ['translate', 'abcd', 'sentence']

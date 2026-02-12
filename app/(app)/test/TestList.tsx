@@ -173,7 +173,7 @@ export function TestList({ decks, folders }: { decks: Item[]; folders: Item[] })
           <div className="rounded-lg border p-3" style={{ borderColor: 'var(--border)' }}>
             <p className="mb-2 text-xs font-semibold">Tryby testu</p>
             <div className="grid grid-cols-2 gap-2 text-sm">
-              {['abcd', 'translate', 'sentence', 'describe'].map((m) => (
+              {['abcd', 'translate'].map((m) => (
                 <label key={m} className="flex items-center gap-2">
                   <input
                     type="checkbox"

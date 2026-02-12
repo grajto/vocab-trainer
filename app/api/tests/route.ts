@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
   const allowAll = Boolean(body.allowAll)
   const sourceType = allowAll ? 'all' : (body.sourceType === 'folder' ? 'folder' : 'set')
   const enabledModes = Array.isArray(body.enabledModes) && body.enabledModes.length > 0
-    ? body.enabledModes.filter((m: string) => ['abcd', 'translate', 'sentence', 'describe'].includes(m))
+    ? body.enabledModes.filter((m: string) => ['abcd', 'translate'].includes(m))
     : ['abcd', 'translate']
 
   const sourceDeckRaw = sourceType === 'set' ? body.deckId : null
