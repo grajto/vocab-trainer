@@ -281,7 +281,7 @@ export default async function DashboardPage() {
   }))
 
   return (
-    <PageContainer className="space-y-8 px-4 py-2 lg:px-0">
+    <PageContainer className="space-y-6 px-4 py-2 lg:px-0">
       <PageHeader title="Dashboard" description="Szybki podgląd Twojej nauki" icon={BarChart3} />
       {/* Section A - Informacje (unified analytical card) */}
       <section>
@@ -321,7 +321,7 @@ export default async function DashboardPage() {
           </Card>
         </section>
 
-      {/* NEW Section - Co powtórzyć dziś */}
+      {/* Section - Co powtórzyć dziś */}
       <section>
         <h2 className="section-heading mb-3 text-lg" style={{ color: 'var(--text)', fontWeight: 700 }}>Co powtórzyć dziś</h2>
         {recommendedDecks.length === 0 ? (
@@ -331,22 +331,29 @@ export default async function DashboardPage() {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {recommendedDecks.map((item) => (
-              <div key={item.id} className="relative overflow-hidden rounded-[var(--radius)] p-5" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
-                <div className="absolute bottom-0 right-0 opacity-10 pointer-events-none" style={{ width: '110px', height: '110px', background: 'var(--primary)', borderRadius: '50% 0 0 0', transform: 'translate(20%, 20%)' }} />
-                <div className="relative z-10 space-y-3">
+              <Card key={item.id} className="relative">
+                <div className="space-y-4">
+                  {/* Header with deck name and mode badge */}
                   <div className="flex items-start justify-between gap-2">
-                    <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>{item.title}</p>
-                    <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ background: 'var(--primary-soft)', color: 'var(--primary)' }}>
+                    <h3 className="text-base font-bold truncate" style={{ color: 'var(--text)' }}>{item.title}</h3>
+                    <span className="rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap" style={{ background: 'var(--primary-soft)', color: 'var(--primary)' }}>
                       {item.modeLabel}
                     </span>
                   </div>
-                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{item.reason}</p>
-                  <div className="grid grid-cols-2 gap-2 text-xs" style={{ color: 'var(--text-muted)' }}>
-                    <div className="rounded-lg px-2 py-1" style={{ background: 'var(--surface2)' }}>Długość: <span className="font-semibold" style={{ color: 'var(--text)' }}>{item.estimatedMinutes} min</span></div>
-                    <div className="rounded-lg px-2 py-1" style={{ background: 'var(--surface2)' }}>Kart: <span className="font-semibold" style={{ color: 'var(--text)' }}>{item.targetCount}</span></div>
+                  
+                  {/* Quick stats */}
+                  <div className="flex items-center gap-3 text-sm" style={{ color: 'var(--text-muted)' }}>
+                    <div className="flex items-center gap-1">
+                      <BookOpen size={14} />
+                      <span className="font-medium" style={{ color: 'var(--text)' }}>{item.targetCount}</span> kart
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Clock size={14} />
+                      <span className="font-medium" style={{ color: 'var(--text)' }}>{item.estimatedMinutes}</span> min
+                    </div>
                   </div>
-                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Tryb: <span className="font-semibold" style={{ color: 'var(--text)' }}>{item.modeLabel}</span> • Kierunek: <span className="font-semibold" style={{ color: 'var(--text)' }}>{item.direction}</span></p>
-                  <ProgressBar value={Math.min(100, Math.max(10, item.progressPercent))} className="h-3" />
+
+                  {/* Start button */}
                   <StartSessionButton
                     deckId={item.id}
                     mode={item.mode}
@@ -354,7 +361,7 @@ export default async function DashboardPage() {
                     direction={item.direction}
                   />
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
         )}
@@ -427,8 +434,8 @@ export default async function DashboardPage() {
             <p className="text-xs font-semibold mb-2.5" style={{ color: 'var(--text)' }}>Ostatnie 5 dni</p>
             <div className="grid grid-cols-5 gap-2">
               {last5Days.map((day) => {
-                const stateColor = day.met ? '#22c55e' : day.sessions > 0 ? '#f97316' : '#ef4444'
-                const bgColor = day.met ? '#ecfdf3' : day.sessions > 0 ? '#fff7ed' : '#fef2f2'
+                const stateColor = day.met ? 'var(--success)' : day.sessions > 0 ? 'var(--warning-dark)' : 'var(--danger)'
+                const bgColor = day.met ? 'var(--success-soft)' : day.sessions > 0 ? 'var(--warning-soft)' : 'var(--danger-soft)'
 
                 return (
                   <div
@@ -450,7 +457,7 @@ export default async function DashboardPage() {
               {hardestSets.slice(0, 3).map((set) => (
                 <div key={set.id} className="flex items-center justify-between rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
                   <span className="text-xs font-semibold truncate" style={{ color: 'var(--text)' }}>{set.name}</span>
-                  <span className="text-[11px] font-bold px-2 py-1 rounded-full" style={{ background: '#fee2e2', color: '#b91c1c' }}>
+                  <span className="text-[11px] font-bold px-2 py-1 rounded-full" style={{ background: 'var(--danger-soft)', color: 'var(--danger-dark)' }}>
                     {set.accuracy}%
                   </span>
                 </div>
@@ -464,7 +471,7 @@ export default async function DashboardPage() {
               {easiestSets.slice(0, 3).map((set) => (
                 <div key={set.id} className="flex items-center justify-between rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
                   <span className="text-xs font-semibold truncate" style={{ color: 'var(--text)' }}>{set.name}</span>
-                  <span className="text-[11px] font-bold px-2 py-1 rounded-full" style={{ background: '#ecfdf3', color: '#15803d' }}>
+                  <span className="text-[11px] font-bold px-2 py-1 rounded-full" style={{ background: 'var(--success-soft)', color: 'var(--success-dark)' }}>
                     {set.accuracy}%
                   </span>
                 </div>

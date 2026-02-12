@@ -85,8 +85,12 @@ export default function SessionPage() {
   // Hint state
   const [showHint, setShowHint] = useState(false)
 
-  // Shuffle toggle (persisted in localStorage)
-  const [shuffleEnabled, setShuffleEnabled] = useState(false)
+  // Shuffle toggle (persisted in localStorage) - initialize from localStorage to prevent hydration mismatch
+  const [shuffleEnabled, setShuffleEnabled] = useState(() => {
+    if (typeof window === 'undefined') return false
+    const saved = localStorage.getItem('vocab-shuffle')
+    return saved === 'true'
+  })
   const [menuOpen, setMenuOpen] = useState(false)
 
   // Track per-card state (attempts, hints used)
@@ -101,38 +105,34 @@ export default function SessionPage() {
 
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null)
 
-  // Load shuffle setting
-  useEffect(() => {
-    const saved = localStorage.getItem('vocab-shuffle')
-    if (saved === 'true') setShuffleEnabled(true)
-  }, [])
-
   useEffect(() => {
     let ignore = false
 
     async function loadSession() {
       try {
-        const stored = sessionStorage.getItem(`session-${sessionId}`)
-        if (stored) {
-          const parsedStored = JSON.parse(stored)
-          let parsed: Task[] = Array.isArray(parsedStored) ? parsedStored : parsedStored.tasks
-          if (!Array.isArray(parsed)) parsed = []
-          if (!Array.isArray(parsedStored)) {
-            setSessionMode(parsedStored.mode || 'translate')
-            setReturnDeckId(String(parsedStored.returnDeckId || ''))
-          }
-          const shufflePref = localStorage.getItem('vocab-shuffle') === 'true'
-          if (shufflePref) {
-            // Fisher-Yates shuffle for uniform randomization
-            const arr = [...parsed]
-            for (let i = arr.length - 1; i > 0; i--) {
-              const j = Math.floor(Math.random() * (i + 1))
-              ;[arr[i], arr[j]] = [arr[j], arr[i]]
+        if (typeof window !== 'undefined') {
+          const stored = sessionStorage.getItem(`session-${sessionId}`)
+          if (stored) {
+            const parsedStored = JSON.parse(stored)
+            let parsed: Task[] = Array.isArray(parsedStored) ? parsedStored : parsedStored.tasks
+            if (!Array.isArray(parsed)) parsed = []
+            if (!Array.isArray(parsedStored)) {
+              setSessionMode(parsedStored.mode || 'translate')
+              setReturnDeckId(String(parsedStored.returnDeckId || ''))
             }
-            parsed = arr
+            const shufflePref = localStorage.getItem('vocab-shuffle') === 'true'
+            if (shufflePref) {
+              // Fisher-Yates shuffle for uniform randomization
+              const arr = [...parsed]
+              for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1))
+                ;[arr[i], arr[j]] = [arr[j], arr[i]]
+              }
+              parsed = arr
+            }
+            if (!ignore) setTasks(parsed)
+            return
           }
-          if (!ignore) setTasks(parsed)
-          return
         }
       } catch (error) {
         console.error('Failed to load session tasks from storage:', error)
@@ -149,7 +149,9 @@ export default function SessionPage() {
           mode: String(data.mode || 'translate'),
           returnDeckId: String(data.returnDeckId || ''),
         }
-        sessionStorage.setItem(`session-${sessionId}`, JSON.stringify(payload))
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem(`session-${sessionId}`, JSON.stringify(payload))
+        }
 
         if (!ignore) {
           setSessionMode(payload.mode)
@@ -398,7 +400,7 @@ export default function SessionPage() {
   }
 
   useEffect(() => {
-    if (!sentenceNeedsAcknowledge) return
+    if (!sentenceNeedsAcknowledge || typeof window === 'undefined') return
 
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === 'Enter') {
@@ -425,7 +427,7 @@ export default function SessionPage() {
 
 
   useEffect(() => {
-    if (!currentTask || currentTask.taskType !== 'abcd' || feedback || typoState) return
+    if (!currentTask || currentTask.taskType !== 'abcd' || feedback || typoState || typeof window === 'undefined') return
 
     function handleKey(event: KeyboardEvent) {
       if (!currentTask || currentTask.taskType !== 'abcd' || !currentTask.options) return
@@ -621,7 +623,9 @@ export default function SessionPage() {
   function toggleShuffle() {
     setShuffleEnabled(prev => {
       const next = !prev
-      localStorage.setItem('vocab-shuffle', String(next))
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('vocab-shuffle', String(next))
+      }
       return next
     })
   }

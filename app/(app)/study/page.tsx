@@ -7,6 +7,7 @@ import { getPayload } from '@/src/lib/getPayload'
 import { StartSessionForm } from '@/app/(app)/learn/StartSessionForm'
 import { PageHeader } from '../_components/PageHeader'
 import { PageContainer } from '../_components/PageContainer'
+import { Card } from '../_components/ui/Card'
 
 export const dynamic = 'force-dynamic'
 
@@ -33,17 +34,19 @@ export default async function StudyPage() {
       <PageHeader title="Ucz się" icon={BookOpen} />
 
       {decks.docs.length === 0 ? (
-        <div className="rounded-xl py-12 text-center" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
-          <p className="mb-2 text-sm" style={{ color: 'var(--text-muted)' }}>Brak dostępnych zestawów.</p>
-          <Link href="/create" className="text-sm font-medium" style={{ color: 'var(--primary)' }}>Utwórz pierwszy zestaw</Link>
-        </div>
+        <Card>
+          <div className="py-12 text-center">
+            <p className="mb-2 text-sm" style={{ color: 'var(--text-muted)' }}>Brak dostępnych zestawów.</p>
+            <Link href="/create" className="text-sm font-medium" style={{ color: 'var(--primary)' }}>Utwórz pierwszy zestaw</Link>
+          </div>
+        </Card>
       ) : (
-        <div className="rounded-xl border p-5 lg:p-6" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+        <Card>
           <StartSessionForm
           decks={decks.docs.map((d: any) => ({ id: String(d.id), name: d.name }))}
           folders={folders.docs.map((f: any) => ({ id: String(f.id), name: f.name }))}
         />
-        </div>
+        </Card>
       )}
     </PageContainer>
   )
