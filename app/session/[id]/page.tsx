@@ -12,6 +12,19 @@ const FEEDBACK_DELAY_DONE = 1200
 const FEEDBACK_DELAY_CORRECT_SLOW = 800
 const FEEDBACK_DELAY_WRONG_SLOW = 2000
 
+// Color tokens
+const COLOR_SUCCESS = '#22C55E'
+const COLOR_SUCCESS_BG = '#ECFDF5'
+const COLOR_SUCCESS_BORDER = '#A7F3D0'
+const COLOR_ERROR = '#EF4444'
+const COLOR_ERROR_BG = '#FEF2F2'
+const COLOR_ERROR_BORDER = '#FECACA'
+const COLOR_NEUTRAL = '#64748B'
+const COLOR_CTA = '#3B82F6'
+const COLOR_CTA_BG = '#EFF6FF'
+const COLOR_CTA_BORDER = '#BFDBFE'
+const COLOR_GOLD_STREAK = '#d4af37'
+
 interface Task {
   cardId: string
   taskType: string
@@ -87,6 +100,7 @@ export default function SessionPage() {
 
   // Toast for success messages
   const [toast, setToast] = useState<{ message: string; show: boolean } | null>(null)
+  const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // Shuffle toggle (persisted in localStorage) - initialize from localStorage to prevent hydration mismatch
   const [shuffleEnabled, setShuffleEnabled] = useState(() => {
@@ -636,9 +650,20 @@ export default function SessionPage() {
   }
 
   function showToast(message: string) {
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current)
+    }
     setToast({ message, show: true })
-    setTimeout(() => setToast(null), 2500)
+    toastTimeoutRef.current = setTimeout(() => setToast(null), 2500)
   }
+
+  useEffect(() => {
+    return () => {
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current)
+      }
+    }
+  }, [])
 
   function getModeLabel(): string {
     if (sessionMode === 'sentence') return 'Sentence'
