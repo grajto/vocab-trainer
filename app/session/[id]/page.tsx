@@ -499,9 +499,10 @@ export default function SessionPage() {
       setAnsweredCount(prev => prev + 1)
       setCorrectCount(prev => prev + 1)
       setStreak(prev => prev + 1)
-      setFeedback({ correct: true, message: 'Tłumaczenie poprawne. Teraz napisz zdanie z użyciem tego słowa.' })
       setSentenceStage('sentence')
       setUserAnswer('')
+      setFeedback(null)
+      setShowHint(false)
       playCorrect()
       return
     }
