@@ -8,7 +8,7 @@ import { PageContainer } from '../../_components/PageContainer'
 import Link from 'next/link'
 import { FolderQuickModeButtons } from './FolderQuickModeButtons'
 import { PageHeader } from '../../_components/PageHeader'
-import { FolderManageActions } from './FolderManageActions'
+import { FolderSettingsDialog } from './FolderSettingsDialog'
 
 export const dynamic = 'force-dynamic'
 
@@ -62,8 +62,8 @@ export default async function FolderPage({ params }: { params: Promise<{ id: str
       <div className="flex items-start justify-between gap-4">
         <PageHeader title={folder.name} description={`${totalCards} pojęć • przez Ciebie`} icon={FolderOpen} />
         <div className="flex items-center gap-2">
-          <Link href="/create" className="inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-medium" style={{ background: 'var(--primary-soft)', color: 'var(--primary)' }}><Plus size={14} /> Dodaj zestaw</Link>
-          <FolderManageActions folderId={id} initialName={folder.name} />
+          <Link href={`/folders/${id}/add-decks`} className="inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-medium" style={{ background: 'var(--primary-soft)', color: 'var(--primary)' }}><Plus size={14} /> Dodaj zestaw</Link>
+          <FolderSettingsDialog folderId={id} initialName={folder.name} />
         </div>
       </div>
 
