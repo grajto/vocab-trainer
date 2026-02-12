@@ -48,6 +48,7 @@ export default async function DashboardPage() {
   let folders: any = { docs: [] }
   let recentSessions: any = { docs: [] }
   let allSessionsYear: any = { docs: [] }
+  let cards: any = { docs: [] }
 
   try {
     const results = await Promise.all([
@@ -75,6 +76,7 @@ export default async function DashboardPage() {
         limit: 0,
         depth: 0,
       }),
+      payload.find({ collection: 'cards', where: { owner: { equals: user.id } }, limit: 5000, depth: 0 }),
     ])
 
     sessionsToday = results[0]
@@ -82,8 +84,21 @@ export default async function DashboardPage() {
     folders = results[2]
     recentSessions = results[3]
     allSessionsYear = results[4]
+    cards = results[5]
   } catch (err) {
     console.error('Dashboard data fetch error:', err)
+  }
+
+  // Count cards per deck
+  const cardsByDeck = new Map<string, number>()
+  for (const card of cards.docs) {
+    const deckId = String(card.deck)
+    cardsByDeck.set(deckId, (cardsByDeck.get(deckId) || 0) + 1)
+  }
+
+  // Add cardCount to each deck
+  for (const deck of decks.docs) {
+    deck.cardCount = cardsByDeck.get(String(deck.id)) || 0
   }
 
   const settings = getStudySettings(user as Record<string, unknown>)
