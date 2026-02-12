@@ -4,12 +4,14 @@ import { sql } from '@payloadcms/db-postgres'
 export async function up({ db }: MigrateUpArgs): Promise<void> {
   // Add missing columns to payload_locked_documents_rels table
   // These columns are needed for new collections: DailyAggregates, WordStats, UserTestPreferences, UserNotifications
+  // Note: Foreign key constraints are omitted because Payload manages relationships through its ORM
+  // and the referenced tables may not exist yet at migration time
   await db.execute(sql`
     ALTER TABLE payload_locked_documents_rels 
-    ADD COLUMN IF NOT EXISTS daily_aggregates_id INTEGER REFERENCES daily_aggregates(id) ON DELETE CASCADE,
-    ADD COLUMN IF NOT EXISTS word_stats_id INTEGER REFERENCES word_stats(id) ON DELETE CASCADE,
-    ADD COLUMN IF NOT EXISTS user_test_preferences_id INTEGER REFERENCES user_test_preferences(id) ON DELETE CASCADE,
-    ADD COLUMN IF NOT EXISTS user_notifications_id INTEGER REFERENCES user_notifications(id) ON DELETE CASCADE;
+    ADD COLUMN IF NOT EXISTS daily_aggregates_id INTEGER,
+    ADD COLUMN IF NOT EXISTS word_stats_id INTEGER,
+    ADD COLUMN IF NOT EXISTS user_test_preferences_id INTEGER,
+    ADD COLUMN IF NOT EXISTS user_notifications_id INTEGER;
   `)
   
   // Create indexes for better query performance
