@@ -12,10 +12,8 @@ interface SettingsContextValue {
   saved: boolean
   sessionLength: number
   setSessionLength: (length: number) => void
-  theme: 'light' | 'dark' | 'system'
-  setTheme: (theme: 'light' | 'dark' | 'system') => void
-  language: 'pl' | 'en'
-  setLanguage: (lang: 'pl' | 'en') => void
+   theme: 'light' | 'dark' | 'system'
+   setTheme: (theme: 'light' | 'dark' | 'system') => void
 }
 
 const SettingsContext = createContext<SettingsContextValue | undefined>(undefined)
@@ -35,12 +33,6 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     const stored = localStorage.getItem('theme')
     return (stored as 'light' | 'dark' | 'system') || 'light'
   })
-  const [language, setLanguageState] = useState<'pl' | 'en'>(() => {
-    if (typeof window === 'undefined') return 'pl'
-    const stored = localStorage.getItem('language')
-    return (stored as 'pl' | 'en') || 'pl'
-  })
-
   // Load settings from API
   useEffect(() => {
     let ignore = false
@@ -90,13 +82,6 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     }
   }, [settings.darkMode, theme])
 
-  // Apply language
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    localStorage.setItem('language', language)
-    document.documentElement.setAttribute('lang', language)
-  }, [language])
-
   // Persist session length
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -135,10 +120,6 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     setThemeState(newTheme)
   }, [])
 
-  const setLanguage = useCallback((lang: 'pl' | 'en') => {
-    setLanguageState(lang)
-  }, [])
-
   const value: SettingsContextValue = {
     settings,
     updateSettings,
@@ -150,8 +131,6 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     setSessionLength,
     theme,
     setTheme,
-    language,
-    setLanguage,
   }
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>
