@@ -367,12 +367,50 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      {saving && (
-        <div className="flex items-center gap-2 text-sm opacity-60">
-          <Save size={16} className="animate-pulse" />
-          <span>Zapisywanie...</span>
+      {/* Save Button */}
+      <div className="mt-8 flex items-center justify-between gap-4 p-4 rounded-xl border" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card-bg)' }}>
+        <div className="flex-1">
+          <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>
+            Zapisz zmiany
+          </p>
+          <p className="text-xs opacity-60" style={{ color: 'var(--text)' }}>
+            Ustawienia są automatycznie zapisywane, ale możesz też zapisać ręcznie
+          </p>
         </div>
-      )}
+        <button
+          onClick={() => {
+            if (saveTimeoutRef.current) {
+              clearTimeout(saveTimeoutRef.current)
+            }
+            saveSettings().catch(() => toast.error('Błąd zapisu'))
+          }}
+          disabled={saving}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all"
+          style={{
+            backgroundColor: saved ? 'var(--success)' : 'var(--primary)',
+            color: 'white',
+            opacity: saving ? 0.6 : 1,
+            cursor: saving ? 'not-allowed' : 'pointer',
+          }}
+        >
+          {saving ? (
+            <>
+              <Save size={16} className="animate-pulse" />
+              <span>Zapisywanie...</span>
+            </>
+          ) : saved ? (
+            <>
+              <Check size={16} />
+              <span>Zapisano</span>
+            </>
+          ) : (
+            <>
+              <Save size={16} />
+              <span>Zapisz ustawienia</span>
+            </>
+          )}
+        </button>
+      </div>
     </PageContainer>
   )
 }
