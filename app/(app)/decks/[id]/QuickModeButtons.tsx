@@ -9,6 +9,8 @@ import { useSound } from '@/src/lib/SoundProvider'
 type StudyMode = 'translate' | 'abcd' | 'sentence' | 'describe' | 'mixed' | 'test'
 type TestMode = 'abcd' | 'translate' | 'sentence' | 'describe'
 
+const allowedTestModes: TestMode[] = ['abcd', 'translate']
+
 const modes = [
   { id: 'abcd' as const, label: 'ABCD', icon: Grid3X3, color: 'var(--primary)' },
   { id: 'translate' as const, label: 'Tłumaczenie', icon: Layers, color: 'var(--primary)' },
@@ -36,7 +38,7 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
   // Test modal state
   const [showTestModal, setShowTestModal] = useState(false)
   const [testCount, setTestCount] = useState(20)
-  const [enabledModes, setEnabledModes] = useState<TestMode[]>(['abcd', 'translate', 'sentence', 'describe'])
+  const [enabledModes, setEnabledModes] = useState<TestMode[]>(allowedTestModes)
   const [randomizeQuestions, setRandomizeQuestions] = useState(true)
   const [randomizeAnswers, setRandomizeAnswers] = useState(true)
   const [starredOnly, setStarredOnly] = useState(false)
@@ -71,8 +73,9 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
         const parsed = JSON.parse(raw)
         setTestCount(parsed.questionCount ?? 20)
         setStarredOnly(!!parsed.starredOnly)
-        const modes = parsed.enabledModes?.length ? parsed.enabledModes : (parsed.enabledTypes?.length ? parsed.enabledTypes : ['abcd', 'translate'])
-        setEnabledModes(modes as TestMode[])
+        const modes = parsed.enabledModes?.length ? parsed.enabledModes : (parsed.enabledTypes?.length ? parsed.enabledTypes : allowedTestModes)
+        const normalizedModes = (modes as TestMode[]).filter((mode) => allowedTestModes.includes(mode))
+        setEnabledModes(normalizedModes.length ? normalizedModes : ['abcd'])
         setRandomizeQuestions(parsed.randomizeQuestions ?? true)
         setRandomizeAnswers(parsed.randomizeAnswers ?? true)
         setAnswerLang(parsed.answerLang ?? 'auto')
@@ -94,8 +97,9 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
             setStarredOnly(!!data.starredOnly)
             const modes = Array.isArray(data.enabledModes) && data.enabledModes.length 
               ? data.enabledModes 
-              : (Array.isArray(data.enabledTypes) && data.enabledTypes.length ? data.enabledTypes : ['abcd', 'translate'])
-            setEnabledModes(modes as TestMode[])
+              : (Array.isArray(data.enabledTypes) && data.enabledTypes.length ? data.enabledTypes : allowedTestModes)
+            const normalizedModes = (modes as TestMode[]).filter((mode) => allowedTestModes.includes(mode))
+            setEnabledModes(normalizedModes.length ? normalizedModes : ['abcd'])
             setRandomizeQuestions(data.randomizeQuestions ?? true)
             setRandomizeAnswers(data.randomizeAnswers ?? true)
             const langs = Array.isArray(data.answerLanguages) && data.answerLanguages[0]?.lang
@@ -219,8 +223,9 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
     const poolEmpty = starredOnly && cardCount === 0
     if (poolEmpty) return
     const target = useAllWords ? cardCount : Math.min(cardCount, clampedCount)
+    const selectedModes = enabledModes.filter((mode) => allowedTestModes.includes(mode))
     const settings = {
-      modes: enabledModes,
+      modes: selectedModes.length ? selectedModes : ['abcd'],
       starredOnly,
       randomizeQuestions,
       randomizeAnswers,
@@ -410,14 +415,6 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
                       label: 'Tłumaczenie',
                       control: <Toggle checked={enabledModes.includes('translate')} onChange={(v) => toggleMode('translate', v)} />,
                     },
-                    {
-                      label: 'Zdanie',
-                      control: <Toggle checked={enabledModes.includes('sentence')} onChange={(v) => toggleMode('sentence', v)} />,
-                    },
-                    {
-                      label: 'Opis',
-                      control: <Toggle checked={enabledModes.includes('describe')} onChange={(v) => toggleMode('describe', v)} />,
-                    },
                   ]}
                 />
 
@@ -445,8 +442,8 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
                     },
                     {
                       label: 'Pomijanie literówek',
-                      control: <Toggle checked={allowTypos} onChange={setAllowTypos} disabled={!enabledModes.includes('translate') && !enabledModes.includes('sentence') && !enabledModes.includes('describe')} />,
-                      muted: !enabledModes.includes('translate') && !enabledModes.includes('sentence') && !enabledModes.includes('describe'),
+                      control: <Toggle checked={allowTypos} onChange={setAllowTypos} disabled={!enabledModes.includes('translate')} />,
+                      muted: !enabledModes.includes('translate'),
                     },
                   ]}
                 />

@@ -26,7 +26,7 @@ export function FolderQuickModeButtons({ folderId, cardCount }: { folderId: stri
   const [selectedCount, setSelectedCount] = useState<number | null>(null)
   const [showTestModal, setShowTestModal] = useState(false)
   const [testCount, setTestCount] = useState(20)
-  const [enabledModes, setEnabledModes] = useState<string[]>(['abcd', 'translate', 'sentence', 'describe'])
+  const [enabledModes, setEnabledModes] = useState<string[]>(['abcd', 'translate'])
   const [randomQuestionOrder, setRandomQuestionOrder] = useState(true)
   const [randomAnswerOrder, setRandomAnswerOrder] = useState(true)
   const [useAllWords, setUseAllWords] = useState(false)
@@ -188,7 +188,7 @@ export function FolderQuickModeButtons({ folderId, cardCount }: { folderId: stri
                 Wszystkie słowa w folderze
               </label>
               <div className="grid grid-cols-2 gap-2">
-                {['abcd', 'translate', 'sentence', 'describe'].map(mode => (
+                {['abcd', 'translate'].map(mode => (
                   <label key={mode} className="flex items-center gap-2">
                     <input
                       type="checkbox"

@@ -87,6 +87,7 @@ export default function SessionPage() {
   const [userAnswer, setUserAnswer] = useState('')
   const [feedback, setFeedback] = useState<{ correct: boolean; message: string } | null>(null)
   const [sentenceNeedsAcknowledge, setSentenceNeedsAcknowledge] = useState(false)
+  const [translateNeedsAdvance, setTranslateNeedsAdvance] = useState(false)
   const [sentenceStage, setSentenceStage] = useState<'translate' | 'sentence'>('translate')
   const [describeStage, setDescribeStage] = useState<'translate' | 'describe'>('translate')
   const [loading, setLoading] = useState(false)
@@ -216,6 +217,7 @@ export default function SessionPage() {
     } else {
       setDescribeStage('translate')
     }
+    setTranslateNeedsAdvance(false)
     setQuestionStartedAt(Date.now())
   }, [currentIndex, tasks])
 
@@ -253,6 +255,7 @@ export default function SessionPage() {
         setAiInfo(null)
         setSelectedOption(null)
         setSentenceNeedsAcknowledge(false)
+        setTranslateNeedsAdvance(false)
         setCurrentIndex(prev => prev + 1)
         setQuestionStartedAt(Date.now())
       }, delay)
@@ -434,6 +437,18 @@ export default function SessionPage() {
     advanceToNext(50)
   }
 
+  const acknowledgeTranslateFeedback = useCallback(() => {
+    setFeedback(null)
+    setTranslateNeedsAdvance(false)
+    setUserAnswer('')
+    setShowHint(false)
+    setTypoState(null)
+    setAiInfo(null)
+    setSelectedOption(null)
+    setSentenceNeedsAcknowledge(false)
+    advanceToNext(50)
+  }, [advanceToNext])
+
   useEffect(() => {
     if (!sentenceNeedsAcknowledge || typeof window === 'undefined') return
 
@@ -459,6 +474,20 @@ export default function SessionPage() {
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [sentenceNeedsAcknowledge, currentIndex, tasks.length])
+
+  useEffect(() => {
+    if (!translateNeedsAdvance || typeof window === 'undefined') return
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Enter') {
+        event.preventDefault()
+        acknowledgeTranslateFeedback()
+      }
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [translateNeedsAdvance, currentIndex, tasks.length, acknowledgeTranslateFeedback])
 
 
   useEffect(() => {
@@ -506,9 +535,12 @@ export default function SessionPage() {
       const result = checkAnswerWithTypo(userAnswer, expected)
       const correct = result === 'correct' || result === 'typo'
       if (!correct) {
+        state.wasWrongBefore = true
         setStreak(0)
         setFeedback({ correct: false, message: `Najpierw poprawnie przetłumacz słowo. Poprawna odpowiedź: ${expected}` })
+        setTranslateNeedsAdvance(true)
         playWrong()
+        requeueCard(currentTask)
         return
       }
       setAnsweredCount(prev => prev + 1)
@@ -599,9 +631,12 @@ export default function SessionPage() {
       const result = checkAnswerWithTypo(userAnswer, expected)
       const correct = result === 'correct' || result === 'typo'
       if (!correct) {
+        state.wasWrongBefore = true
         setStreak(0)
         setFeedback({ correct: false, message: `Najpierw poprawnie przetłumacz słowo. Poprawna odpowiedź: ${expected}` })
+        setTranslateNeedsAdvance(true)
         playWrong()
+        requeueCard(currentTask)
         return
       }
       state.describeTranslated = true
@@ -1153,6 +1188,18 @@ export default function SessionPage() {
                   <button
                     type="button"
                     onClick={acknowledgeSentenceFeedback}
+                    className="inline-flex items-center px-5 py-2.5 rounded-[var(--radiusSm)] text-sm font-semibold text-white transition-colors"
+                    style={{ background: '#3B82F6' }}
+                  >
+                    Dalej (Enter)
+                  </button>
+                </div>
+              )}
+              {translateNeedsAdvance && (
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    onClick={acknowledgeTranslateFeedback}
                     className="inline-flex items-center px-5 py-2.5 rounded-[var(--radiusSm)] text-sm font-semibold text-white transition-colors"
                     style={{ background: '#3B82F6' }}
                   >
