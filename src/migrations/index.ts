@@ -11,6 +11,7 @@ import * as migration_20260211_140000_add_deck_folder from './20260211_140000_ad
 import * as migration_20260211_150000_add_user_test_preferences from './20260211_150000_add_user_test_preferences.ts';
 import * as migration_20260211_180000_perf_indexes from './20260211_180000_perf_indexes.ts';
 import * as migration_20260211_210000_extend_user_settings from './20260211_210000_extend_user_settings.ts';
+import * as migration_20260212_100000_add_tests_tables from './20260212_100000_add_tests_tables.ts';
 
 export const migrations = [
   {
@@ -77,5 +78,10 @@ export const migrations = [
     up: migration_20260211_210000_extend_user_settings.up,
     down: migration_20260211_210000_extend_user_settings.down,
     name: '20260211_210000_extend_user_settings'
+  },
+  {
+    up: migration_20260212_100000_add_tests_tables.up,
+    down: migration_20260212_100000_add_tests_tables.down,
+    name: '20260212_100000_add_tests_tables'
   },
 ];
