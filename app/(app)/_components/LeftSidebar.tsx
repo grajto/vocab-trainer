@@ -76,10 +76,10 @@ export function LeftSidebar({
 
   const groupTitle = 'px-2 text-[13px] font-semibold'
   const itemClass = (isActive: boolean) =>
-    `flex min-h-[40px] items-center gap-[10px] rounded-[var(--radiusSm)] border px-[10px] py-2 text-sm transition-colors ${
+    `flex min-h-[40px] items-center gap-[10px] rounded-[var(--chip-radius)] border px-[10px] py-2 text-sm transition-colors ${
       isActive
-        ? 'border-[#d9e0ff] bg-[var(--primaryBg)] text-[var(--primary)] font-semibold'
-        : 'border-transparent text-[var(--text)] hover:border-[var(--border)] hover:bg-[#f8fafc]'
+        ? 'border-[var(--primary-soft)] bg-[var(--primary-soft)] text-[var(--primary)] font-semibold'
+        : 'border-transparent text-[var(--text)] hover:border-[var(--border)] hover:bg-[var(--surface-muted)]'
     }`
 
   async function startDailySession() {
@@ -129,7 +129,7 @@ export function LeftSidebar({
     <aside className="flex h-full flex-col overflow-y-auto border-r px-[var(--sidebar-pad)] py-[var(--sidebar-pad)]" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
       <div className="mb-1 flex items-center justify-between px-2 lg:hidden">
         <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Menu</span>
-        <button type="button" onClick={onClose} className="rounded-md p-1 hover:bg-[#f8fafc]" style={{ color: 'var(--muted)' }} aria-label="Zamknij menu">
+        <button type="button" onClick={onClose} className="rounded-md p-1 hover:bg-[var(--surface-muted)]" style={{ color: 'var(--text-muted)' }} aria-label="Zamknij menu">
           <X size={16} />
         </button>
       </div>
@@ -144,16 +144,16 @@ export function LeftSidebar({
           {/* Progress Display */}
           <div className="space-y-2">
             <div className="flex items-baseline justify-between">
-              <span className="text-xs" style={{ color: 'var(--muted)' }}>Nowe słówka dzisiaj</span>
+              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Nowe słówka dzisiaj</span>
               {progressLoading ? (
-                <span className="text-xs" style={{ color: 'var(--muted)' }}>...</span>
+                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>...</span>
               ) : (
                 <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
                   {cardsCompleted}/{dailyGoal}
                 </span>
               )}
             </div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-[#e2e8f0]">
+            <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--surface-muted)]">
               <div 
                 className="h-full transition-all duration-500" 
                 style={{ width: `${progressPercent}%`, background: 'var(--primary)' }}
@@ -224,7 +224,7 @@ export function LeftSidebar({
 
   return (
     <>
-      {open ? <div className="fixed inset-0 z-40 lg:hidden" style={{ background: 'rgba(15,23,42,0.3)' }} onClick={onClose} /> : null}
+      {open ? <div className="fixed inset-0 z-40 lg:hidden" style={{ background: 'rgb(0 0 0 / 0.3)' }} onClick={onClose} /> : null}
       <div className={`fixed inset-y-0 left-0 z-50 w-[260px] max-w-[88vw] transform transition-transform duration-200 lg:hidden ${open ? 'translate-x-0' : '-translate-x-full'}`} style={{ background: 'var(--surface)' }}>
         {nav}
       </div>

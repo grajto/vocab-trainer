@@ -42,7 +42,7 @@ export function ContinueCard({ item, onRemove }: { item: ContinueItem; onRemove:
               type="button"
               onClick={() => setMenuOpen(prev => !prev)}
               className="rounded-md p-1 hover:bg-[var(--surface-muted)]"
-              style={{ color: 'var(--gray400)' }}
+              style={{ color: 'var(--text-soft)' }}
               aria-label="Więcej opcji"
             >
               <MoreVertical size={16} />
@@ -79,11 +79,11 @@ export function ContinueCard({ item, onRemove }: { item: ContinueItem; onRemove:
         <Link
           href={item.resumeHref}
           className="inline-flex min-h-10 items-center rounded-full px-5 text-sm font-semibold transition-all hover:opacity-90"
-          style={{ background: 'var(--primary)', color: '#fff' }}
+          style={{ background: 'var(--primary)', color: 'white' }}
         >
           Kontynuuj
         </Link>
-        <span className="text-xs font-medium" style={{ color: 'var(--gray400)' }}>{item.date}</span>
+        <span className="text-xs font-medium" style={{ color: 'var(--text-soft)' }}>{item.date}</span>
       </div>
     </SimpleCard>
   )

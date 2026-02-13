@@ -55,17 +55,17 @@ export default function CalendarPage() {
       <div className="flex items-center justify-between gap-3">
         <PageHeader title="Kalendarz" icon={CalendarIcon} />
         <div className="flex items-center gap-2">
-          <button onClick={() => changeMonth(-1)} className="rounded-[var(--radiusSm)] p-2 hover:bg-[#f8fafc]" style={{ border: '1px solid var(--border)' }}>
+          <button onClick={() => changeMonth(-1)} className="rounded-[var(--chip-radius)] p-2 hover:bg-[var(--surface-muted)]" style={{ border: '1px solid var(--border)' }}>
             <ChevronLeft className="w-4 h-4" />
           </button>
           <span className="text-sm font-medium capitalize" style={{ color: 'var(--text)' }}>{monthName}</span>
-          <button onClick={() => changeMonth(1)} className="rounded-[var(--radiusSm)] p-2 hover:bg-[#f8fafc]" style={{ border: '1px solid var(--border)' }}>
+          <button onClick={() => changeMonth(1)} className="rounded-[var(--chip-radius)] p-2 hover:bg-[var(--surface-muted)]" style={{ border: '1px solid var(--border)' }}>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-2 text-xs" style={{ color: 'var(--gray400)' }}>
+      <div className="grid grid-cols-7 gap-2 text-xs" style={{ color: 'var(--text-soft)' }}>
         {['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'Sb', 'Nd'].map(day => (
           <div key={day} className="text-center">{day}</div>
         ))}
@@ -77,18 +77,18 @@ export default function CalendarPage() {
         ))}
         {loading ? (
           Array.from({ length: 28 }).map((_, idx) => (
-            <div key={`skeleton-${idx}`} className="h-16 rounded-[var(--radiusSm)] animate-pulse" style={{ background: 'var(--surface2)' }} />
+            <div key={`skeleton-${idx}`} className="h-16 rounded-[var(--chip-radius)] animate-pulse" style={{ background: 'var(--surface-muted)' }} />
           ))
         ) : (
           days.map(day => {
             const dateNum = Number(day.date.split('-')[2])
-            const bgColor = day.status === 'met' ? '#ecfdf5' : day.status === 'partial' ? '#fffbeb' : 'var(--surface2)'
-            const textColor = day.status === 'met' ? '#059669' : day.status === 'partial' ? '#d97706' : 'var(--gray400)'
+            const bgColor = day.status === 'met' ? 'var(--success-soft)' : day.status === 'partial' ? 'var(--warning-soft)' : 'var(--surface-muted)'
+            const textColor = day.status === 'met' ? 'var(--success)' : day.status === 'partial' ? 'var(--warning)' : 'var(--text-soft)'
             return (
               <button
                 key={day.date}
                 onClick={() => setSelected(day)}
-                className="h-16 rounded-[var(--radiusSm)] text-left px-2 py-1.5 hover:opacity-80"
+                className="h-16 rounded-[var(--chip-radius)] text-left px-2 py-1.5 hover:opacity-80"
                 style={{ background: bgColor, border: '1px solid var(--border)', color: textColor }}
               >
                 <div className="text-xs font-semibold">{dateNum}</div>
@@ -104,17 +104,17 @@ export default function CalendarPage() {
           <div className="space-y-4">
             <div>
               <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{selected.date}</p>
-              <p className="text-xs" style={{ color: 'var(--gray400)' }}>{selected.sessions} sesji · {selected.minutes} min</p>
+              <p className="text-xs" style={{ color: 'var(--text-soft)' }}>{selected.sessions} sesji · {selected.minutes} min</p>
             </div>
             {selected.items.length === 0 ? (
-              <p className="text-sm" style={{ color: 'var(--gray400)' }}>Brak sesji.</p>
+              <p className="text-sm" style={{ color: 'var(--text-soft)' }}>Brak sesji.</p>
             ) : (
               <div className="space-y-2">
                 {selected.items.map(item => (
                   <div key={item.id} className="flex items-center justify-between text-sm">
                     <div>
                       <p className="font-medium" style={{ color: 'var(--text)' }}>{item.deckName}</p>
-                      <p className="text-xs capitalize" style={{ color: 'var(--gray400)' }}>{item.mode} · {item.minutes} min</p>
+                      <p className="text-xs capitalize" style={{ color: 'var(--text-soft)' }}>{item.mode} · {item.minutes} min</p>
                     </div>
                     <span className="text-xs font-semibold" style={{ color: 'var(--primary)' }}>{item.accuracy ?? 0}%</span>
                   </div>
@@ -123,7 +123,7 @@ export default function CalendarPage() {
             )}
           </div>
         ) : (
-          <p className="text-sm" style={{ color: 'var(--gray400)' }}>Kliknij dzień, aby zobaczyć szczegóły.</p>
+          <p className="text-sm" style={{ color: 'var(--text-soft)' }}>Kliknij dzień, aby zobaczyć szczegóły.</p>
         )}
       </div>
     </PageContainer>

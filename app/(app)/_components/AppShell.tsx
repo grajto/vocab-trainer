@@ -30,8 +30,8 @@ export function AppShell({
             <div className="mb-5 flex items-center gap-2 lg:hidden">
               <button
                 type="button"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full hover:bg-[#f8fafc]"
-                style={{ color: 'var(--muted)' }}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full hover:bg-[var(--surface-muted)]"
+                style={{ color: 'var(--text-muted)' }}
                 onClick={() => setOpen(true)}
                 aria-label="Otwórz menu"
               >

@@ -55,12 +55,12 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'var(--surface2)' }}>
-      <form onSubmit={handleSubmit} className="w-full max-w-md rounded-[var(--radius)] p-6 space-y-4" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
-        <p style={{ color: 'var(--muted)' }}>Podaj login, aby kontynuować.</p>
+    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'var(--surface-muted)' }}>
+      <form onSubmit={handleSubmit} className="w-full max-w-md rounded-[var(--card-radius)] p-6 space-y-4" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
+        <p style={{ color: 'var(--text-muted)' }}>Podaj login, aby kontynuować.</p>
 
         {error && (
-          <div className="rounded-[var(--radiusSm)] px-4 py-3 text-sm" style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b' }}>
+          <div className="rounded-[var(--chip-radius)] px-4 py-3 text-sm" style={{ background: 'var(--danger-soft)', border: '1px solid var(--danger)', color: 'var(--danger-dark)' }}>
             {error}
           </div>
         )}
@@ -76,7 +76,7 @@ export default function LoginPage() {
             maxLength={50}
             placeholder="Wpisz swój login"
             autoComplete="username"
-            className="w-full rounded-[var(--radiusSm)] px-3 py-2.5 text-sm focus:outline-none"
+            className="w-full rounded-[var(--input-radius)] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
             style={{ border: '1px solid var(--border)', color: 'var(--text)' }}
           />
         </div>
@@ -84,8 +84,8 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-full py-2.5 text-sm font-semibold disabled:opacity-70"
-          style={{ background: 'var(--primary)', color: '#fff' }}
+          className="w-full rounded-full py-2.5 text-sm font-semibold text-white disabled:opacity-70"
+          style={{ background: 'var(--primary)' }}
         >
           Zaloguj się
         </button>

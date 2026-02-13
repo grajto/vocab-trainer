@@ -58,8 +58,8 @@ export function StarToggle({ cardId, initialStarred, className = '' }: Props) {
     >
       <Star
         size={20}
-        fill={starred ? '#FCD34D' : 'none'}
-        stroke={starred ? '#FCD34D' : 'currentColor'}
+        fill={starred ? 'var(--warning)' : 'none'}
+        stroke={starred ? 'var(--warning)' : 'currentColor'}
         strokeWidth={2}
       />
     </button>

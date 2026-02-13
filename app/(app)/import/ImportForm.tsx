@@ -40,7 +40,7 @@ export function ImportForm({ decks }: { decks: Deck[] }) {
     <form onSubmit={handleSubmit} className="space-y-5 rounded-lg p-6" style={{ border: '1px solid var(--border)' }}>
       {/* Deck selector */}
       <div>
-        <label className="mb-1.5 block text-xs font-medium" style={{ color: 'var(--muted)' }}>Docelowy zestaw</label>
+        <label className="mb-1.5 block text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Docelowy zestaw</label>
         <select value={deckId} onChange={e => setDeckId(e.target.value)} className={selectClass} style={selectStyle}>
           {decks.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
         </select>
@@ -48,7 +48,7 @@ export function ImportForm({ decks }: { decks: Deck[] }) {
 
       {/* CSV textarea */}
       <div>
-        <label className="mb-1.5 block text-xs font-medium" style={{ color: 'var(--muted)' }}>Dane CSV</label>
+        <label className="mb-1.5 block text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Dane CSV</label>
         <textarea
           value={csvText}
           onChange={e => setCsvText(e.target.value)}
@@ -57,7 +57,7 @@ export function ImportForm({ decks }: { decks: Deck[] }) {
           className="w-full rounded-lg px-4 py-3 font-mono text-sm leading-relaxed focus:outline-none"
           style={{ border: '1px solid var(--border)', color: 'var(--text)', resize: 'vertical' }}
         />
-        <p className="mt-1.5 text-xs" style={{ color: 'var(--gray400)' }}>Kolumny: front, back, notes (opcja), examples (opcja)</p>
+        <p className="mt-1.5 text-xs" style={{ color: 'var(--text-soft)' }}>Kolumny: front, back, notes (opcja), examples (opcja)</p>
       </div>
 
       {/* Submit */}
@@ -73,11 +73,11 @@ export function ImportForm({ decks }: { decks: Deck[] }) {
       {/* Result */}
       {result && (
         <div className="space-y-1 rounded-lg p-4 text-sm" style={{ border: '1px solid var(--border)' }}>
-          <p style={{ color: '#059669' }}>Utworzono: {result.createdCount}</p>
-          {result.skippedCount > 0 && <p style={{ color: '#d97706' }}>Pominięto: {result.skippedCount}</p>}
+          <p style={{ color: 'var(--success)' }}>Utworzono: {result.createdCount}</p>
+          {result.skippedCount > 0 && <p style={{ color: 'var(--warning)' }}>Pominięto: {result.skippedCount}</p>}
           {result.errors.length > 0 && (
             <div className="mt-2 space-y-0.5">
-              {result.errors.map((err, i) => <p key={i} className="text-xs" style={{ color: '#dc2626' }}>{err}</p>)}
+              {result.errors.map((err, i) => <p key={i} className="text-xs" style={{ color: 'var(--danger)' }}>{err}</p>)}
             </div>
           )}
         </div>

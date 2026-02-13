@@ -69,7 +69,7 @@ export function JumpBackInCarousel({ items }: { items: ContinueItem[] }) {
           type="button"
           onClick={() => slide('left')}
           className="absolute left-2 top-1/2 z-20 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full shadow-md transition-opacity"
-          style={{ border: '1px solid var(--border)', background: '#fff', color: 'var(--text)' }}
+          style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
           aria-label="Przesuń w lewo"
         >
           <ChevronLeft size={20} />
@@ -81,7 +81,7 @@ export function JumpBackInCarousel({ items }: { items: ContinueItem[] }) {
         type="button"
         onClick={() => slide('right')}
         className="absolute right-2 top-1/2 z-20 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full shadow-md"
-        style={{ border: '1px solid var(--border)', background: '#fff', color: 'var(--text)' }}
+        style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
         aria-label="Przesuń w prawo"
       >
         <ChevronRight size={20} />
