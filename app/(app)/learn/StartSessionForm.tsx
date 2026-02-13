@@ -147,6 +147,7 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
                   key={level}
                   type="button"
                   onClick={() => toggleLevel(level)}
+                  aria-label={`Poziom ${level}: ${levelLabels[level - 1]}${levels.includes(level) ? ' (wybrany)' : ''}`}
                   className="relative flex flex-col items-center justify-center gap-1.5 h-20 rounded-xl text-sm font-semibold transition-all"
                   style={{
                     border: `2px solid ${levels.includes(level) ? 'var(--primary)' : 'var(--border)'}`,
@@ -155,7 +156,7 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
                     transform: levels.includes(level) ? 'scale(1.02)' : 'scale(1)',
                   }}
                 >
-                  <span className="text-2xl">{levelEmojis[level - 1]}</span>
+                  <span className="text-2xl" aria-hidden="true">{levelEmojis[level - 1]}</span>
                   <span className="text-xs">{levelLabels[level - 1]}</span>
                 </button>
               ))}
@@ -210,7 +211,7 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
         className="h-12 w-full sm:w-auto sm:px-8 rounded-full text-base font-semibold text-white transition-all disabled:opacity-50 flex items-center justify-center gap-2 hover:opacity-90"
         style={{ background: 'var(--primary)' }}
       >
-        <Play className="w-5 h-5" fill="white" />
+        <Play className="w-5 h-5" />
         {loading ? 'Uruchamiam…' : 'Rozpocznij naukę'}
       </button>
     </form>
