@@ -217,7 +217,7 @@ export default async function DashboardPage() {
                 const Icon = item.icon
                 return (
                   <div key={idx} className="flex items-center gap-3">
-                    <IconSquare variant="primary" size={36}>
+                    <IconSquare variant="primary" size="sm">
                       <Icon size={16} />
                     </IconSquare>
                     <div>
@@ -271,7 +271,7 @@ export default async function DashboardPage() {
                 className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--hover-bg)] transition-colors"
                 style={{ border: '1px solid var(--border)' }}
               >
-                <IconSquare variant={item.type === 'deck' ? 'primary' : 'muted'} size={36}>
+                <IconSquare variant={item.type === 'deck' ? 'primary' : 'secondary'} size="sm">
                   {item.type === 'deck' ? <BookOpen size={18} /> : <FolderOpen size={18} />}
                 </IconSquare>
                 <div className="flex-1 min-w-0">

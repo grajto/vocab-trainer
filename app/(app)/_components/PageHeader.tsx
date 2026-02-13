@@ -12,7 +12,7 @@ export function PageHeader({
 }) {
   return (
     <div className="flex items-center gap-3">
-      <IconSquare variant="primary" size={40}>
+      <IconSquare variant="primary" size="md">
         <Icon size={20} />
       </IconSquare>
       <div>
