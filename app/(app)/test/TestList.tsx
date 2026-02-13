@@ -300,7 +300,7 @@ export function TestList({ decks, folders }: { decks: Item[]; folders: Item[] })
           <div className="grid gap-3 sm:grid-cols-1 lg:grid-cols-2">
             {testsVisible.map((t) => (
               <Link key={t.id} href={`/test/${t.id}`}>
-                <Card clickable compact>
+                <Card clickable padding="sm" hover>
                   <div className="space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
@@ -354,7 +354,7 @@ export function TestList({ decks, folders }: { decks: Item[]; folders: Item[] })
               const medal = idx < 3 ? medals[idx] : null
               
               return (
-                <Card key={r.key} compact>
+                <Card key={r.key} padding="sm">
                   <div className="flex items-center gap-3">
                     <div className="flex items-center justify-center w-10 h-10 rounded-lg font-bold text-lg" style={{ background: 'var(--surface-hover)', color: 'var(--text)' }}>
                       {medal || `#${idx + 1}`}

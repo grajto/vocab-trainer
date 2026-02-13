@@ -257,7 +257,7 @@ export default async function DashboardPage() {
       <section>
         <SectionHeading title="Recents" />
         {recents.length === 0 ? (
-          <Card compact>
+          <Card padding="sm">
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Brak ostatnich materiałów.</p>
           </Card>
         ) : (
@@ -288,7 +288,7 @@ export default async function DashboardPage() {
       <section>
         <SectionHeading title="Jump back in" />
         {jumpBackIn.length === 0 ? (
-          <Card compact>
+          <Card padding="sm">
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Brak przerwanych sesji.</p>
           </Card>
         ) : (
