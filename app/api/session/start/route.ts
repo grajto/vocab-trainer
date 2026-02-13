@@ -41,6 +41,12 @@ export async function POST(req: NextRequest) {
     const payload = await getPayload()
     const settings = getStudySettings(user as unknown as Record<string, unknown>)
 
+    // Validate user ID early to avoid partial state issues
+    const numericUserId = parseNumericId(user.id)
+    if (numericUserId === null) {
+      return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 })
+    }
+
     let linkedTestId: string | number | null = testId || null
 
     // Get deck to check direction setting
@@ -174,11 +180,6 @@ export async function POST(req: NextRequest) {
       try {
         const pool = getNeonPool()
         const now = new Date().toISOString()
-        const numericUserId = parseNumericId(user.id)
-        
-        if (numericUserId === null) {
-          return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 })
-        }
         
         // Build parameterized query for batch insert
         const values = cardsNeedingReviewState.map((_, idx) => {
@@ -412,40 +413,54 @@ export async function POST(req: NextRequest) {
 
     // Create session items (batch insert optimization)
     if (tasks.length > 0) {
-      try {
-        const pool = getNeonPool()
-        const numericSessionId = parseNumericId(session.id)
-        
-        if (numericSessionId === null) {
-          return NextResponse.json({ error: 'Invalid session ID' }, { status: 400 })
+      const numericSessionId = parseNumericId(session.id)
+      
+      // Try batch insert first (requires numeric session ID)
+      if (numericSessionId !== null) {
+        try {
+          const pool = getNeonPool()
+          
+          // Build parameterized query for batch insert
+          const values = tasks.map((_, idx) => {
+            const base = idx * 4
+            return `($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4})`
+          }).join(', ')
+          
+          // Flatten all parameters (parameterized queries prevent SQL injection)
+          const params: (number | string)[] = []
+          for (const task of tasks) {
+            params.push(
+              numericSessionId,
+              task.cardId,
+              task.taskType,
+              task.prompt
+            )
+          }
+          
+          // Batch insert
+          await pool.query(`
+            INSERT INTO session_items 
+            (session_id, card_id, task_type, prompt_shown)
+            VALUES ${values}
+          `, params)
+        } catch (err: unknown) {
+          console.error('Batch insert for session items failed, falling back to sequential creation:', err)
+          // Fallback to sequential creation
+          for (const task of tasks) {
+            await payload.create({
+              collection: 'session-items',
+              data: {
+                session: session.id,
+                card: task.cardId,
+                taskType: task.taskType,
+                promptShown: task.prompt,
+              },
+            })
+          }
         }
-        
-        // Build parameterized query for batch insert
-        const values = tasks.map((_, idx) => {
-          const base = idx * 4
-          return `($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4})`
-        }).join(', ')
-        
-        // Flatten all parameters with proper SQL escaping
-        const params: (number | string)[] = []
-        for (const task of tasks) {
-          params.push(
-            numericSessionId,
-            task.cardId,
-            task.taskType,
-            task.prompt // Already a string, parameterized query handles escaping
-          )
-        }
-        
-        // Batch insert
-        await pool.query(`
-          INSERT INTO session_items 
-          (session_id, card_id, task_type, prompt_shown)
-          VALUES ${values}
-        `, params)
-      } catch (err: unknown) {
-        console.error('Batch insert for session items failed, falling back to sequential creation:', err)
-        // Fallback to sequential creation for backward compatibility
+      } else {
+        // Session ID couldn't be parsed as numeric, use sequential creation
+        console.warn('Session ID is not numeric, using sequential creation for session items')
         for (const task of tasks) {
           await payload.create({
             collection: 'session-items',
