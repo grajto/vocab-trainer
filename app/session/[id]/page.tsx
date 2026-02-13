@@ -964,7 +964,7 @@ export default function SessionPage() {
   const progress = ((currentIndex + 1) / tasks.length) * 100
   const hintText = showHint && currentTask ? generateHint(currentTask.expectedAnswer || currentTask.answer) : ''
   const progressHeadPosition = Math.min(100, Math.max(5, progress))
-  const progressColor = streak > 10 ? 'var(--warning)' : streak > 5 ? 'var(--warning)' : 'var(--success)'
+  const progressColor = streak > 5 ? 'var(--warning)' : 'var(--success)'
   const progressFillStyle = {
     width: `${progress}%`,
     background: streak > 10 ? 'linear-gradient(90deg, var(--warning), var(--warning), var(--danger))' : progressColor,
