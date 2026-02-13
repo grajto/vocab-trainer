@@ -94,9 +94,10 @@ function isClearlyBadForAutoPass(
   if (hasLikelyGibberishToken(sentence, required)) return true
 
   const severeTypes = new Set(['usage', 'meaning', 'spam'])
+  // Be more lenient with spelling - allow up to 3 spelling errors
   const spellingErrors = parsed.errors.filter(err => (err.type || '').toLowerCase() === 'spelling')
 
-  if (spellingErrors.length >= 2) return true
+  if (spellingErrors.length >= 4) return true
 
   for (const err of parsed.errors) {
     const t = (err.type || '').toLowerCase()
@@ -108,18 +109,14 @@ function isClearlyBadForAutoPass(
     if (ex.includes('unintelligible') || ex.includes('gibberish') || ex.includes('nonsense') || ex.includes('non-word')) return true
   }
 
-  // Allow auto-pass only when errors are minor and mostly style/punctuation/article level.
-  return !parsed.errors.every(err => {
-    const t = (err.type || '').toLowerCase()
-    if (t === 'style' || t === 'punctuation') return true
-    if (t === 'grammar' && isMinorExplain(err.explain || '')) return true
-    return false
-  })
+  // More lenient auto-pass: Accept grammar errors as long as the sentence is understandable
+  // Only reject if errors are severe (usage, meaning, spam, or too many issues)
+  return parsed.errors.length > 5
 }
 
 const SYSTEM_PROMPT = `You are an English teacher AI for SENTENCE mode (user must write a meaningful sentence using the target word).
 
-Evaluate the user's sentence quality in a practical way.
+Evaluate the user's sentence quality in a LENIENT way - focus on whether the sentence is understandable and uses the word correctly.
 Return ONLY minified JSON:
 {"ok":boolean,"corrected":string,"errors":[{"type":string,"from":string,"to":string,"explain":string}],"comment":string}
 
@@ -131,8 +128,9 @@ Rules:
 - If ok=true: corrected MUST equal input sentence exactly.
 - If ok=false: corrected MUST be an empty string.
 - Ignore missing final dot and capitalization at sentence start.
-- Accept understandable grammar; do not fail for small style issues, punctuation or tiny wording variants.
-- Point out exact mistakes (e.g. spelling: "greeen" -> "green").
+- BE LENIENT: Accept any understandable sentence that uses the target word meaningfully, even if it has minor grammar issues, style quirks, or simple phrasing.
+- Only fail for major errors: missing target word, gibberish, completely wrong meaning, or unintelligible structure.
+- Point out exact mistakes (e.g. spelling: "greeen" -> "green") but be forgiving.
 - Never write meta-comments like "task expects corrected".
 - Error types: grammar, usage, meaning, spelling, punctuation, style, other.
 - No markdown. No extra keys.`

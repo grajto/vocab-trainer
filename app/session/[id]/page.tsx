@@ -609,6 +609,7 @@ export default function SessionPage() {
       if (correct) {
         advanceToNext(FEEDBACK_DELAY_CORRECT_SLOW)
       }
+      // If wrong: sentenceNeedsAcknowledge is set, user must press Enter/Continue to advance
     } catch {
       state.wasWrongBefore = true
       setStreak(0)
@@ -623,7 +624,15 @@ export default function SessionPage() {
 
   async function handleDescribeSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!userAnswer.trim() || !currentTask) return
+    if (!currentTask) return
+
+    if (feedback && sentenceNeedsAcknowledge) {
+      acknowledgeSentenceFeedback()
+      return
+    }
+
+    if (!userAnswer.trim()) return
+
     const state = getTaskState(currentTask.cardId)
     state.attempts++
 
@@ -668,9 +677,9 @@ export default function SessionPage() {
       if (!res.ok) {
         const message = data?.message_pl || data?.error || 'AI validation failed. Try again.'
         setFeedback({ correct: false, message })
+        setSentenceNeedsAcknowledge(true)
         playWrong()
         requeueCard(currentTask)
-        advanceToNext(FEEDBACK_DELAY_WRONG_SLOW)
         return
       }
       const correct = !!data.ok
@@ -694,6 +703,7 @@ export default function SessionPage() {
           ? `${data.message_pl || 'Incorrect'}\nSuggested: ${data.suggested_fix}`
           : (data.message_pl || 'Spróbuj opisać inaczej')
         setFeedback({ correct: false, message: msg })
+        setSentenceNeedsAcknowledge(true)
         playWrong()
         requeueCard(currentTask)
       }
@@ -712,13 +722,16 @@ export default function SessionPage() {
         streakAfterAnswer: correct ? streak + 1 : 0,
       })
 
-      advanceToNext(correct ? FEEDBACK_DELAY_CORRECT_SLOW : FEEDBACK_DELAY_WRONG_SLOW)
+      if (correct) {
+        advanceToNext(FEEDBACK_DELAY_CORRECT_SLOW)
+      }
+      // If wrong: sentenceNeedsAcknowledge is set, user must press Enter/Continue to advance
     } catch {
       state.wasWrongBefore = true
       setFeedback({ correct: false, message: 'Network error – try again' })
+      setSentenceNeedsAcknowledge(true)
       playWrong()
       requeueCard(currentTask)
-      advanceToNext(FEEDBACK_DELAY_WRONG_SLOW)
     } finally {
       setLoading(false)
     }
@@ -1153,6 +1166,7 @@ export default function SessionPage() {
                 </>
               )}
               {currentTask.taskType === 'sentence' && sentenceNeedsAcknowledge && renderAdvanceButton(acknowledgeSentenceFeedback)}
+              {currentTask.taskType === 'describe' && sentenceNeedsAcknowledge && renderAdvanceButton(acknowledgeSentenceFeedback)}
               {translateNeedsAdvance && renderAdvanceButton(acknowledgeTranslateFeedback)}
               {currentTask.taskType === 'sentence' && aiInfo && (
                 <div className="flex justify-center">
@@ -1466,15 +1480,15 @@ export default function SessionPage() {
                     <button
                       type="button"
                       onClick={e => {
-                        if (userAnswer.trim() && !loading) {
+                        if ((!feedback && userAnswer.trim() && !loading) || (feedback && sentenceNeedsAcknowledge && !loading)) {
                           handleDescribeSubmit(e as unknown as React.FormEvent)
                         }
                       }}
-                      disabled={loading || (!userAnswer.trim())}
+                      disabled={loading || (!sentenceNeedsAcknowledge && !userAnswer.trim())}
                       className="flex-1 text-white py-3 rounded-[var(--radiusSm)] text-sm font-medium disabled:opacity-40 transition-colors"
                       style={{ background: 'var(--primary)' }}
                     >
-                      {loading ? 'Checking…' : describeStage === 'translate' ? 'Sprawdź' : 'Sprawdź opis'}
+                      {loading ? 'Checking…' : sentenceNeedsAcknowledge ? 'Dalej' : (describeStage === 'translate' ? 'Sprawdź' : 'Sprawdź opis')}
                     </button>
                     {!feedback && (
                       <button
