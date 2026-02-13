@@ -41,7 +41,7 @@ export function ContinueCard({ item, onRemove }: { item: ContinueItem; onRemove:
             <button
               type="button"
               onClick={() => setMenuOpen(prev => !prev)}
-              className="rounded-md p-1 hover:bg-[#f8fafc]"
+              className="rounded-md p-1 hover:bg-[var(--surface-muted)]"
               style={{ color: 'var(--gray400)' }}
               aria-label="Więcej opcji"
             >
@@ -49,8 +49,8 @@ export function ContinueCard({ item, onRemove }: { item: ContinueItem; onRemove:
             </button>
             {menuOpen && (
               <div
-                className="absolute right-0 top-7 z-10 w-48 rounded-lg border bg-white shadow-sm"
-                style={{ borderColor: 'var(--border)' }}
+                className="absolute right-0 top-7 z-10 w-48 rounded-lg border shadow-sm"
+                style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
               >
                 <button
                   type="button"
@@ -59,7 +59,7 @@ export function ContinueCard({ item, onRemove }: { item: ContinueItem; onRemove:
                     onRemove()
                   }}
                   className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-[var(--hover-bg)]"
-                  style={{ color: '#ef4444' }}
+                  style={{ color: 'var(--danger)' }}
                 >
                   <Trash2 size={14} />
                   Usuń z historii

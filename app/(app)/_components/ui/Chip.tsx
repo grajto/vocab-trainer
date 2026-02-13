@@ -11,9 +11,9 @@ export function Chip({
 }) {
   const styles: Record<string, { bg: string; color: string }> = {
     default: { bg: 'var(--primary-soft)', color: 'var(--primary)' },
-    success: { bg: '#eaf8ef', color: 'var(--success)' },
-    warning: { bg: '#fff8dd', color: 'var(--warning)' },
-    danger: { bg: '#fee2e2', color: 'var(--danger)' },
+    success: { bg: 'var(--success-soft)', color: 'var(--success)' },
+    warning: { bg: 'var(--warning-soft)', color: 'var(--warning)' },
+    danger: { bg: 'var(--danger-soft)', color: 'var(--danger)' },
   }
 
   const style = styles[variant]

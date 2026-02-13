@@ -180,7 +180,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
 
   return (
     <div className="space-y-6">
-      {error && <p className="text-sm rounded-xl px-4 py-2" style={{ color: '#dc2626', background: '#fef2f2', border: '1px solid #fecaca' }}>{error}</p>}
+      {error && <p className="text-sm rounded-xl px-4 py-2" style={{ color: 'var(--danger-dark)', background: 'var(--danger-soft)', border: '1px solid var(--danger-soft)' }}>{error}</p>}
 
       {/* Deck meta */}
       <div className="rounded-xl p-5 space-y-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>

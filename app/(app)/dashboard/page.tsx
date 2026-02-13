@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { BarChart3, BookOpen, Clock, Flame, FolderOpen } from 'lucide-react'
+import { BarChart3, BookOpen, Clock, Flame, FolderOpen, Info } from 'lucide-react'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { getStudySettings, isDailyGoalMet } from '@/src/lib/userSettings'
@@ -12,6 +12,7 @@ import { JumpBackInCarousel } from './_components/JumpBackInCarousel'
 import { PageHeader } from '../_components/PageHeader'
 import { PageContainer } from '../_components/PageContainer'
 import { ProgressBar } from '../_components/ui/ProgressBar'
+import { SectionHeading } from '../_components/ui/SectionHeading'
 
 export const dynamic = 'force-dynamic'
 
@@ -204,7 +205,7 @@ export default async function DashboardPage() {
       <PageHeader title="Dashboard" description="Szybki podgląd Twojej nauki" icon={BarChart3} />
       {/* Section A - Informacje (unified analytical card) */}
       <section>
-        <h2 className="section-heading mb-3 text-lg" style={{ color: 'var(--text)', fontWeight: 700 }}>Informacje</h2>
+        <SectionHeading icon={Info} title="Informacje" />
           <Card>
             {/* A1: Three compact stats */}
             <div className="grid grid-cols-3 gap-4 pb-5 border-b" style={{ borderColor: 'var(--border)' }}>
@@ -256,7 +257,7 @@ export default async function DashboardPage() {
 
       {/* Section B - Recents */}
       <section>
-        <h2 className="section-heading mb-3 text-lg" style={{ color: 'var(--text)', fontWeight: 700 }}>Recents</h2>
+        <SectionHeading icon={Clock} title="Recents" />
         {recents.length === 0 ? (
           <Card compact>
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Brak ostatnich materiałów.</p>
@@ -285,7 +286,7 @@ export default async function DashboardPage() {
 
       {/* Section C - Jump back in */}
       <section>
-        <h2 className="section-heading mb-3 text-lg" style={{ color: 'var(--text)', fontWeight: 700 }}>Jump back in</h2>
+        <SectionHeading icon={BarChart3} title="Jump back in" />
         {jumpBackIn.length === 0 ? (
           <Card compact>
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Brak przerwanych sesji.</p>
