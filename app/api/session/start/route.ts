@@ -181,8 +181,7 @@ export async function POST(req: NextRequest) {
         }
         
         // Build parameterized query for batch insert
-        const values = cardsNeedingReviewState.map((card, idx) => {
-          const cardIdValue = cardIdMap.get(String(card.cardId))!
+        const values = cardsNeedingReviewState.map((_, idx) => {
           const base = idx * 9
           return `($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4}, $${base + 5}, $${base + 6}, $${base + 7}, $${base + 8}, $${base + 9})`
         }).join(', ')
