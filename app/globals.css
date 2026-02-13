@@ -49,11 +49,11 @@
   --spacing-3xl: 3rem;      /* 48px */
 
   /* === SHADOWS === */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-  --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.08);
-  --shadow-hover: 0 4px 12px 0 rgb(0 0 0 / 0.1);
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --shadow-card: none;
+  --shadow-hover: none;
 
   /* === TRANSITIONS === */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -84,11 +84,13 @@
   --border-width-thick: 2px;
 
   /* === RADII === */
-  --card-radius: 16px;
-  --input-radius: 14px;
-  --button-radius: 999px;
+  --radius: 12px;
+  --card-radius: 12px;
+  --input-radius: 12px;
+  --button-radius: 12px;
   --icon-radius: 12px;
-  --chip-radius: 6px;
+  --chip-radius: 12px;
+  --radiusSm: 12px;
 
   /* === Z-INDEX === */
   --z-dropdown: 50;
@@ -124,8 +126,8 @@
   --primary: #5b6eff;
   --primary-soft: rgba(91, 110, 255, 0.15);
   --primary-hover: #7080ff;
-  --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.3);
-  --shadow-hover: 0 4px 12px 0 rgb(0 0 0 / 0.4);
+  --shadow-card: none;
+  --shadow-hover: none;
 }
 
 /* ====== Base Resets ====== */

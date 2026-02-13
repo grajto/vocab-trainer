@@ -345,7 +345,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
         <button
           onClick={() => saveDeck()}
           disabled={saving}
-          className="flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold disabled:opacity-50 transition-all shadow-sm hover:shadow-md"
+          className="flex items-center gap-2 px-6 py-2.5 rounded-[var(--button-radius)] text-sm font-semibold disabled:opacity-50 transition-all"
           style={{ background: 'var(--primary)', color: '#fff', border: '1px solid var(--primary)' }}
         >
           <Check size={16} />
@@ -420,7 +420,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
             <button
               onClick={handleImport}
               disabled={importPreview.length === 0}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold disabled:opacity-50 transition-all shadow-sm hover:shadow-md"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-[var(--button-radius)] text-sm font-semibold disabled:opacity-50 transition-all"
               style={{ background: 'var(--primary)', color: '#fff' }}
             >
               <Upload size={16} />

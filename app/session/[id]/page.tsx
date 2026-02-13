@@ -991,7 +991,7 @@ export default function SessionPage() {
       {/* Toast notification */}
       {toast?.show && (
         <div 
-          className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-full shadow-lg transition-opacity"
+          className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-[var(--button-radius)] transition-opacity"
           style={{ background: 'var(--success-soft)', color: 'var(--success)', border: '1px solid var(--success-soft)' }}
           role="alert"
           aria-live="polite"

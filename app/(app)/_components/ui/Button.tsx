@@ -29,12 +29,12 @@ export function Button({
   const baseStyles = 'inline-flex items-center justify-center gap-2 font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2'
   
   const variantStyles: Record<ButtonVariant, string> = {
-    primary: 'bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] shadow-[var(--shadow-md)] focus-visible:ring-[var(--primary)]',
-    secondary: 'bg-[var(--surface-muted)] text-[var(--text)] hover:bg-[var(--surface-hover)] shadow-[var(--shadow-sm)] focus-visible:ring-[var(--primary)]',
+    primary: 'bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] focus-visible:ring-[var(--primary)]',
+    secondary: 'bg-[var(--surface-muted)] text-[var(--text)] hover:bg-[var(--surface-hover)] focus-visible:ring-[var(--primary)]',
     outline: 'border border-[var(--border)] bg-transparent text-[var(--text)] hover:bg-[var(--surface-muted)] focus-visible:ring-[var(--primary)]',
     ghost: 'bg-transparent text-[var(--text-muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--text)] focus-visible:ring-[var(--primary)]',
-    danger: 'bg-[var(--danger)] text-white hover:bg-[var(--danger-dark)] shadow-[var(--shadow-md)] focus-visible:ring-[var(--danger)]',
-    success: 'bg-[var(--success)] text-white hover:bg-[var(--success-dark)] shadow-[var(--shadow-md)] focus-visible:ring-[var(--success)]',
+    danger: 'bg-[var(--danger)] text-white hover:bg-[var(--danger-dark)] focus-visible:ring-[var(--danger)]',
+    success: 'bg-[var(--success)] text-white hover:bg-[var(--success-dark)] focus-visible:ring-[var(--success)]',
   }
   
   const sizeStyles: Record<ButtonSize, string> = {
