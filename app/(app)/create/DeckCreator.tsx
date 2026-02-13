@@ -188,7 +188,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
 
       {/* Deck meta */}
       <Card>
-        <SectionHeading icon={Settings} title="Ustawienia zestawu" />
+        <SectionHeading title="Ustawienia zestawu" />
         <div className="space-y-4">
           <div>
             <label className="flex items-center gap-2 text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>

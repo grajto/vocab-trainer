@@ -22,12 +22,11 @@ export default async function FolderPage({ params }: { params: Promise<{ id: str
   try { folder = await payload.findByID({ collection: 'folders', id, depth: 0 }) } catch { notFound() }
   if (String(folder.owner) !== String(user.id)) notFound()
 
-  const [decks, cardResult, reviewStates, sessions, foldersAll] = await Promise.all([
+  const [decks, cardResult, reviewStates, sessions] = await Promise.all([
     payload.find({ collection: 'decks', where: { owner: { equals: user.id }, folder: { equals: id } }, sort: '-updatedAt', limit: 100, depth: 0 }),
     payload.find({ collection: 'cards', where: { owner: { equals: user.id } }, limit: 5000, depth: 0 }),
     payload.find({ collection: 'review-states', where: { owner: { equals: user.id } }, limit: 5000, depth: 0 }),
     payload.find({ collection: 'sessions', where: { owner: { equals: user.id } }, limit: 500, depth: 0 }),
-    payload.find({ collection: 'folders', where: { owner: { equals: user.id } }, limit: 200, depth: 0 }),
   ])
 
   const folderDeckIds = new Set(decks.docs.map((d: any) => String(d.id)))
@@ -60,7 +59,7 @@ export default async function FolderPage({ params }: { params: Promise<{ id: str
   return (
     <PageContainer className="space-y-8">
       <div className="flex items-start justify-between gap-4">
-        <PageHeader title={folder.name} description={`${totalCards} pojęć • przez Ciebie`} icon={FolderOpen} />
+        <PageHeader title={folder.name} icon={FolderOpen} />
         <div className="flex items-center gap-2">
           <Link href={`/folders/${id}/add-decks`} className="inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-medium" style={{ background: 'var(--primary-soft)', color: 'var(--primary)' }}><Plus size={14} /> Dodaj zestaw</Link>
           <FolderSettingsDialog folderId={id} initialName={folder.name} />
@@ -84,7 +83,7 @@ export default async function FolderPage({ params }: { params: Promise<{ id: str
       </div>
 
       <div className="pt-1"><FolderQuickModeButtons folderId={id} cardCount={totalCards} /></div>
-      <FolderDeckList decks={deckItems} folders={foldersAll.docs.map((f: any) => ({ id: String(f.id), name: f.name }))} />
+      <FolderDeckList decks={deckItems} />
     </PageContainer>
   )
 }

@@ -41,7 +41,6 @@ export default async function AddDecksToFolderPage({ params }: { params: Promise
     <PageContainer className="space-y-6">
       <PageHeader 
         title="Dodaj zestawy do folderu" 
-        description={`Wybierz zestawy, które chcesz dodać do folderu "${folder.name}"`} 
         icon={FolderOpen} 
       />
 

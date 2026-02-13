@@ -100,7 +100,7 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
     <form onSubmit={handleStart} className="space-y-4">
       {/* Step 1: Source */}
       <Card>
-        <SectionHeading icon={Database} title="Źródło" />
+        <SectionHeading title="Źródło" />
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <label className={labelClass} style={{ color: 'var(--muted)' }}>Typ zasobu</label>
@@ -120,7 +120,7 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
 
       {/* Step 2: Mode */}
       <Card>
-        <SectionHeading icon={Gamepad} title="Tryb ćwiczeń" />
+        <SectionHeading title="Tryb ćwiczeń" />
         <div>
           <label className={labelClass} style={{ color: 'var(--muted)' }}>Tryb</label>
           <select value={mode} onChange={e => setMode(e.target.value)} className={selectClass} style={selectStyle}>
@@ -136,7 +136,7 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
 
       {/* Step 3: Settings */}
       <Card>
-        <SectionHeading icon={Settings} title="Ustawienia" />
+        <SectionHeading title="Ustawienia" />
 
         <div className="space-y-4">
           <div>

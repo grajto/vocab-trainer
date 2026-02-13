@@ -202,10 +202,10 @@ export default async function DashboardPage() {
 
   return (
     <PageContainer className="space-y-6 px-4 py-2 lg:px-0">
-      <PageHeader title="Dashboard" description="Szybki podgląd Twojej nauki" icon={BarChart3} />
+      <PageHeader title="Dashboard" icon={BarChart3} />
       {/* Section A - Informacje (unified analytical card) */}
       <section>
-        <SectionHeading icon={Info} title="Informacje" />
+        <SectionHeading title="Informacje" />
           <Card>
             {/* A1: Three compact stats */}
             <div className="grid grid-cols-3 gap-4 pb-5 border-b" style={{ borderColor: 'var(--border)' }}>
@@ -257,7 +257,7 @@ export default async function DashboardPage() {
 
       {/* Section B - Recents */}
       <section>
-        <SectionHeading icon={Clock} title="Recents" />
+        <SectionHeading title="Recents" />
         {recents.length === 0 ? (
           <Card compact>
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Brak ostatnich materiałów.</p>
@@ -286,7 +286,7 @@ export default async function DashboardPage() {
 
       {/* Section C - Jump back in */}
       <section>
-        <SectionHeading icon={BarChart3} title="Jump back in" />
+        <SectionHeading title="Jump back in" />
         {jumpBackIn.length === 0 ? (
           <Card compact>
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Brak przerwanych sesji.</p>

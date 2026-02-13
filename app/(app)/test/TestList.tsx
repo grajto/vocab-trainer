@@ -146,7 +146,7 @@ export function TestList({ decks, folders }: { decks: Item[]; folders: Item[] })
     <div className="space-y-6">
       {/* Kreator testu section */}
       <Card>
-        <SectionHeading icon={Play} title="Kreator testu" />
+        <SectionHeading title="Kreator testu" />
         
         {/* Źródło */}
         <div className="mb-4">
@@ -251,7 +251,7 @@ export function TestList({ decks, folders }: { decks: Item[]; folders: Item[] })
 
       {/* Test results section */}
       <Card>
-        <SectionHeading icon={FileQuestion} title="Wyniki testów" />
+        <SectionHeading title="Wyniki testów" />
         
         <div className="mb-4 flex flex-wrap items-center gap-2">
           <select 
@@ -339,7 +339,7 @@ export function TestList({ decks, folders }: { decks: Item[]; folders: Item[] })
 
       {/* Ranking section */}
       <Card>
-        <SectionHeading icon={Trophy} title="Ranking zestawów" />
+        <SectionHeading title="Ranking zestawów" />
         
         {ranking.length === 0 ? (
           <EmptyState 

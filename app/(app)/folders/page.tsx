@@ -40,7 +40,7 @@ export default async function FoldersPage() {
 
   return (
     <PageContainer>
-      <PageHeader title="Foldery" description="Organizuj zestawy w przejrzystych folderach" icon={FolderOpen} />
+      <PageHeader title="Foldery" icon={FolderOpen} />
 
       <Card>
         <div className="mb-4 flex items-center justify-between">

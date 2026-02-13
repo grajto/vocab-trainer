@@ -62,7 +62,7 @@ export default function NotificationsPage() {
   return (
     <PageContainer>
       <div className="flex items-center justify-between gap-3">
-        <PageHeader title="Powiadomienia" description="Ważne informacje o Twojej nauce" icon={Bell} />
+        <PageHeader title="Powiadomienia" icon={Bell} />
         <button type="button" onClick={markAllRead} className="inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold" style={{ border: '1px solid var(--border)', color: 'var(--text)' }}>
           <CheckCheck size={14} /> Oznacz wszystkie jako przeczytane
         </button>

@@ -53,7 +53,7 @@ export default function CalendarPage() {
   return (
     <PageContainer>
       <div className="flex items-center justify-between gap-3">
-        <PageHeader title="Kalendarz" description="Śledź aktywność i streak" icon={CalendarIcon} />
+        <PageHeader title="Kalendarz" icon={CalendarIcon} />
         <div className="flex items-center gap-2">
           <button onClick={() => changeMonth(-1)} className="rounded-[var(--radiusSm)] p-2 hover:bg-[#f8fafc]" style={{ border: '1px solid var(--border)' }}>
             <ChevronLeft className="w-4 h-4" />
