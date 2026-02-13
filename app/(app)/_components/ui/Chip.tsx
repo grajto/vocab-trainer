@@ -1,39 +1,42 @@
 import type { ReactNode } from 'react'
+import type { LucideIcon } from 'lucide-react'
+
+export type ChipVariant = 'success' | 'warning' | 'danger' | 'info' | 'neutral' | 'primary'
+
+export interface ChipProps {
+  children: ReactNode
+  variant?: ChipVariant
+  icon?: LucideIcon
+  className?: string
+}
 
 export function Chip({
   children,
-  variant = 'default',
+  variant = 'neutral',
+  icon: Icon,
   className = '',
-}: {
-  children: ReactNode
-  variant?: 'default' | 'success' | 'warning' | 'danger'
-  className?: string
-}) {
-  const styles: Record<string, { bg: string; color: string }> = {
-    default: { bg: 'var(--primary-soft)', color: 'var(--primary)' },
-    success: { bg: 'var(--success-soft)', color: 'var(--success)' },
-    warning: { bg: 'var(--warning-soft)', color: 'var(--warning)' },
-    danger: { bg: 'var(--danger-soft)', color: 'var(--danger)' },
+}: ChipProps) {
+  const variantStyles: Record<ChipVariant, string> = {
+    success: 'bg-[var(--success-soft)] text-[var(--success-dark)]',
+    warning: 'bg-[var(--warning-soft)] text-[var(--warning-dark)]',
+    danger: 'bg-[var(--danger-soft)] text-[var(--danger-dark)]',
+    info: 'bg-[var(--info-soft)] text-[var(--info-dark)]',
+    neutral: 'bg-[var(--surface-muted)] text-[var(--text-muted)]',
+    primary: 'bg-[var(--primary-soft)] text-[var(--primary)]',
   }
-
-  const style = styles[variant]
-
+  
+  const baseStyles = [
+    'inline-flex items-center gap-1',
+    'px-2.5 py-0.5',
+    'rounded-[var(--chip-radius)]',
+    'text-xs font-medium',
+    variantStyles[variant],
+    className,
+  ].filter(Boolean).join(' ')
+  
   return (
-    <span
-      className={className}
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 'var(--xs)',
-        padding: '4px 12px',
-        borderRadius: 'var(--button-radius)',
-        background: style.bg,
-        color: style.color,
-        fontSize: '0.75rem',
-        fontWeight: 600,
-        whiteSpace: 'nowrap',
-      }}
-    >
+    <span className={baseStyles}>
+      {Icon && <Icon size={12} />}
       {children}
     </span>
   )

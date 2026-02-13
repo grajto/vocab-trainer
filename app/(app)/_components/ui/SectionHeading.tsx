@@ -1,32 +1,38 @@
+import type { ReactNode } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import { IconSquare } from './IconSquare'
 
-export function SectionHeading({
-  icon: Icon,
-  title,
-  subtitle,
-}: {
-  icon?: LucideIcon
+export interface SectionHeadingProps {
   title: string
   subtitle?: string
-}) {
+  icon?: LucideIcon
+  action?: ReactNode
+  className?: string
+}
+
+export function SectionHeading({
+  title,
+  subtitle,
+  icon: Icon,
+  action,
+  className = '',
+}: SectionHeadingProps) {
   return (
-    <div className="flex items-center gap-3 mb-3">
-      {Icon && (
-        <IconSquare variant="muted" size={32}>
-          <Icon size={16} />
-        </IconSquare>
-      )}
-      <div>
-        <h2 className="text-base font-semibold" style={{ color: 'var(--text)' }}>
-          {title}
-        </h2>
-        {subtitle && (
-          <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-            {subtitle}
-          </p>
-        )}
+    <div className={`flex items-start justify-between gap-4 mb-4 ${className}`}>
+      <div className="flex items-center gap-3 flex-1">
+        {Icon && <IconSquare icon={Icon} size="sm" variant="secondary" />}
+        <div className="flex-1">
+          <h2 className="text-base font-semibold text-[var(--text)]">
+            {title}
+          </h2>
+          {subtitle && (
+            <p className="text-xs text-[var(--text-muted)] mt-1">
+              {subtitle}
+            </p>
+          )}
+        </div>
       </div>
+      {action && <div className="ml-auto flex-shrink-0">{action}</div>}
     </div>
   )
 }
