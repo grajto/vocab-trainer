@@ -208,7 +208,7 @@ export default async function DashboardPage() {
         <SectionHeading title="Informacje" />
           <Card>
             {/* A1: Three compact stats */}
-            <div className="grid grid-cols-3 gap-4 pb-5 border-b" style={{ borderColor: 'var(--border)' }}>
+            <div className="grid grid-cols-3 gap-4 pb-5">
               {[
                 { label: 'Sesje dzisiaj', value: sessionsToday.totalDocs, icon: BarChart3 },
                 { label: 'Czas dzisiaj', value: `${timeTodayMinutes} min`, icon: Clock },
@@ -228,23 +228,19 @@ export default async function DashboardPage() {
             </div>
 
             {/* A2: Goal + progress */}
-            <div className="py-5" style={{ borderColor: 'var(--border)' }}>
+            <div className="py-5">
               <div className="space-y-4">
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Sesje dziennie: {sessionsGoal}</p>
-                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Pozostało: {remainingSessions}</p>
+                    <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Wykonane sesje dzisiaj: {sessionsToday.totalDocs}/{sessionsGoal}</p>
                   </div>
                   <ProgressBar value={sessionsProgress} className="h-3" />
-                  <p className="mt-2 text-xs" style={{ color: 'var(--text-muted)' }}>Do końca celu brakuje: {remainingSessions} sesji</p>
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Minuty dziennie: {minutesGoal}</p>
-                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Pozostało: {remainingMinutes}</p>
+                    <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Przepracowane minuty dzisiaj: {timeTodayMinutes}/{minutesGoal}</p>
                   </div>
                   <ProgressBar value={minutesProgress} className="h-3" />
-                  <p className="mt-2 text-xs" style={{ color: 'var(--text-muted)' }}>Do końca celu brakuje: {remainingMinutes} min</p>
                 </div>
               </div>
             </div>
