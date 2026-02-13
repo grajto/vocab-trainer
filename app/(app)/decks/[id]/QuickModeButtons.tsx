@@ -164,7 +164,7 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
     }
   }
 
-  async function startSession(mode: StudyMode, target: number, settings?: any) {
+  async function startSession(mode: StudyMode, target: number, extra?: Record<string, unknown>) {
     setLoading(true)
     unlock()
     try {
@@ -172,7 +172,7 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ deckId, mode, targetCount: target, settings }),
+        body: JSON.stringify({ deckId, mode, targetCount: target, ...extra }),
       })
       const data = await res.json()
       if (res.ok && data.sessionId) {
@@ -239,18 +239,13 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
     if (poolEmpty) return
     const target = useAllWords ? cardCount : Math.min(cardCount, clampedCount)
     const selectedModes = normalizeTestModes(enabledModes)
-    const settings = {
-      modes: selectedModes,
-      starredOnly,
-      randomizeQuestions,
-      randomizeAnswers,
-      answerLang,
-      correction: { allowTypos, requireSingle },
-      questionCount: target,
-    }
     persistLocal()
     await persistRemote()
-    await startSession('test', target, settings)
+    await startSession('test', target, {
+      enabledModes: selectedModes,
+      shuffle: randomizeQuestions,
+      randomAnswerOrder: randomizeAnswers,
+    })
     setShowTestModal(false)
     triggerRef.current?.focus()
   }
@@ -504,22 +499,11 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
                 />
               </div>
 
-              <div className="flex items-center justify-between border-t px-5 py-4" style={{ borderColor: 'var(--border)' }}>
+              <div className="border-t px-5 py-4 space-y-3" style={{ borderColor: 'var(--border)' }}>
                 <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
                   Pamiętamy Twoje ustawienia
                 </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowTestModal(false)
-                      handleReset()
-                    }}
-                    className="h-10 rounded-full px-4 text-sm font-semibold"
-                    style={{ border: '1px solid var(--border)', color: 'var(--text)' }}
-                  >
-                    Anuluj
-                  </button>
+                <div className="grid gap-2 sm:grid-cols-2">
                   <button
                     type="button"
                     disabled={loading || savingPrefs || !enabledModes.length || (starredOnly && cardCount === 0)}
@@ -527,7 +511,16 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
                     style={{ background: '#4255FF' }}
                     onClick={handleCreateTest}
                   >
-                    {loading ? 'Ładowanie…' : savingPrefs ? 'Zapisywanie…' : 'Rozpocznij test'}
+                    {loading ? 'Ładowanie…' : savingPrefs ? 'Zapisywanie…' : 'Szybki test'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => router.push(`/test?source=set&deckId=${deckId}`)}
+                    className="h-10 rounded-full px-5 text-sm font-semibold"
+                    style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)' }}
+                    disabled={loading}
+                  >
+                    Pełny kreator
                   </button>
                 </div>
               </div>

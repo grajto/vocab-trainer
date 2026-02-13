@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { Target, Clock, Languages, Shuffle, Monitor, TrendingUp, Save, Check, Settings2, Sliders, PlayCircle } from 'lucide-react'
 import { PageHeader } from '../_components/PageHeader'
 import { PageContainer } from '../_components/PageContainer'
@@ -22,17 +22,6 @@ export default function SettingsPage() {
     setTheme,
   } = useSettings()
 
-  const saveTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current)
-      }
-    }
-  }, [])
-
   useEffect(() => {
     if (!loading) {
       localStorage.setItem('vocab-shuffle', String(settings.shuffleWords))
@@ -48,14 +37,6 @@ export default function SettingsPage() {
 
   const handleChange = (updates: Partial<typeof settings>) => {
     updateSettings(updates)
-    
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current)
-    }
-    
-    saveTimeoutRef.current = setTimeout(() => {
-      saveSettings().catch(() => toast.error('Błąd zapisu'))
-    }, 1000)
   }
 
   const handleSessionLengthChange = (value: number) => {
@@ -350,14 +331,11 @@ export default function SettingsPage() {
             Zapisz zmiany
           </p>
           <p className="text-xs opacity-60" style={{ color: 'var(--text)' }}>
-            Ustawienia są automatycznie zapisywane, ale możesz też zapisać ręcznie
+            Zapisz ustawienia po zakończeniu zmian
           </p>
         </div>
         <button
           onClick={() => {
-            if (saveTimeoutRef.current) {
-              clearTimeout(saveTimeoutRef.current)
-            }
             saveSettings().catch(() => toast.error('Błąd zapisu'))
           }}
           disabled={saving}
