@@ -217,9 +217,7 @@ export default async function DashboardPage() {
                 const Icon = item.icon
                 return (
                   <div key={idx} className="flex items-center gap-3">
-                    <IconSquare variant="primary" size="sm">
-                      <Icon size={16} />
-                    </IconSquare>
+                    <IconSquare icon={Icon} variant="primary" size="sm" />
                     <div>
                       <p className="text-xs" style={{ color: 'var(--text-muted)', marginBottom: '4px' }}>{item.label}</p>
                       <p className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{item.value}</p>
@@ -271,9 +269,11 @@ export default async function DashboardPage() {
                 className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--hover-bg)] transition-colors"
                 style={{ border: '1px solid var(--border)' }}
               >
-                <IconSquare variant={item.type === 'deck' ? 'primary' : 'secondary'} size="sm">
-                  {item.type === 'deck' ? <BookOpen size={18} /> : <FolderOpen size={18} />}
-                </IconSquare>
+                <IconSquare 
+                  icon={item.type === 'deck' ? BookOpen : FolderOpen}
+                  variant={item.type === 'deck' ? 'primary' : 'secondary'} 
+                  size="sm" 
+                />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>{item.name}</p>
                   <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{item.meta}</p>

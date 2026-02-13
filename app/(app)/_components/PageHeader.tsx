@@ -12,9 +12,7 @@ export function PageHeader({
 }) {
   return (
     <div className="flex items-center gap-3">
-      <IconSquare variant="primary" size="md">
-        <Icon size={20} />
-      </IconSquare>
+      <IconSquare icon={Icon} variant="primary" size="md" />
       <div>
         <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>
           {title}

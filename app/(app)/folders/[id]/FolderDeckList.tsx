@@ -50,7 +50,7 @@ export function FolderDeckList({ decks }: { decks: DeckItem[] }) {
           {filtered.map((deck) => (
             <div key={deck.id} className="flex items-center gap-3 rounded-[var(--card-radius)] px-4 py-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
               <Link href={`/decks/${deck.id}`} prefetch className="flex min-w-0 flex-1 items-center gap-3">
-                <IconSquare><BookOpen size={16} /></IconSquare>
+                <IconSquare icon={BookOpen} variant="primary" size="sm" />
                 <div className="min-w-0">
                   <p className="font-semibold text-sm" style={{ color: 'var(--text)' }}>{deck.name}</p>
                   {deck.cardCount !== undefined && <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{deck.cardCount} {pluralizeCards(deck.cardCount)}</p>}
