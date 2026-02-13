@@ -208,7 +208,7 @@ export default async function DashboardPage() {
         <SectionHeading title="Informacje" />
           <Card>
             {/* A1: Three compact stats */}
-            <div className="grid grid-cols-3 gap-4 pb-5 border-b" style={{ borderColor: 'var(--border)' }}>
+            <div className="grid grid-cols-3 gap-4 border-b border-[var(--border)] pb-5">
               {[
                 { label: 'Sesje dzisiaj', value: sessionsToday.totalDocs, icon: BarChart3 },
                 { label: 'Czas dzisiaj', value: `${timeTodayMinutes} min`, icon: Clock },
@@ -219,8 +219,8 @@ export default async function DashboardPage() {
                   <div key={idx} className="flex items-center gap-3">
                     <IconSquare icon={Icon} variant="primary" size="sm" />
                     <div>
-                      <p className="text-xs" style={{ color: 'var(--text-muted)', marginBottom: '4px' }}>{item.label}</p>
-                      <p className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{item.value}</p>
+                      <p className="mb-1 text-xs text-[var(--text-muted)]">{item.label}</p>
+                      <p className="text-2xl font-bold text-[var(--text)]">{item.value}</p>
                     </div>
                   </div>
                 )
@@ -228,23 +228,23 @@ export default async function DashboardPage() {
             </div>
 
             {/* A2: Goal + progress */}
-            <div className="py-5" style={{ borderColor: 'var(--border)' }}>
+            <div className="py-5">
               <div className="space-y-4">
                 <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Sesje dziennie: {sessionsGoal}</p>
-                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Pozostało: {remainingSessions}</p>
+                  <div className="mb-3 flex items-center justify-between">
+                    <p className="text-sm font-semibold text-[var(--text)]">Sesje dziennie: {sessionsGoal}</p>
+                    <p className="text-sm text-[var(--text-muted)]">Pozostało: {remainingSessions}</p>
                   </div>
                   <ProgressBar value={sessionsProgress} className="h-3" />
-                  <p className="mt-2 text-xs" style={{ color: 'var(--text-muted)' }}>Do końca celu brakuje: {remainingSessions} sesji</p>
+                  <p className="mt-2 text-xs text-[var(--text-muted)]">Do końca celu brakuje: {remainingSessions} sesji</p>
                 </div>
                 <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Minuty dziennie: {minutesGoal}</p>
-                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Pozostało: {remainingMinutes}</p>
+                  <div className="mb-3 flex items-center justify-between">
+                    <p className="text-sm font-semibold text-[var(--text)]">Minuty dziennie: {minutesGoal}</p>
+                    <p className="text-sm text-[var(--text-muted)]">Pozostało: {remainingMinutes}</p>
                   </div>
                   <ProgressBar value={minutesProgress} className="h-3" />
-                  <p className="mt-2 text-xs" style={{ color: 'var(--text-muted)' }}>Do końca celu brakuje: {remainingMinutes} min</p>
+                  <p className="mt-2 text-xs text-[var(--text-muted)]">Do końca celu brakuje: {remainingMinutes} min</p>
                 </div>
               </div>
             </div>
@@ -258,7 +258,7 @@ export default async function DashboardPage() {
         <SectionHeading title="Recents" />
         {recents.length === 0 ? (
           <Card padding="sm">
-            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Brak ostatnich materiałów.</p>
+            <p className="text-sm text-[var(--text-muted)]">Brak ostatnich materiałów.</p>
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -266,8 +266,7 @@ export default async function DashboardPage() {
               <Link
                 key={`${item.type}-${item.id}`}
                 href={item.type === 'deck' ? `/decks/${item.id}` : `/folders/${item.id}`}
-                className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--hover-bg)] transition-colors"
-                style={{ border: '1px solid var(--border)' }}
+                className="flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3 transition-colors hover:bg-[var(--surface-muted)]"
               >
                 <IconSquare 
                   icon={item.type === 'deck' ? BookOpen : FolderOpen}
@@ -275,8 +274,8 @@ export default async function DashboardPage() {
                   size="sm" 
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>{item.name}</p>
-                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{item.meta}</p>
+                  <p className="truncate text-sm font-semibold text-[var(--text)]">{item.name}</p>
+                  <p className="text-xs text-[var(--text-muted)]">{item.meta}</p>
                 </div>
               </Link>
             ))}
@@ -289,7 +288,7 @@ export default async function DashboardPage() {
         <SectionHeading title="Jump back in" />
         {jumpBackIn.length === 0 ? (
           <Card padding="sm">
-            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Brak przerwanych sesji.</p>
+            <p className="text-sm text-[var(--text-muted)]">Brak przerwanych sesji.</p>
           </Card>
         ) : (
           <JumpBackInCarousel items={jumpBackIn} />

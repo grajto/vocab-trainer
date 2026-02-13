@@ -2,6 +2,9 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { LogIn } from 'lucide-react'
+import { Button } from '@/app/(app)/_components/ui/Button'
+import { Input } from '@/app/(app)/_components/ui/Input'
 
 export default function LoginPage() {
   const [login, setLogin] = useState('')
@@ -26,13 +29,11 @@ export default function LoginPage() {
         router.push('/')
         router.refresh()
       } else {
-        // Handle error responses
         let errorMessage = 'Nieprawidłowy login.'
         
         try {
           const data = await res.json()
           if (data.errors && data.errors.length > 0) {
-            // Payload CMS error format
             const firstError = data.errors[0]
             if (firstError.message) {
               errorMessage = firstError.message
@@ -55,40 +56,46 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'var(--surface-muted)' }}>
-      <form onSubmit={handleSubmit} className="w-full max-w-md rounded-[var(--card-radius)] p-6 space-y-4" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
-        <p style={{ color: 'var(--text-muted)' }}>Podaj login, aby kontynuować.</p>
+    <div className="flex min-h-screen items-center justify-center px-4 bg-[var(--surface-muted)]">
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-md space-y-5 rounded-[var(--card-radius)] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card)]"
+      >
+        <div>
+          <h1 className="text-xl font-bold text-[var(--text)]">Witaj!</h1>
+          <p className="mt-1 text-sm text-[var(--text-muted)]">Podaj login, aby kontynuować.</p>
+        </div>
 
         {error && (
-          <div className="rounded-[var(--chip-radius)] px-4 py-3 text-sm" style={{ background: 'var(--danger-soft)', border: '1px solid var(--danger)', color: 'var(--danger-dark)' }}>
+          <div className="rounded-[var(--chip-radius)] border border-[var(--danger)] bg-[var(--danger-soft)] px-4 py-3 text-sm text-[var(--danger-dark)]">
             {error}
           </div>
         )}
 
-        <div className="space-y-1.5">
-          <label className="block text-sm" style={{ color: 'var(--text)' }}>Login</label>
-          <input
-            type="text"
-            value={login}
-            onChange={e => setLogin(e.target.value)}
-            required
-            minLength={2}
-            maxLength={50}
-            placeholder="Wpisz swój login"
-            autoComplete="username"
-            className="w-full rounded-[var(--input-radius)] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-            style={{ border: '1px solid var(--border)', color: 'var(--text)' }}
-          />
-        </div>
+        <Input
+          label="Login"
+          type="text"
+          value={login}
+          onChange={e => setLogin(e.target.value)}
+          required
+          minLength={2}
+          maxLength={50}
+          placeholder="Wpisz swój login"
+          autoComplete="username"
+          fullWidth
+          error={undefined}
+        />
 
-        <button
+        <Button
           type="submit"
-          disabled={loading}
-          className="w-full rounded-full py-2.5 text-sm font-semibold text-white disabled:opacity-70"
-          style={{ background: 'var(--primary)' }}
+          variant="primary"
+          size="lg"
+          fullWidth
+          loading={loading}
+          icon={LogIn}
         >
           Zaloguj się
-        </button>
+        </Button>
       </form>
     </div>
   )
