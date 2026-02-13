@@ -547,10 +547,10 @@ export default function SessionPage() {
       if (!correct) {
         state.wasWrongBefore = true
         setStreak(0)
-        setFeedback({ correct: false, message: `Najpierw poprawnie przetłumacz słowo. Poprawna odpowiedź: ${expected}` })
-        setTranslateNeedsAdvance(true)
+        setFeedback({ correct: false, message: `Correct answer: ${expected}` })
         playWrong()
         requeueCard(currentTask)
+        advanceToNext(FEEDBACK_DELAY_WRONG)
         return
       }
       setAnsweredCount(prev => prev + 1)
@@ -652,10 +652,10 @@ export default function SessionPage() {
       if (!correct) {
         state.wasWrongBefore = true
         setStreak(0)
-        setFeedback({ correct: false, message: `Najpierw poprawnie przetłumacz słowo. Poprawna odpowiedź: ${expected}` })
-        setTranslateNeedsAdvance(true)
+        setFeedback({ correct: false, message: `Correct answer: ${expected}` })
         playWrong()
         requeueCard(currentTask)
+        advanceToNext(FEEDBACK_DELAY_WRONG)
         return
       }
       state.describeTranslated = true
