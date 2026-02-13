@@ -13,18 +13,7 @@ const FEEDBACK_DELAY_DONE = 1200
 const FEEDBACK_DELAY_CORRECT_SLOW = 800
 const FEEDBACK_DELAY_WRONG_SLOW = 2000
 
-// Color tokens
-const COLOR_SUCCESS = '#22C55E'
-const COLOR_SUCCESS_BG = '#ECFDF5'
-const COLOR_SUCCESS_BORDER = '#A7F3D0'
-const COLOR_ERROR = '#EF4444'
-const COLOR_ERROR_BG = '#FEF2F2'
-const COLOR_ERROR_BORDER = '#FECACA'
-const COLOR_NEUTRAL = '#64748B'
-const COLOR_CTA = '#3B82F6'
-const COLOR_CTA_BG = '#EFF6FF'
-const COLOR_CTA_BORDER = '#BFDBFE'
-const COLOR_GOLD_STREAK = '#d4af37'
+
 
 interface Task {
   cardId: string
@@ -453,7 +442,7 @@ export default function SessionPage() {
         type="button"
         onClick={onClick}
         className="inline-flex items-center px-5 py-2.5 rounded-[var(--radiusSm)] text-sm font-semibold text-white transition-colors"
-        style={{ background: COLOR_CTA }}
+        style={{ background: 'var(--primary)' }}
       >
         Dalej (Enter)
       </button>
@@ -797,8 +786,8 @@ export default function SessionPage() {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
         <div className="text-center">
-          <p className="text-sm mb-3" style={{ color: '#64748B' }}>No session data found.</p>
-          <button onClick={() => router.push('/study')} className="text-sm underline underline-offset-2" style={{ color: '#3B82F6' }}>
+          <p className="text-sm mb-3" style={{ color: 'var(--text-muted)' }}>No session data found.</p>
+          <button onClick={() => router.push('/study')} className="text-sm underline underline-offset-2" style={{ color: 'var(--primary)' }}>
             Przejdź do Ucz się
           </button>
         </div>
@@ -819,11 +808,11 @@ export default function SessionPage() {
       <div className="min-h-screen" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
         <div className="px-6 py-3" style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
           <div className="max-w-4xl mx-auto flex items-center justify-between">
-            <div className="text-xs font-semibold uppercase tracking-[0.3em]" style={{ color: '#64748B' }}>Test</div>
+            <div className="text-xs font-semibold uppercase tracking-[0.3em]" style={{ color: 'var(--text-muted)' }}>Test</div>
             <button
               onClick={handleStopSession}
               className="text-xs font-medium hover:opacity-70 transition-colors"
-              style={{ color: '#64748B' }}
+              style={{ color: 'var(--text-muted)' }}
             >
               Przerwij sesję
             </button>
@@ -832,22 +821,22 @@ export default function SessionPage() {
         <main className="max-w-4xl mx-auto px-6 py-10 space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-semibold" style={{ color: 'var(--text)' }}>Test</h2>
-            <span className="text-sm" style={{ color: '#64748B' }}>{tasks.length} pytań</span>
+            <span className="text-sm" style={{ color: 'var(--text-muted)' }}>{tasks.length} pytań</span>
           </div>
           {testSubmitted && testScore ? (
             <div className="rounded-[var(--radius)] p-8 space-y-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
               <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>Wynik: {Math.round((testScore.correct / testScore.total) * 100)}%</p>
-              <p className="text-sm" style={{ color: '#64748B' }}>Błędy: {testScore.total - testScore.correct}</p>
+              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Błędy: {testScore.total - testScore.correct}</p>
               {incorrect.length > 0 && (
                 <div className="space-y-2 pt-4" style={{ borderTop: '1px solid var(--border)' }}>
                   {incorrect.map(task => (
-                    <div key={task.cardId} className="text-sm" style={{ color: '#64748B' }}>
+                    <div key={task.cardId} className="text-sm" style={{ color: 'var(--text-muted)' }}>
                       <span className="font-medium" style={{ color: 'var(--text)' }}>{task.prompt}</span> → poprawne: {task.answer}
                     </div>
                   ))}
                 </div>
               )}
-              <button onClick={() => router.push('/')} className="text-sm font-medium hover:opacity-80" style={{ color: '#3B82F6' }}>
+              <button onClick={() => router.push('/')} className="text-sm font-medium hover:opacity-80" style={{ color: 'var(--primary)' }}>
                 Wróć do dashboardu
               </button>
             </div>
@@ -856,8 +845,8 @@ export default function SessionPage() {
               {tasks.map((task, idx) => (
                 <div key={task.cardId} className="rounded-[var(--radius)] p-6 space-y-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
                   <div className="flex items-center justify-between">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: '#64748B' }}>Pytanie {idx + 1}</p>
-                    <span className="text-xs" style={{ color: '#64748B' }}>{idx + 1} / {tasks.length}</span>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>Pytanie {idx + 1}</p>
+                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{idx + 1} / {tasks.length}</span>
                   </div>
                   <p className="text-lg font-medium" style={{ color: 'var(--text)' }}>{task.prompt}</p>
                   {task.taskType === 'abcd' && task.options ? (
@@ -919,7 +908,7 @@ export default function SessionPage() {
                   })
                 }}
                 className="w-full py-3 rounded-[var(--radiusSm)] font-medium text-white transition-colors"
-                style={{ background: '#3B82F6' }}
+                style={{ background: 'var(--primary)' }}
               >
                 Sprawdź
               </button>
@@ -934,9 +923,9 @@ export default function SessionPage() {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
         <div className="text-center max-w-xs mx-4">
-          <p className="text-xs uppercase tracking-widest mb-2" style={{ color: '#64748B' }}>Session Complete</p>
-          <p className="text-5xl font-bold tabular-nums mb-1" style={{ color: '#3B82F6' }}>{accuracy}%</p>
-          <p className="text-sm" style={{ color: '#64748B' }}>Przekierowanie do zestawu…</p>
+          <p className="text-xs uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>Session Complete</p>
+          <p className="text-5xl font-bold tabular-nums mb-1" style={{ color: 'var(--primary)' }}>{accuracy}%</p>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Przekierowanie do zestawu…</p>
         </div>
       </div>
     )
@@ -946,7 +935,7 @@ export default function SessionPage() {
   if (!tasksLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
-        <p className="text-sm" style={{ color: '#64748B' }}>Ładowanie sesji…</p>
+        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Ładowanie sesji…</p>
       </div>
     )
   }
@@ -956,14 +945,14 @@ export default function SessionPage() {
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
         <div className="text-center max-w-sm px-4">
           <p className="text-sm font-semibold mb-2">Nie udało się załadować pytań sesji.</p>
-          <p className="text-xs mb-4" style={{ color: '#64748B' }}>
+          <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
             Spróbuj uruchomić sesję ponownie z listy zestawów.
           </p>
           <button
             type="button"
             onClick={() => router.replace('/decks')}
             className="rounded-full px-4 py-2 text-sm font-semibold text-white"
-            style={{ background: '#3B82F6' }}
+            style={{ background: 'var(--primary)' }}
           >
             Wróć do zestawów
           </button>
@@ -975,10 +964,10 @@ export default function SessionPage() {
   const progress = ((currentIndex + 1) / tasks.length) * 100
   const hintText = showHint && currentTask ? generateHint(currentTask.expectedAnswer || currentTask.answer) : ''
   const progressHeadPosition = Math.min(100, Math.max(5, progress))
-  const progressColor = streak > 10 ? '#f97316' : streak > 5 ? COLOR_GOLD_STREAK : COLOR_SUCCESS
+  const progressColor = streak > 10 ? 'var(--warning)' : streak > 5 ? 'var(--warning)' : 'var(--success)'
   const progressFillStyle = {
     width: `${progress}%`,
-    background: streak > 10 ? 'linear-gradient(90deg, #f59e0b, #f97316, #ef4444)' : progressColor,
+    background: streak > 10 ? 'linear-gradient(90deg, var(--warning), var(--warning), var(--danger))' : progressColor,
     boxShadow: streak > 10 ? '0 0 12px rgba(249, 115, 22, 0.55)' : undefined,
   }
 
@@ -988,7 +977,7 @@ export default function SessionPage() {
       {toast?.show && (
         <div 
           className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-full shadow-lg transition-opacity"
-          style={{ background: '#ECFDF5', color: '#22C55E', border: '1px solid #A7F3D0' }}
+          style={{ background: 'var(--success-soft)', color: 'var(--success)', border: '1px solid var(--success-soft)' }}
           role="alert"
           aria-live="polite"
         >
@@ -1007,7 +996,7 @@ export default function SessionPage() {
         <button
           onClick={handleStopSession}
           className="p-2 transition-colors hover:bg-[var(--hover-bg)] rounded-full"
-          style={{ color: '#64748B' }}
+          style={{ color: 'var(--text-muted)' }}
           title="Return to dashboard"
           aria-label="Exit session"
         >
@@ -1017,7 +1006,7 @@ export default function SessionPage() {
           <button
             onClick={() => setMenuOpen(prev => !prev)}
             className="p-2 transition-colors hover:bg-[var(--hover-bg)] rounded-full"
-            style={{ color: '#64748B' }}
+            style={{ color: 'var(--text-muted)' }}
           title="Settings"
             aria-label="Settings"
           >
@@ -1027,7 +1016,7 @@ export default function SessionPage() {
             <div className="absolute right-12 top-1/2 z-20 w-52 -translate-y-1/2 rounded-lg border p-2 text-xs" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
               <button onClick={toggleSound} className="block w-full rounded px-2 py-1 text-left hover:bg-[var(--hover-bg)]">Sound: {soundEnabled ? 'on' : 'off'}</button>
               <button onClick={toggleShuffle} className="block w-full rounded px-2 py-1 text-left hover:bg-[var(--hover-bg)]">Shuffle: {shuffleEnabled ? 'on' : 'off'}</button>
-              <button onClick={handleStopSession} className="block w-full rounded px-2 py-1 text-left hover:bg-[var(--hover-bg)]" style={{ color: '#EF4444' }}>End session</button>
+              <button onClick={handleStopSession} className="block w-full rounded px-2 py-1 text-left hover:bg-[var(--hover-bg)]" style={{ color: 'var(--danger)' }}>End session</button>
             </div>
           ) : null}
         </div>
@@ -1064,32 +1053,32 @@ export default function SessionPage() {
             {currentTask.prompt}
           </h2>
           {currentTask.taskType === 'translate' && (
-            <p className="text-sm mb-8" style={{ color: '#64748B' }}>Translate this word.</p>
+            <p className="text-sm mb-8" style={{ color: 'var(--text-muted)' }}>Translate this word.</p>
           )}
           {currentTask.taskType === 'sentence' && (
-            <p className="text-sm mb-8" style={{ color: '#64748B' }}>
+            <p className="text-sm mb-8" style={{ color: 'var(--text-muted)' }}>
               {sentenceStage === 'translate' ? 'Translate this word.' : 'Write a sentence with this word.'}
             </p>
           )}
           {currentTask.taskType === 'describe' && (
-            <p className="text-sm mb-8" style={{ color: '#64748B' }}>
+            <p className="text-sm mb-8" style={{ color: 'var(--text-muted)' }}>
               {describeStage === 'translate' ? 'Translate this word.' : 'Describe the meaning of this word.'}
             </p>
           )}
           {currentTask.taskType === 'abcd' && (
-            <p className="text-sm mb-8" style={{ color: '#64748B' }}>Choose the correct answer.</p>
+            <p className="text-sm mb-8" style={{ color: 'var(--text-muted)' }}>Choose the correct answer.</p>
           )}
 
           {showHint && !feedback && !typoState && (
-            <div className="mb-6 text-sm font-mono tracking-widest rounded-full px-5 py-2 inline-block" style={{ color: '#d97706', background: '#fffbeb', border: '1px solid #fde68a' }}>
+            <div className="mb-6 text-sm font-mono tracking-widest rounded-full px-5 py-2 inline-block" style={{ color: 'var(--warning)', background: 'var(--warning-soft)', border: '1px solid var(--warning-soft)' }}>
               {hintText}
             </div>
           )}
 
           {typoState && !feedback && (
             <div className="space-y-4">
-              <div className="rounded-[var(--radiusSm)] px-5 py-4 text-sm" style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
-                <p className="font-medium mb-2" style={{ color: '#d97706' }}>One typo detected!</p>
+              <div className="rounded-[var(--radiusSm)] px-5 py-4 text-sm" style={{ background: 'var(--warning-soft)', border: '1px solid var(--warning-soft)' }}>
+                <p className="font-medium mb-2" style={{ color: 'var(--warning)' }}>One typo detected!</p>
                 <p style={{ color: 'var(--text)' }}>
                   Your answer: <span className="font-medium">{typoState.userAnswer}</span>
                 </p>
@@ -1101,14 +1090,14 @@ export default function SessionPage() {
                 <button
                   onClick={() => handleTypoDecision(true)}
                   className="flex-1 text-white py-2.5 rounded-[var(--radiusSm)] text-sm font-medium transition-colors"
-                  style={{ background: '#22C55E' }}
+                  style={{ background: 'var(--success)' }}
                 >
                   ✓ Accept
                 </button>
                 <button
                   onClick={() => handleTypoDecision(false)}
                   className="flex-1 text-white py-2.5 rounded-[var(--radiusSm)] text-sm font-medium transition-colors"
-                  style={{ background: '#EF4444' }}
+                  style={{ background: 'var(--danger)' }}
                 >
                   ✗ Reject
                 </button>
@@ -1123,7 +1112,7 @@ export default function SessionPage() {
                   {/* Success badge for translate mode */}
                   {currentTask.taskType === 'translate' && (
                     <div className="flex justify-center">
-                      <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold" style={{ background: '#ECFDF5', color: '#22C55E', border: '1px solid #A7F3D0' }}>
+                      <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold" style={{ background: 'var(--success-soft)', color: 'var(--success)', border: '1px solid var(--success-soft)' }}>
                         Translate ✓
                       </span>
                     </div>
@@ -1131,10 +1120,10 @@ export default function SessionPage() {
                   {/* Success badges for sentence mode */}
                   {currentTask.taskType === 'sentence' && sentenceStage === 'sentence' && (
                     <div className="flex justify-center gap-2">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" style={{ background: '#ECFDF5', color: '#22C55E', border: '1px solid #A7F3D0' }}>
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" style={{ background: 'var(--success-soft)', color: 'var(--success)', border: '1px solid var(--success-soft)' }}>
                         Translate ✓
                       </span>
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" style={{ background: '#ECFDF5', color: '#22C55E', border: '1px solid #A7F3D0' }}>
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" style={{ background: 'var(--success-soft)', color: 'var(--success)', border: '1px solid var(--success-soft)' }}>
                         Sentence ✓
                       </span>
                     </div>
@@ -1142,19 +1131,19 @@ export default function SessionPage() {
                   {/* Success badges for describe mode */}
                   {currentTask.taskType === 'describe' && (
                     <div className="flex justify-center gap-2">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" style={{ background: '#ECFDF5', color: '#22C55E', border: '1px solid #A7F3D0' }}>
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" style={{ background: 'var(--success-soft)', color: 'var(--success)', border: '1px solid var(--success-soft)' }}>
                         Translate ✓
                       </span>
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" style={{ background: '#ECFDF5', color: '#22C55E', border: '1px solid #A7F3D0' }}>
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" style={{ background: 'var(--success-soft)', color: 'var(--success)', border: '1px solid var(--success-soft)' }}>
                         Describe ✓
                       </span>
                     </div>
                   )}
                   {currentTask.taskType === 'sentence' && sentenceStage === 'translate' && (
                     <div className={`inline-block px-5 py-3 rounded-[var(--radiusSm)] text-sm font-medium`} style={{
-                      background: '#ECFDF5',
-                      color: '#22C55E',
-                      border: '1px solid #A7F3D0',
+                      background: 'var(--success-soft)',
+                      color: 'var(--success)',
+                      border: '1px solid var(--success-soft)',
                     }}>
                       ✓ {feedback.message}
                     </div>
@@ -1164,12 +1153,12 @@ export default function SessionPage() {
                 <>
                   {/* Error panel with AI explanation */}
                   <div className={`rounded-[var(--radiusSm)] p-4 text-sm`} style={{
-                    background: '#FEF2F2',
-                    color: '#EF4444',
-                    border: '1px solid #FECACA',
+                    background: 'var(--danger-soft)',
+                    color: 'var(--danger)',
+                    border: '1px solid var(--danger-soft)',
                   }}>
                     <div className="font-medium mb-2">✗ Incorrect</div>
-                    <div style={{ color: '#DC2626' }}>
+                    <div style={{ color: 'var(--danger)' }}>
                       {feedback.message.split('\n').map((line, i) => (
                         <div key={i} className={i > 0 ? 'mt-1' : ''}>{line}</div>
                       ))}
@@ -1178,10 +1167,10 @@ export default function SessionPage() {
                   {/* Error badges for sentence/describe */}
                   {(currentTask.taskType === 'sentence' || currentTask.taskType === 'describe') && sentenceNeedsAcknowledge && (
                     <div className="flex justify-center gap-2">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" style={{ background: '#ECFDF5', color: '#22C55E', border: '1px solid #A7F3D0' }}>
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" style={{ background: 'var(--success-soft)', color: 'var(--success)', border: '1px solid var(--success-soft)' }}>
                         Translate ✓
                       </span>
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" style={{ background: '#FEF2F2', color: '#EF4444', border: '1px solid #FECACA' }}>
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" style={{ background: 'var(--danger-soft)', color: 'var(--danger)', border: '1px solid var(--danger-soft)' }}>
                         {currentTask.taskType === 'sentence' ? 'Sentence' : 'Describe'} ✗
                       </span>
                     </div>
@@ -1193,9 +1182,9 @@ export default function SessionPage() {
               {currentTask.taskType === 'sentence' && aiInfo && (
                 <div className="flex justify-center">
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-semibold" style={{
-                    background: aiInfo.used ? '#ECFDF5' : 'var(--surface2)',
-                    color: aiInfo.used ? '#22C55E' : '#64748B',
-                    border: `1px solid ${aiInfo.used ? '#A7F3D0' : 'var(--border)'}`,
+                    background: aiInfo.used ? 'var(--success-soft)' : 'var(--surface2)',
+                    color: aiInfo.used ? 'var(--success)' : 'var(--text-muted)',
+                    border: `1px solid ${aiInfo.used ? 'var(--success-soft)' : 'var(--border)'}`,
                   }}>
                     AI: {aiInfo.used ? 'ON' : 'OFF'} ({aiInfo.latencyMs} ms)
                   </span>
@@ -1223,7 +1212,7 @@ export default function SessionPage() {
                         type="button"
                         onClick={handleHintClick}
                         className="min-w-[96px] px-4 py-3 rounded-[var(--radiusSm)] text-sm transition-colors"
-                        style={{ border: '1px solid #fde68a', color: '#d97706', background: '#fffbeb' }}
+                        style={{ border: '1px solid var(--warning-soft)', color: 'var(--warning)', background: 'var(--warning-soft)' }}
                       >
                         Hint
                       </button>
@@ -1232,7 +1221,7 @@ export default function SessionPage() {
                       type="submit"
                       disabled={!userAnswer.trim()}
                       className="flex-1 text-white py-3 rounded-[var(--radiusSm)] text-sm font-medium disabled:opacity-40 transition-colors"
-                      style={{ background: '#3B82F6' }}
+                      style={{ background: 'var(--primary)' }}
                     >
                       Sprawdź
                     </button>
@@ -1262,7 +1251,7 @@ export default function SessionPage() {
                         advanceToNext(FEEDBACK_DELAY_WRONG)
                       }}
                       className="min-w-[96px] px-4 py-3 rounded-[var(--radiusSm)] text-sm font-medium transition-colors"
-                      style={{ border: '1px solid var(--border)', color: '#64748B', background: 'var(--surface)' }}
+                      style={{ border: '1px solid var(--border)', color: 'var(--text-muted)', background: 'var(--surface)' }}
                     >
                       Skip
                     </button>
@@ -1282,41 +1271,41 @@ export default function SessionPage() {
                         border: `1px solid ${
                           feedback
                             ? opt === currentTask.answer
-                              ? '#A7F3D0'
+                              ? 'var(--success-soft)'
                               : opt === selectedOption
-                                ? '#FECACA'
+                                ? 'var(--danger-soft)'
                                 : 'var(--border)'
                             : 'var(--border)'
                         }`,
                         background: feedback
                           ? opt === currentTask.answer
-                            ? '#ECFDF5'
+                            ? 'var(--success-soft)'
                             : opt === selectedOption
-                              ? '#FEF2F2'
+                              ? 'var(--danger-soft)'
                               : 'var(--surface)'
                           : 'var(--surface)',
                         color: feedback
                           ? opt === currentTask.answer
-                            ? '#22C55E'
+                            ? 'var(--success)'
                             : opt === selectedOption
-                              ? '#EF4444'
-                              : '#64748B'
+                              ? 'var(--danger)'
+                              : 'var(--text-muted)'
                           : 'var(--text)',
                       }}
                     >
-                      <span className="inline-flex items-center justify-center w-7 h-7 mr-3 rounded-full text-xs font-semibold" style={{ background: 'var(--surface2)', color: '#64748B' }}>
+                      <span className="inline-flex items-center justify-center w-7 h-7 mr-3 rounded-full text-xs font-semibold" style={{ background: 'var(--surface2)', color: 'var(--text-muted)' }}>
                         {idx + 1}
                       </span>
                       {opt}
                     </button>
                   ))}
-                  <div className="flex items-center justify-center gap-4 text-[11px]" style={{ color: '#64748B' }}>
+                  <div className="flex items-center justify-center gap-4 text-[11px]" style={{ color: 'var(--text-muted)' }}>
                     <span>Tip: press 1–4</span>
                     <button
                       type="button"
                       onClick={handleAbcdSkip}
                       className="transition-colors hover:opacity-80"
-                      style={{ color: '#3B82F6' }}
+                      style={{ color: 'var(--primary)' }}
                     >
                       Pomiń
                     </button>
@@ -1376,7 +1365,7 @@ export default function SessionPage() {
                         type="button"
                         onClick={handleHintClick}
                         className="min-w-[96px] px-4 py-3 rounded-[var(--radiusSm)] text-sm transition-colors"
-                        style={{ border: '1px solid #fde68a', color: '#d97706', background: '#fffbeb' }}
+                        style={{ border: '1px solid var(--warning-soft)', color: 'var(--warning)', background: 'var(--warning-soft)' }}
                       >
                         Hint
                       </button>
@@ -1390,7 +1379,7 @@ export default function SessionPage() {
                       }}
                       disabled={loading || (!sentenceNeedsAcknowledge && !userAnswer.trim())}
                       className="flex-1 text-white py-3 rounded-[var(--radiusSm)] text-sm font-medium disabled:opacity-40 transition-colors"
-                      style={{ background: '#3B82F6' }}
+                      style={{ background: 'var(--primary)' }}
                     >
                       {loading ? 'Checking…' : sentenceNeedsAcknowledge ? 'Dalej' : 'Sprawdź'}
                     </button>
@@ -1425,7 +1414,7 @@ export default function SessionPage() {
                           advanceToNext(FEEDBACK_DELAY_WRONG)
                         }}
                         className="min-w-[96px] px-4 py-3 rounded-[var(--radiusSm)] text-sm font-medium transition-colors"
-                        style={{ border: '1px solid var(--border)', color: '#64748B', background: 'var(--surface)' }}
+                        style={{ border: '1px solid var(--border)', color: 'var(--text-muted)', background: 'var(--surface)' }}
                       >
                         Skip
                       </button>
@@ -1435,13 +1424,13 @@ export default function SessionPage() {
                   {/* Completion badges */}
                   {sentenceStage === 'sentence' && (
                     <div className="flex justify-center gap-2">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" style={{ background: '#ECFDF5', color: '#22C55E', border: '1px solid #A7F3D0' }}>
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" style={{ background: 'var(--success-soft)', color: 'var(--success)', border: '1px solid var(--success-soft)' }}>
                         Translate ✓
                       </span>
                     </div>
                   )}
 
-                  <p className="text-xs text-center" style={{ color: '#64748B' }}>{sentenceStage === 'translate' ? 'Stage 1/2: translation' : 'Stage 2/2: write sentence'}</p>
+                  <p className="text-xs text-center" style={{ color: 'var(--text-muted)' }}>{sentenceStage === 'translate' ? 'Stage 1/2: translation' : 'Stage 2/2: write sentence'}</p>
                 </div>
               )}
 
@@ -1494,7 +1483,7 @@ export default function SessionPage() {
                         type="button"
                         onClick={handleHintClick}
                         className="min-w-[96px] px-4 py-3 rounded-[var(--radiusSm)] text-sm transition-colors"
-                        style={{ border: '1px solid #fde68a', color: '#d97706', background: '#fffbeb' }}
+                        style={{ border: '1px solid var(--warning-soft)', color: 'var(--warning)', background: 'var(--warning-soft)' }}
                       >
                         Hint
                       </button>
@@ -1508,7 +1497,7 @@ export default function SessionPage() {
                       }}
                       disabled={loading || (!userAnswer.trim())}
                       className="flex-1 text-white py-3 rounded-[var(--radiusSm)] text-sm font-medium disabled:opacity-40 transition-colors"
-                      style={{ background: '#3B82F6' }}
+                      style={{ background: 'var(--primary)' }}
                     >
                       {loading ? 'Checking…' : describeStage === 'translate' ? 'Sprawdź' : 'Sprawdź opis'}
                     </button>
@@ -1545,17 +1534,17 @@ export default function SessionPage() {
                           advanceToNext(FEEDBACK_DELAY_WRONG_SLOW)
                         }}
                         className="min-w-[96px] px-4 py-3 rounded-[var(--radiusSm)] text-sm font-medium transition-colors"
-                        style={{ border: '1px solid var(--border)', color: '#64748B', background: 'var(--surface)' }}
+                        style={{ border: '1px solid var(--border)', color: 'var(--text-muted)', background: 'var(--surface)' }}
                       >
                         Skip
                       </button>
                     )}
                   </div>
-                  <p className="text-xs text-center" style={{ color: '#64748B' }}>
+                  <p className="text-xs text-center" style={{ color: 'var(--text-muted)' }}>
                     {describeStage === 'translate' ? 'Stage 1/2: translation' : 'Stage 2/2: description'}
                   </p>
                   {describeStage === 'describe' && (
-                    <p className="text-xs text-center" style={{ color: '#64748B' }}>Ctrl+Enter to submit</p>
+                    <p className="text-xs text-center" style={{ color: 'var(--text-muted)' }}>Ctrl+Enter to submit</p>
                   )}
                 </div>
               )}
