@@ -6,6 +6,7 @@ import { checkAnswerWithTypo, generateHint, normalizeAnswer } from '@/src/lib/an
 import { useSound } from '@/src/lib/SoundProvider'
 import { MoreVertical, X, Settings } from 'lucide-react'
 import { StarToggle } from '@/app/_components/StarToggle'
+import { SegmentedProgressBar } from '@/app/(app)/_components/ui/SegmentedProgressBar'
 
 const FEEDBACK_DELAY_CORRECT = 200
 const FEEDBACK_DELAY_WRONG = 1500
@@ -961,15 +962,7 @@ export default function SessionPage() {
     )
   }
 
-  const progress = ((currentIndex + 1) / tasks.length) * 100
   const hintText = showHint && currentTask ? generateHint(currentTask.expectedAnswer || currentTask.answer) : ''
-  const progressHeadPosition = Math.min(100, Math.max(5, progress))
-  const progressColor = streak > 5 ? 'var(--warning)' : 'var(--success)'
-  const progressFillStyle = {
-    width: `${progress}%`,
-    background: streak > 10 ? 'linear-gradient(90deg, var(--warning), var(--warning), var(--danger))' : progressColor,
-    boxShadow: streak > 10 ? '0 0 12px rgba(249, 115, 22, 0.55)' : undefined,
-  }
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
@@ -1024,29 +1017,11 @@ export default function SessionPage() {
 
       <main className="max-w-4xl mx-auto px-6 py-10">
         <div className="mb-8">
-          <div className="relative h-4 rounded-full" style={{ background: 'var(--surface2)' }}>
-            <div
-              className={`h-4 rounded-full transition-all duration-500 ${streak > 10 ? 'animate-pulse' : ''}`}
-              style={progressFillStyle}
-            />
-            <div
-              className="absolute top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-xs font-semibold text-white"
-              style={{
-                left: `${progressHeadPosition}%`,
-                background: progressColor,
-                transform: 'translate(-50%, -50%)',
-                border: '2px solid var(--surface)',
-              }}
-            >
-              {currentIndex + 1}
-            </div>
-            <span
-              className="absolute right-0 top-1/2 translate-x-full -translate-y-1/2 text-xs font-semibold"
-              style={{ color: 'var(--text)' }}
-            >
-              {tasks.length}
-            </span>
-          </div>
+          <SegmentedProgressBar 
+            current={currentIndex + 1} 
+            total={tasks.length}
+            segments={Math.min(20, tasks.length)}
+          />
         </div>
         <div className="rounded-[var(--radius)] px-8 py-10 text-center" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
           <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight mb-3" style={{ color: 'var(--text)' }}>

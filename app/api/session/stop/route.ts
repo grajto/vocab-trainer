@@ -23,10 +23,16 @@ export async function POST(req: NextRequest) {
 
     if (!session.endedAt) {
       const endedAt = new Date().toISOString()
+      const durationMs = Math.max(0, new Date(endedAt).getTime() - new Date(session.startedAt).getTime())
+      const durationSeconds = Math.round(durationMs / 1000)
+      
       await payload.update({
         collection: 'sessions',
         id: sessionId,
-        data: { endedAt },
+        data: { 
+          endedAt,
+          durationSeconds,
+        },
       })
 
       const rawTestId = (session.settings as Record<string, unknown> | undefined)?.testId
@@ -42,7 +48,7 @@ export async function POST(req: NextRequest) {
             data: {
               status: total > 0 ? 'finished' : 'abandoned',
               finishedAt: endedAt,
-              durationMs: Math.max(0, new Date(endedAt).getTime() - new Date(session.startedAt).getTime()),
+              durationMs,
               scoreCorrect: correct,
               scoreTotal: total,
               scorePercent: total > 0 ? Math.round((correct / total) * 100) : 0,
