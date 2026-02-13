@@ -479,15 +479,24 @@ export default function SessionPage() {
   useEffect(() => {
     if (!translateNeedsAdvance || typeof window === 'undefined') return
 
+    // Auto-advance after 2 seconds
+    const timer = setTimeout(() => {
+      acknowledgeTranslateFeedback()
+    }, 2000)
+
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === 'Enter') {
         event.preventDefault()
+        clearTimeout(timer)
         acknowledgeTranslateFeedback()
       }
     }
 
     window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
+    return () => {
+      clearTimeout(timer)
+      window.removeEventListener('keydown', onKeyDown)
+    }
   }, [translateNeedsAdvance, acknowledgeTranslateFeedback])
 
 
