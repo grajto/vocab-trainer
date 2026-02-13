@@ -83,7 +83,6 @@ export default function LoginPage() {
           placeholder="Wpisz swój login"
           autoComplete="username"
           fullWidth
-          error={undefined}
         />
 
         <Button

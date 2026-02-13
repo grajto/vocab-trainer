@@ -335,7 +335,7 @@ export default function SettingsPage() {
           </div>
           <Button
             variant={saved ? 'success' : 'primary'}
-            icon={saving ? Save : saved ? Check : Save}
+            icon={saved ? Check : Save}
             loading={saving}
             onClick={() => {
               saveSettings().catch(() => toast.error('Błąd zapisu'))
