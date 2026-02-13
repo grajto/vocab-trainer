@@ -9,6 +9,17 @@ import { useSound } from '@/src/lib/SoundProvider'
 type StudyMode = 'translate' | 'abcd' | 'sentence' | 'describe' | 'mixed' | 'test'
 type TestMode = 'abcd' | 'translate' | 'sentence' | 'describe'
 
+const DEFAULT_TEST_MODE: TestMode = 'abcd'
+const allowedTestModes = ['abcd', 'translate'] as const
+const allowedTestModesArray: TestMode[] = [...allowedTestModes]
+const allowedTestModesSet = new Set<string>(allowedTestModes)
+
+const normalizeTestModes = (modes: unknown): TestMode[] => {
+  if (!Array.isArray(modes)) return [DEFAULT_TEST_MODE]
+  const filtered = modes.filter((mode): mode is TestMode => typeof mode === 'string' && allowedTestModesSet.has(mode))
+  return filtered.length ? filtered : [DEFAULT_TEST_MODE]
+}
+
 const modes = [
   { id: 'abcd' as const, label: 'ABCD', icon: Grid3X3, color: 'var(--primary)' },
   { id: 'translate' as const, label: 'Tłumaczenie', icon: Layers, color: 'var(--primary)' },
@@ -32,11 +43,12 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
   const [loading, setLoading] = useState(false)
   const [selectedMode, setSelectedMode] = useState<StudyMode | null>(null)
   const [selectedCount, setSelectedCount] = useState<number | null>(null)
+  const [customCount, setCustomCount] = useState('')
 
   // Test modal state
   const [showTestModal, setShowTestModal] = useState(false)
   const [testCount, setTestCount] = useState(20)
-  const [enabledModes, setEnabledModes] = useState<TestMode[]>(['abcd', 'translate', 'sentence', 'describe'])
+  const [enabledModes, setEnabledModes] = useState<TestMode[]>(allowedTestModesArray)
   const [randomizeQuestions, setRandomizeQuestions] = useState(true)
   const [randomizeAnswers, setRandomizeAnswers] = useState(true)
   const [starredOnly, setStarredOnly] = useState(false)
@@ -71,8 +83,8 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
         const parsed = JSON.parse(raw)
         setTestCount(parsed.questionCount ?? 20)
         setStarredOnly(!!parsed.starredOnly)
-        const modes = parsed.enabledModes?.length ? parsed.enabledModes : (parsed.enabledTypes?.length ? parsed.enabledTypes : ['abcd', 'translate'])
-        setEnabledModes(modes as TestMode[])
+        const modes = parsed.enabledModes?.length ? parsed.enabledModes : (parsed.enabledTypes?.length ? parsed.enabledTypes : allowedTestModesArray)
+        setEnabledModes(normalizeTestModes(modes))
         setRandomizeQuestions(parsed.randomizeQuestions ?? true)
         setRandomizeAnswers(parsed.randomizeAnswers ?? true)
         setAnswerLang(parsed.answerLang ?? 'auto')
@@ -94,8 +106,8 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
             setStarredOnly(!!data.starredOnly)
             const modes = Array.isArray(data.enabledModes) && data.enabledModes.length 
               ? data.enabledModes 
-              : (Array.isArray(data.enabledTypes) && data.enabledTypes.length ? data.enabledTypes : ['abcd', 'translate'])
-            setEnabledModes(modes as TestMode[])
+              : (Array.isArray(data.enabledTypes) && data.enabledTypes.length ? data.enabledTypes : allowedTestModesArray)
+            setEnabledModes(normalizeTestModes(modes))
             setRandomizeQuestions(data.randomizeQuestions ?? true)
             setRandomizeAnswers(data.randomizeAnswers ?? true)
             const langs = Array.isArray(data.answerLanguages) && data.answerLanguages[0]?.lang
@@ -152,7 +164,7 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
     }
   }
 
-  async function startSession(mode: StudyMode, target: number, settings?: any) {
+  async function startSession(mode: StudyMode, target: number, extra?: Record<string, unknown>) {
     setLoading(true)
     unlock()
     try {
@@ -160,7 +172,7 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ deckId, mode, targetCount: target, settings }),
+        body: JSON.stringify({ deckId, mode, targetCount: target, ...extra }),
       })
       const data = await res.json()
       if (res.ok && data.sessionId) {
@@ -185,20 +197,27 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
       setShowTestModal(true)
       setSelectedMode(null)
       setSelectedCount(null)
+      setCustomCount('')
       return
     } else {
       setSelectedMode(mode)
       setSelectedCount(null)
+      setCustomCount('')
+      if (cardCount > 0 && cardCount < cardCountOptions[0]) {
+        setSelectedCount(cardCount)
+      }
     }
   }
 
   function handleCountSelect(count: number) {
     setSelectedCount(count)
+    setCustomCount('')
   }
 
   function handleReset() {
     setSelectedMode(null)
     setSelectedCount(null)
+    setCustomCount('')
   }
 
   function toggleMode(mode: TestMode, next: boolean) {
@@ -208,7 +227,7 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
       if (!next) arr = prev.filter((m) => m !== mode)
       if (!arr.length) {
         setMinTypeHint(true)
-        return ['abcd']
+        return [DEFAULT_TEST_MODE]
       }
       setMinTypeHint(false)
       return arr
@@ -219,18 +238,14 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
     const poolEmpty = starredOnly && cardCount === 0
     if (poolEmpty) return
     const target = useAllWords ? cardCount : Math.min(cardCount, clampedCount)
-    const settings = {
-      modes: enabledModes,
-      starredOnly,
-      randomizeQuestions,
-      randomizeAnswers,
-      answerLang,
-      correction: { allowTypos, requireSingle },
-      questionCount: target,
-    }
+    const selectedModes = normalizeTestModes(enabledModes)
     persistLocal()
     await persistRemote()
-    await startSession('test', target, settings)
+    await startSession('test', target, {
+      enabledModes: selectedModes,
+      shuffle: randomizeQuestions,
+      randomAnswerOrder: randomizeAnswers,
+    })
     setShowTestModal(false)
     triggerRef.current?.focus()
   }
@@ -305,6 +320,46 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
                 </button>
               )
             })}
+          </div>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedCount(cardCount)
+                setCustomCount('')
+              }}
+              disabled={loading || cardCount === 0}
+              className="rounded-xl px-4 py-3 text-sm font-semibold transition-all hover:opacity-90 disabled:opacity-50"
+              style={{
+                border: `1px solid ${selectedCount === cardCount ? 'var(--primary)' : 'var(--border)'}`,
+                background: selectedCount === cardCount ? 'var(--primary-soft)' : 'var(--surface)',
+                color: selectedCount === cardCount ? 'var(--primary)' : 'var(--text)',
+              }}
+            >
+              Wszystkie ({cardCount})
+            </button>
+            <label
+              className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm"
+              style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
+            >
+              Custom
+              <input
+                type="number"
+                min={1}
+                max={cardCount}
+                value={customCount}
+                onChange={(e) => {
+                  const value = e.target.value
+                  setCustomCount(value)
+                  const parsed = Number(value)
+                  if (Number.isFinite(parsed) && parsed > 0) {
+                    setSelectedCount(Math.min(cardCount, parsed))
+                  }
+                }}
+                className="w-full rounded-lg border px-3 py-1 text-sm focus:outline-none"
+                style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
+              />
+            </label>
           </div>
         </div>
       )}
@@ -410,14 +465,6 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
                       label: 'Tłumaczenie',
                       control: <Toggle checked={enabledModes.includes('translate')} onChange={(v) => toggleMode('translate', v)} />,
                     },
-                    {
-                      label: 'Zdanie',
-                      control: <Toggle checked={enabledModes.includes('sentence')} onChange={(v) => toggleMode('sentence', v)} />,
-                    },
-                    {
-                      label: 'Opis',
-                      control: <Toggle checked={enabledModes.includes('describe')} onChange={(v) => toggleMode('describe', v)} />,
-                    },
                   ]}
                 />
 
@@ -437,28 +484,6 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
                 />
 
                 <Section
-                  title="Języki odpowiedzi"
-                  items={[
-                    {
-                      label: 'Preferuj odpowiedzi w',
-                      control: (
-                        <select
-                          value={answerLang}
-                          onChange={(e) => setAnswerLang(e.target.value)}
-                          className="h-9 rounded-lg border px-3 text-sm focus:outline-none"
-                          style={{ borderColor: 'var(--border)', color: 'var(--text)', background: 'var(--surface)' }}
-                        >
-                          <option value="auto">Auto</option>
-                          <option value="pl">Polski</option>
-                          <option value="en">Angielski</option>
-                          <option value="mix">Oba</option>
-                        </select>
-                      ),
-                    },
-                  ]}
-                />
-
-                <Section
                   title="Opcje korekty"
                   items={[
                     {
@@ -467,29 +492,18 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
                     },
                     {
                       label: 'Pomijanie literówek',
-                      control: <Toggle checked={allowTypos} onChange={setAllowTypos} disabled={!enabledModes.includes('translate') && !enabledModes.includes('sentence') && !enabledModes.includes('describe')} />,
-                      muted: !enabledModes.includes('translate') && !enabledModes.includes('sentence') && !enabledModes.includes('describe'),
+                      control: <Toggle checked={allowTypos} onChange={setAllowTypos} disabled={!enabledModes.includes('translate')} />,
+                      muted: !enabledModes.includes('translate'),
                     },
                   ]}
                 />
               </div>
 
-              <div className="flex items-center justify-between border-t px-5 py-4" style={{ borderColor: 'var(--border)' }}>
+              <div className="border-t px-5 py-4 space-y-3" style={{ borderColor: 'var(--border)' }}>
                 <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
                   Pamiętamy Twoje ustawienia
                 </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowTestModal(false)
-                      handleReset()
-                    }}
-                    className="h-10 rounded-full px-4 text-sm font-semibold"
-                    style={{ border: '1px solid var(--border)', color: 'var(--text)' }}
-                  >
-                    Anuluj
-                  </button>
+                <div className="grid gap-2 sm:grid-cols-2">
                   <button
                     type="button"
                     disabled={loading || savingPrefs || !enabledModes.length || (starredOnly && cardCount === 0)}
@@ -497,7 +511,16 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
                     style={{ background: '#4255FF' }}
                     onClick={handleCreateTest}
                   >
-                    {loading ? 'Ładowanie…' : savingPrefs ? 'Zapisywanie…' : 'Rozpocznij test'}
+                    {loading ? 'Ładowanie…' : savingPrefs ? 'Zapisywanie…' : 'Szybki test'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => router.push(`/test?source=set&deckId=${deckId}`)}
+                    className="h-10 rounded-full px-5 text-sm font-semibold"
+                    style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)' }}
+                    disabled={loading}
+                  >
+                    Pełny kreator
                   </button>
                 </div>
               </div>

@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
       sort: 'startedAt',
     })
 
-    const settings = getStudySettings(user as Record<string, unknown>)
+    const settings = getStudySettings(user as unknown as Record<string, unknown>)
 
     type DayInfo = {
       date: string

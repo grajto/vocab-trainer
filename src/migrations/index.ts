@@ -15,6 +15,7 @@ import * as migration_20260212_160000_add_starred_to_cards from './20260212_1600
 import * as migration_20260212_170000_add_locked_docs_rel_columns from './20260212_170000_add_locked_docs_rel_columns.ts';
 import * as migration_20260212_180000_create_tests_tables from './20260212_180000_create_tests_tables.ts';
 import * as migration_20260212_210000_recreate_tests_tables from './20260212_210000_recreate_tests_tables.ts';
+import * as migration_20260213_070000_ensure_tests_tables from './20260213_070000_ensure_tests_tables.ts';
 
 export const migrations = [
   {
@@ -101,5 +102,10 @@ export const migrations = [
     up: migration_20260212_210000_recreate_tests_tables.up,
     down: migration_20260212_210000_recreate_tests_tables.down,
     name: '20260212_210000_recreate_tests_tables'
+  },
+  {
+    up: migration_20260213_070000_ensure_tests_tables.up,
+    down: migration_20260213_070000_ensure_tests_tables.down,
+    name: '20260213_070000_ensure_tests_tables'
   },
 ];

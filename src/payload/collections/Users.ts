@@ -28,7 +28,7 @@ export const Users: CollectionConfig = {
           type: 'number',
           defaultValue: 1,
           min: 1,
-          max: 10,
+          max: 20,
         },
         {
           name: 'minMinutesPerDay',

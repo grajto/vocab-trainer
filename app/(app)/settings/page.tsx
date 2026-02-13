@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { Target, Clock, Languages, Shuffle, Monitor, TrendingUp, Save, Check, Settings2, Sliders, PlayCircle } from 'lucide-react'
 import { PageHeader } from '../_components/PageHeader'
 import { PageContainer } from '../_components/PageContainer'
@@ -22,17 +22,6 @@ export default function SettingsPage() {
     setTheme,
   } = useSettings()
 
-  const saveTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current)
-      }
-    }
-  }, [])
-
   useEffect(() => {
     if (!loading) {
       localStorage.setItem('vocab-shuffle', String(settings.shuffleWords))
@@ -48,14 +37,6 @@ export default function SettingsPage() {
 
   const handleChange = (updates: Partial<typeof settings>) => {
     updateSettings(updates)
-    
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current)
-    }
-    
-    saveTimeoutRef.current = setTimeout(() => {
-      saveSettings().catch(() => toast.error('Błąd zapisu'))
-    }, 1000)
   }
 
   const handleSessionLengthChange = (value: number) => {
@@ -148,8 +129,7 @@ export default function SettingsPage() {
             <button
               type="button"
               onClick={() => handleSessionLengthChange(Math.max(5, sessionLength - 5))}
-              className="px-3 py-2 rounded-lg border"
-              style={{ borderColor: 'var(--border)', background: 'var(--card)' }}
+              className="settings-stepper-btn"
             >
               -
             </button>
@@ -160,13 +140,12 @@ export default function SettingsPage() {
               step={5}
               value={sessionLength}
               onChange={(e) => handleSessionLengthChange(Number(e.target.value))}
-              className="flex-1"
+              className="settings-slider flex-1"
             />
             <button
               type="button"
               onClick={() => handleSessionLengthChange(Math.min(50, sessionLength + 5))}
-              className="px-3 py-2 rounded-lg border"
-              style={{ borderColor: 'var(--border)', background: 'var(--card)' }}
+              className="settings-stepper-btn"
             >
               +
             </button>
@@ -182,8 +161,7 @@ export default function SettingsPage() {
             <button
               type="button"
               onClick={() => handleChange({ dailyGoalWords: Math.max(10, settings.dailyGoalWords - 10) })}
-              className="px-3 py-2 rounded-lg border"
-              style={{ borderColor: 'var(--border)', background: 'var(--card)' }}
+              className="settings-stepper-btn"
             >
               -
             </button>
@@ -191,8 +169,7 @@ export default function SettingsPage() {
             <button
               type="button"
               onClick={() => handleChange({ dailyGoalWords: Math.min(100, settings.dailyGoalWords + 10) })}
-              className="px-3 py-2 rounded-lg border"
-              style={{ borderColor: 'var(--border)', background: 'var(--card)' }}
+              className="settings-stepper-btn"
             >
               +
             </button>
@@ -219,11 +196,11 @@ export default function SettingsPage() {
           <input
             type="range"
             min={10}
-            max={60}
+            max={180}
             step={5}
             value={settings.minMinutesPerDay}
             onChange={(e) => handleChange({ minMinutesPerDay: Number(e.target.value) })}
-            className="w-full"
+            className="settings-slider w-full"
           />
         </div>
 
@@ -235,11 +212,11 @@ export default function SettingsPage() {
           <input
             type="range"
             min={1}
-            max={10}
+            max={20}
             step={1}
             value={settings.minSessionsPerDay}
             onChange={(e) => handleChange({ minSessionsPerDay: Number(e.target.value) })}
-            className="w-full"
+            className="settings-slider w-full"
           />
         </div>
       </section>
@@ -295,7 +272,7 @@ export default function SettingsPage() {
             max={100}
             value={50}
             disabled
-            className="w-full opacity-50 cursor-not-allowed"
+            className="settings-slider w-full opacity-50 cursor-not-allowed"
           />
           <p className="text-xs opacity-60 mt-1">Funkcja będzie dostępna w przyszłych wersjach</p>
         </div>
@@ -354,14 +331,11 @@ export default function SettingsPage() {
             Zapisz zmiany
           </p>
           <p className="text-xs opacity-60" style={{ color: 'var(--text)' }}>
-            Ustawienia są automatycznie zapisywane, ale możesz też zapisać ręcznie
+            Zapisz ustawienia po zakończeniu zmian
           </p>
         </div>
         <button
           onClick={() => {
-            if (saveTimeoutRef.current) {
-              clearTimeout(saveTimeoutRef.current)
-            }
             saveSettings().catch(() => toast.error('Błąd zapisu'))
           }}
           disabled={saving}

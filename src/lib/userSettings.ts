@@ -20,8 +20,8 @@ export interface StudySettings {
 }
 
 export const defaultStudySettings: StudySettings = {
-  minSessionsPerDay: 1,
-  minMinutesPerDay: 10,
+  minSessionsPerDay: 10,
+  minMinutesPerDay: 20,
   dailyGoalMode: 'sessions',
   dailyGoalWords: 20,
   defaultDirection: 'pl-en',

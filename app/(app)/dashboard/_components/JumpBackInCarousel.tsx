@@ -1,14 +1,17 @@
 'use client'
 
 import { useMemo, useRef, useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { ContinueCard, type ContinueItem } from './ContinueCard'
 
 export function JumpBackInCarousel({ items }: { items: ContinueItem[] }) {
   const railRef = useRef<HTMLDivElement | null>(null)
+  const router = useRouter()
   const [active, setActive] = useState(0)
   const [showLeftArrow, setShowLeftArrow] = useState(false)
-  const shownItems = useMemo(() => items.slice(0, 6), [items])
+  const [list, setList] = useState(items)
+  const shownItems = useMemo(() => list.slice(0, 6), [list])
 
   function slide(direction: 'left' | 'right') {
     const el = railRef.current
@@ -36,6 +39,27 @@ export function JumpBackInCarousel({ items }: { items: ContinueItem[] }) {
       setShowLeftArrow(el.scrollLeft > 10)
     }
   }, [])
+
+  useEffect(() => {
+    setList(items)
+  }, [items])
+
+  async function handleRemove(sessionId: string) {
+    try {
+      const res = await fetch('/api/session/delete', {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId }),
+      })
+      if (res.ok) {
+        setList(prev => prev.filter(item => item.sessionId !== sessionId))
+        router.refresh()
+      }
+    } catch {
+      /* ignore */
+    }
+  }
 
   return (
     <div className="relative">
@@ -71,7 +95,7 @@ export function JumpBackInCarousel({ items }: { items: ContinueItem[] }) {
         >
           {shownItems.map((item) => (
             <div key={item.resumeHref} className="snap-start shrink-0 basis-full sm:basis-[48%] lg:basis-[38%]">
-              <ContinueCard item={item} />
+              <ContinueCard item={item} onRemove={() => handleRemove(item.sessionId)} />
             </div>
           ))}
         </div>

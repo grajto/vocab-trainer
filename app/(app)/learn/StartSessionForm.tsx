@@ -217,7 +217,7 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
         {/* Step 2: Mode */}
         <fieldset className="space-y-3">
           <legend className="text-sm font-semibold" style={{ color: 'var(--text)' }}>2. Tryb ćwiczeń</legend>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3">
             <div>
               <label className={labelClass} style={{ color: 'var(--muted)' }}>Tryb</label>
               <select value={mode} onChange={e => setMode(e.target.value)} className={selectClass} style={selectStyle}>
@@ -227,14 +227,6 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
                 <option value="describe">Opisz słowo (AI)</option>
                 <option value="mixed">Mixed</option>
                 <option value="test">Test</option>
-              </select>
-            </div>
-            <div>
-              <label className={labelClass} style={{ color: 'var(--muted)' }}>Odpowiedz w języku</label>
-              <select value={direction} onChange={e => setDirection(e.target.value as typeof direction)} className={selectClass} style={selectStyle}>
-                <option value="pl-en">🇵🇱 Polski</option>
-                <option value="en-pl">🇬🇧 Angielski</option>
-                <option value="both">🌍 Oba</option>
               </select>
             </div>
           </div>

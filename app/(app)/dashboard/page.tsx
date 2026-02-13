@@ -101,7 +101,7 @@ export default async function DashboardPage() {
     deck.cardCount = cardsByDeck.get(String(deck.id)) || 0
   }
 
-  const settings = getStudySettings(user as Record<string, unknown>)
+  const settings = getStudySettings(user as unknown as Record<string, unknown>)
 
   const timeTodayMinutes = sessionsToday.docs.reduce((sum: number, s: any) => {
     if (!s.startedAt || !s.endedAt) return sum
@@ -170,6 +170,7 @@ export default async function DashboardPage() {
 
     if ((s.endedAt === null || completed < target) && !jumpBackIn.find((item) => item.resumeHref.endsWith(String(s.id)))) {
       jumpBackIn.push({
+        sessionId: String(s.id),
         deckId: String(deck.id),
         deckName: deck.name,
         progressPercent,
@@ -206,8 +207,12 @@ export default async function DashboardPage() {
     }),
   ].slice(0, 6)
 
-  const remainingToGoal = Math.max(0, Math.max(1, settings.minSessionsPerDay) - sessionsToday.totalDocs)
-  const todayProgress = Math.min(100, Math.round((sessionsToday.totalDocs / Math.max(1, settings.minSessionsPerDay)) * 100))
+  const sessionsGoal = Math.max(1, settings.minSessionsPerDay)
+  const minutesGoal = Math.max(1, settings.minMinutesPerDay)
+  const remainingSessions = Math.max(0, sessionsGoal - sessionsToday.totalDocs)
+  const remainingMinutes = Math.max(0, minutesGoal - timeTodayMinutes)
+  const sessionsProgress = Math.min(100, Math.round((sessionsToday.totalDocs / sessionsGoal) * 100))
+  const minutesProgress = Math.min(100, Math.round((timeTodayMinutes / minutesGoal) * 100))
 
   const last5Days = [4, 3, 2, 1, 0].map((offset) => {
     const d = new Date(now)
@@ -326,12 +331,24 @@ export default async function DashboardPage() {
 
             {/* A2: Goal + progress */}
             <div className="py-5" style={{ borderColor: 'var(--border)' }}>
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Cel dzienny: {settings.minSessionsPerDay} sesji</p>
-                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Pozostało: {remainingToGoal}</p>
+              <div className="space-y-4">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Sesje dziennie: {sessionsGoal}</p>
+                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Pozostało: {remainingSessions}</p>
+                  </div>
+                  <ProgressBar value={sessionsProgress} className="h-3" />
+                  <p className="mt-2 text-xs" style={{ color: 'var(--text-muted)' }}>Do końca celu brakuje: {remainingSessions} sesji</p>
+                </div>
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Minuty dziennie: {minutesGoal}</p>
+                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Pozostało: {remainingMinutes}</p>
+                  </div>
+                  <ProgressBar value={minutesProgress} className="h-3" />
+                  <p className="mt-2 text-xs" style={{ color: 'var(--text-muted)' }}>Do końca celu brakuje: {remainingMinutes} min</p>
+                </div>
               </div>
-              <ProgressBar value={todayProgress} className="h-3" />
-              <p className="mt-2 text-xs" style={{ color: 'var(--text-muted)' }}>Do końca celu brakuje: {remainingToGoal} sesji</p>
             </div>
           </Card>
         </section>

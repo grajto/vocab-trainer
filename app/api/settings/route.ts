@@ -11,7 +11,7 @@ function clampNumber(value: unknown, fallback: number, min: number, max: number)
 
 function normalizeSettings(body: Record<string, unknown>) {
   return {
-    minSessionsPerDay: clampNumber(body.minSessionsPerDay, defaultStudySettings.minSessionsPerDay, 1, 10),
+    minSessionsPerDay: clampNumber(body.minSessionsPerDay, defaultStudySettings.minSessionsPerDay, 1, 20),
     minMinutesPerDay: clampNumber(body.minMinutesPerDay, defaultStudySettings.minMinutesPerDay, 5, 180),
     dailyGoalMode: ['sessions', 'minutes', 'hybrid'].includes(String(body.dailyGoalMode))
       ? String(body.dailyGoalMode)
@@ -38,7 +38,7 @@ export async function GET() {
   const user = await getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const settings = getStudySettings(user as Record<string, unknown>)
+  const settings = getStudySettings(user as unknown as Record<string, unknown>)
   return NextResponse.json({ settings })
 }
 
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
       overrideLock: true,
     })
 
-    const merged = getStudySettings({ ...(user as Record<string, unknown>), studySettings: settings })
+    const merged = getStudySettings({ ...(user as unknown as Record<string, unknown>), studySettings: settings })
     return NextResponse.json({ settings: merged })
   } catch (error) {
     console.error('Settings POST error:', error)

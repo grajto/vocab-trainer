@@ -26,7 +26,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     console.error('Layout folders fetch error (migration may be pending):', err)
   }
 
-  const username = (user as Record<string, unknown>).username as string || (user as Record<string, unknown>).email as string || 'user'
+  const userRecord = user as unknown as Record<string, unknown>
+  const username = userRecord.username as string || userRecord.email as string || 'user'
 
   return (
     <AppShell username={username} folders={folderList}>

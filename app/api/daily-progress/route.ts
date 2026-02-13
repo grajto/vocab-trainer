@@ -31,7 +31,7 @@ export async function GET() {
     let minutesSpent = 0
 
     for (const session of sessions.docs) {
-      const s = session as SessionDocument
+      const s = session as unknown as SessionDocument
       
       if (s.settings?.tasks) {
         cardsCompleted += s.settings.tasks.length

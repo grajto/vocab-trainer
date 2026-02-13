@@ -87,6 +87,7 @@ export default function SessionPage() {
   const [userAnswer, setUserAnswer] = useState('')
   const [feedback, setFeedback] = useState<{ correct: boolean; message: string } | null>(null)
   const [sentenceNeedsAcknowledge, setSentenceNeedsAcknowledge] = useState(false)
+  const [translateNeedsAdvance, setTranslateNeedsAdvance] = useState(false)
   const [sentenceStage, setSentenceStage] = useState<'translate' | 'sentence'>('translate')
   const [describeStage, setDescribeStage] = useState<'translate' | 'describe'>('translate')
   const [loading, setLoading] = useState(false)
@@ -216,6 +217,7 @@ export default function SessionPage() {
     } else {
       setDescribeStage('translate')
     }
+    setTranslateNeedsAdvance(false)
     setQuestionStartedAt(Date.now())
   }, [currentIndex, tasks])
 
@@ -253,6 +255,7 @@ export default function SessionPage() {
         setAiInfo(null)
         setSelectedOption(null)
         setSentenceNeedsAcknowledge(false)
+        setTranslateNeedsAdvance(false)
         setCurrentIndex(prev => prev + 1)
         setQuestionStartedAt(Date.now())
       }, delay)
@@ -423,16 +426,39 @@ export default function SessionPage() {
     return lines.join('\n')
   }
 
-  function acknowledgeSentenceFeedback() {
+  const resetFeedbackState = useCallback(() => {
     setFeedback(null)
-    setSentenceNeedsAcknowledge(false)
     setUserAnswer('')
     setShowHint(false)
     setTypoState(null)
     setAiInfo(null)
     setSelectedOption(null)
+  }, [])
+
+  function acknowledgeSentenceFeedback() {
+    resetFeedbackState()
+    setSentenceNeedsAcknowledge(false)
     advanceToNext(50)
   }
+
+  const acknowledgeTranslateFeedback = useCallback(() => {
+    resetFeedbackState()
+    setTranslateNeedsAdvance(false)
+    advanceToNext(50)
+  }, [advanceToNext, resetFeedbackState])
+
+  const renderAdvanceButton = (onClick: () => void) => (
+    <div className="flex justify-center">
+      <button
+        type="button"
+        onClick={onClick}
+        className="inline-flex items-center px-5 py-2.5 rounded-[var(--radiusSm)] text-sm font-semibold text-white transition-colors"
+        style={{ background: COLOR_CTA }}
+      >
+        Dalej (Enter)
+      </button>
+    </div>
+  )
 
   useEffect(() => {
     if (!sentenceNeedsAcknowledge || typeof window === 'undefined') return
@@ -459,6 +485,20 @@ export default function SessionPage() {
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [sentenceNeedsAcknowledge, currentIndex, tasks.length])
+
+  useEffect(() => {
+    if (!translateNeedsAdvance || typeof window === 'undefined') return
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Enter') {
+        event.preventDefault()
+        acknowledgeTranslateFeedback()
+      }
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [translateNeedsAdvance, acknowledgeTranslateFeedback])
 
 
   useEffect(() => {
@@ -506,9 +546,12 @@ export default function SessionPage() {
       const result = checkAnswerWithTypo(userAnswer, expected)
       const correct = result === 'correct' || result === 'typo'
       if (!correct) {
+        state.wasWrongBefore = true
         setStreak(0)
         setFeedback({ correct: false, message: `Najpierw poprawnie przetłumacz słowo. Poprawna odpowiedź: ${expected}` })
+        setTranslateNeedsAdvance(true)
         playWrong()
+        requeueCard(currentTask)
         return
       }
       setAnsweredCount(prev => prev + 1)
@@ -592,15 +635,19 @@ export default function SessionPage() {
     e.preventDefault()
     if (!userAnswer.trim() || !currentTask) return
     const state = getTaskState(currentTask.cardId)
+    state.attempts++
 
     if (describeStage === 'translate') {
       const expected = currentTask.expectedAnswer || currentTask.answer
       const result = checkAnswerWithTypo(userAnswer, expected)
       const correct = result === 'correct' || result === 'typo'
       if (!correct) {
+        state.wasWrongBefore = true
         setStreak(0)
         setFeedback({ correct: false, message: `Najpierw poprawnie przetłumacz słowo. Poprawna odpowiedź: ${expected}` })
+        setTranslateNeedsAdvance(true)
         playWrong()
+        requeueCard(currentTask)
         return
       }
       state.describeTranslated = true
@@ -615,8 +662,6 @@ export default function SessionPage() {
       return
     }
 
-    state.attempts++
-
     setLoading(true)
     try {
       const res = await fetch('/api/check-describe', {
@@ -624,9 +669,9 @@ export default function SessionPage() {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          word: currentTask.prompt,
+          word: currentTask.requiredEn || currentTask.answer,
           description: userAnswer,
-          meaningPl: currentTask.answer,
+          meaningPl: currentTask.prompt,
         }),
       })
       const data = await res.json().catch(() => ({}))
@@ -929,6 +974,13 @@ export default function SessionPage() {
 
   const progress = ((currentIndex + 1) / tasks.length) * 100
   const hintText = showHint && currentTask ? generateHint(currentTask.expectedAnswer || currentTask.answer) : ''
+  const progressHeadPosition = Math.min(100, Math.max(5, progress))
+  const progressColor = streak > 10 ? '#f97316' : streak > 5 ? COLOR_GOLD_STREAK : COLOR_SUCCESS
+  const progressFillStyle = {
+    width: `${progress}%`,
+    background: streak > 10 ? 'linear-gradient(90deg, #f59e0b, #f97316, #ef4444)' : progressColor,
+    boxShadow: streak > 10 ? '0 0 12px rgba(249, 115, 22, 0.55)' : undefined,
+  }
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
@@ -944,99 +996,88 @@ export default function SessionPage() {
         </div>
       )}
 
-      {/* New Session Header */}
-      <div className="px-6 py-3" style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-between gap-4 mb-3">
-            {/* Left: Mode badge - removed as per user request */}
-            <div className="flex items-center gap-2">
-              {/* Mode badge removed */}
+      <div className="fixed right-4 top-1/2 z-20 flex -translate-y-1/2 flex-col gap-2">
+        {currentTask && (
+          <StarToggle 
+            cardId={currentTask.cardId} 
+            initialStarred={Boolean(currentTask.starred)} 
+            className="p-2 transition-colors hover:bg-[var(--hover-bg)] rounded-full"
+          />
+        )}
+        <button
+          onClick={handleStopSession}
+          className="p-2 transition-colors hover:bg-[var(--hover-bg)] rounded-full"
+          style={{ color: '#64748B' }}
+          title="Return to dashboard"
+          aria-label="Exit session"
+        >
+          <X size={18} />
+        </button>
+        <div className="relative">
+          <button
+            onClick={() => setMenuOpen(prev => !prev)}
+            className="p-2 transition-colors hover:bg-[var(--hover-bg)] rounded-full"
+            style={{ color: '#64748B' }}
+          title="Settings"
+            aria-label="Settings"
+          >
+            <Settings size={18} />
+          </button>
+          {menuOpen ? (
+            <div className="absolute right-12 top-1/2 z-20 w-52 -translate-y-1/2 rounded-lg border p-2 text-xs" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+              <button onClick={toggleSound} className="block w-full rounded px-2 py-1 text-left hover:bg-[var(--hover-bg)]">Sound: {soundEnabled ? 'on' : 'off'}</button>
+              <button onClick={toggleShuffle} className="block w-full rounded px-2 py-1 text-left hover:bg-[var(--hover-bg)]">Shuffle: {shuffleEnabled ? 'on' : 'off'}</button>
+              <button onClick={handleStopSession} className="block w-full rounded px-2 py-1 text-left hover:bg-[var(--hover-bg)]" style={{ color: '#EF4444' }}>End session</button>
             </div>
-
-            {/* Center: Progress */}
-            <div className="text-sm font-semibold tabular-nums" style={{ color: 'var(--text)' }}>
-              {currentIndex + 1} / {tasks.length}
-            </div>
-
-            {/* Right: Star + Exit + Settings */}
-            <div className="flex items-center gap-2">
-              {currentTask && (
-                <StarToggle 
-                  cardId={currentTask.cardId} 
-                  initialStarred={Boolean(currentTask.starred)} 
-                  className="p-1.5 transition-colors hover:bg-[var(--hover-bg)] rounded"
-                />
-              )}
-              <button
-                onClick={handleStopSession}
-                className="p-1.5 transition-colors hover:bg-[var(--hover-bg)] rounded"
-                style={{ color: '#64748B' }}
-                title="Wróć do dashboardu"
-                aria-label="Exit session"
-              >
-                <X size={18} />
-              </button>
-              <div className="relative">
-                <button
-                  onClick={() => setMenuOpen(prev => !prev)}
-                  className="p-1.5 transition-colors hover:bg-[var(--hover-bg)] rounded"
-                  style={{ color: '#64748B' }}
-                  title="Ustawienia"
-                  aria-label="Settings"
-                >
-                  <Settings size={18} />
-                </button>
-                {menuOpen ? (
-                  <div className="absolute right-0 top-9 z-20 w-52 rounded-lg border p-2 text-xs" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-                    <button onClick={toggleSound} className="block w-full rounded px-2 py-1 text-left hover:bg-[var(--hover-bg)]">Dźwięk: {soundEnabled ? 'włączony' : 'wyłączony'}</button>
-                    <button onClick={toggleShuffle} className="block w-full rounded px-2 py-1 text-left hover:bg-[var(--hover-bg)]">Mieszanie: {shuffleEnabled ? 'włączone' : 'wyłączone'}</button>
-                    <button onClick={handleStopSession} className="block w-full rounded px-2 py-1 text-left hover:bg-[var(--hover-bg)]" style={{ color: '#EF4444' }}>Zakończ sesję</button>
-                  </div>
-                ) : null}
-              </div>
-            </div>
-          </div>
-
-          {/* Progress bar */}
-          <div className="flex items-center gap-3">
-            <div className="flex-1 h-2 rounded-full" style={{ background: 'var(--surface2)' }}>
-              <div
-                className="h-2 rounded-full transition-all duration-300"
-                style={{ width: `${progress}%`, background: streak >= 3 ? '#d4af37' : '#22C55E' }}
-              />
-            </div>
-            <span className="text-xs tabular-nums" style={{ color: '#64748B' }}>{accuracy}%</span>
-          </div>
+          ) : null}
         </div>
       </div>
 
       <main className="max-w-4xl mx-auto px-6 py-10">
-        <div className="rounded-[var(--radius)] px-8 py-10 text-center" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-          {/* Hide task type label for sentence mode */}
-          {currentTask.taskType !== 'sentence' && (
-            <div className="flex items-center justify-between mb-6 text-xs" style={{ color: '#64748B' }}>
-              <span className="uppercase tracking-[0.3em]">
-                {currentTask.taskType}
-              </span>
-              <span className="tabular-nums">{currentIndex + 1} / {tasks.length}</span>
+        <div className="mb-8">
+          <div className="relative h-4 rounded-full" style={{ background: 'var(--surface2)' }}>
+            <div
+              className={`h-4 rounded-full transition-all duration-500 ${streak > 10 ? 'animate-pulse' : ''}`}
+              style={progressFillStyle}
+            />
+            <div
+              className="absolute top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-xs font-semibold text-white"
+              style={{
+                left: `${progressHeadPosition}%`,
+                background: progressColor,
+                transform: 'translate(-50%, -50%)',
+                border: '2px solid var(--surface)',
+              }}
+            >
+              {currentIndex + 1}
             </div>
-          )}
+            <span
+              className="absolute right-0 top-1/2 translate-x-full -translate-y-1/2 text-xs font-semibold"
+              style={{ color: 'var(--text)' }}
+            >
+              {tasks.length}
+            </span>
+          </div>
+        </div>
+        <div className="rounded-[var(--radius)] px-8 py-10 text-center" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
           <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight mb-3" style={{ color: 'var(--text)' }}>
             {currentTask.prompt}
           </h2>
           {currentTask.taskType === 'translate' && (
-            <p className="text-sm mb-8" style={{ color: '#64748B' }}>Przetłumacz to słowo.</p>
+            <p className="text-sm mb-8" style={{ color: '#64748B' }}>Translate this word.</p>
           )}
           {currentTask.taskType === 'sentence' && (
             <p className="text-sm mb-8" style={{ color: '#64748B' }}>
-              {sentenceStage === 'translate' ? 'Przetłumacz to słowo.' : 'Ułóż zdanie z tym słowem.'}
+              {sentenceStage === 'translate' ? 'Translate this word.' : 'Write a sentence with this word.'}
             </p>
           )}
           {currentTask.taskType === 'describe' && (
-            <p className="text-sm mb-8" style={{ color: '#64748B' }}>Opisz to słowo własnymi słowami.</p>
+            <p className="text-sm mb-8" style={{ color: '#64748B' }}>
+              {describeStage === 'translate' ? 'Translate this word.' : 'Describe the meaning of this word.'}
+            </p>
           )}
           {currentTask.taskType === 'abcd' && (
-            <p className="text-sm mb-8" style={{ color: '#64748B' }}>Wybierz poprawną odpowiedź.</p>
+            <p className="text-sm mb-8" style={{ color: '#64748B' }}>Choose the correct answer.</p>
           )}
 
           {showHint && !feedback && !typoState && (
@@ -1147,18 +1188,8 @@ export default function SessionPage() {
                   )}
                 </>
               )}
-              {currentTask.taskType === 'sentence' && sentenceNeedsAcknowledge && (
-                <div className="flex justify-center">
-                  <button
-                    type="button"
-                    onClick={acknowledgeSentenceFeedback}
-                    className="inline-flex items-center px-5 py-2.5 rounded-[var(--radiusSm)] text-sm font-semibold text-white transition-colors"
-                    style={{ background: '#3B82F6' }}
-                  >
-                    Dalej (Enter)
-                  </button>
-                </div>
-              )}
+              {currentTask.taskType === 'sentence' && sentenceNeedsAcknowledge && renderAdvanceButton(acknowledgeSentenceFeedback)}
+              {translateNeedsAdvance && renderAdvanceButton(acknowledgeTranslateFeedback)}
               {currentTask.taskType === 'sentence' && aiInfo && (
                 <div className="flex justify-center">
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-semibold" style={{
@@ -1191,10 +1222,10 @@ export default function SessionPage() {
                       <button
                         type="button"
                         onClick={handleHintClick}
-                        className="px-4 py-3 rounded-[var(--radiusSm)] text-sm transition-colors"
+                        className="min-w-[96px] px-4 py-3 rounded-[var(--radiusSm)] text-sm transition-colors"
                         style={{ border: '1px solid #fde68a', color: '#d97706', background: '#fffbeb' }}
                       >
-                        💡 Hint
+                        Hint
                       </button>
                     )}
                     <button
@@ -1230,7 +1261,7 @@ export default function SessionPage() {
                         })
                         advanceToNext(FEEDBACK_DELAY_WRONG)
                       }}
-                      className="px-4 py-3 rounded-[var(--radiusSm)] text-sm font-medium transition-colors"
+                      className="min-w-[96px] px-4 py-3 rounded-[var(--radiusSm)] text-sm font-medium transition-colors"
                       style={{ border: '1px solid var(--border)', color: '#64748B', background: 'var(--surface)' }}
                     >
                       Skip
@@ -1344,10 +1375,10 @@ export default function SessionPage() {
                       <button
                         type="button"
                         onClick={handleHintClick}
-                        className="px-4 py-3 rounded-[var(--radiusSm)] text-sm transition-colors"
+                        className="min-w-[96px] px-4 py-3 rounded-[var(--radiusSm)] text-sm transition-colors"
                         style={{ border: '1px solid #fde68a', color: '#d97706', background: '#fffbeb' }}
                       >
-                        💡 Hint
+                        Hint
                       </button>
                     )}
                     <button
@@ -1393,10 +1424,10 @@ export default function SessionPage() {
                           setSentenceStage('translate')
                           advanceToNext(FEEDBACK_DELAY_WRONG)
                         }}
-                        className="px-4 py-3 rounded-[var(--radiusSm)] text-sm font-medium transition-colors"
+                        className="min-w-[96px] px-4 py-3 rounded-[var(--radiusSm)] text-sm font-medium transition-colors"
                         style={{ border: '1px solid var(--border)', color: '#64748B', background: 'var(--surface)' }}
                       >
-                        Pomiń
+                        Skip
                       </button>
                     )}
                   </div>
@@ -1430,7 +1461,7 @@ export default function SessionPage() {
                           }
                         }
                       }}
-                      placeholder="Przetłumacz to słowo..."
+                      placeholder="Translate this word..."
                       autoFocus
                       className="w-full rounded-[var(--radiusSm)] px-4 py-3 text-center text-lg focus:outline-none transition-colors"
                       style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
@@ -1462,10 +1493,10 @@ export default function SessionPage() {
                       <button
                         type="button"
                         onClick={handleHintClick}
-                        className="px-4 py-3 rounded-[var(--radiusSm)] text-sm transition-colors"
+                        className="min-w-[96px] px-4 py-3 rounded-[var(--radiusSm)] text-sm transition-colors"
                         style={{ border: '1px solid #fde68a', color: '#d97706', background: '#fffbeb' }}
                       >
-                        💡 Hint
+                        Hint
                       </button>
                     )}
                     <button
@@ -1513,14 +1544,19 @@ export default function SessionPage() {
                           setDescribeStage('translate')
                           advanceToNext(FEEDBACK_DELAY_WRONG_SLOW)
                         }}
-                        className="px-4 py-3 rounded-[var(--radiusSm)] text-sm font-medium transition-colors"
+                        className="min-w-[96px] px-4 py-3 rounded-[var(--radiusSm)] text-sm font-medium transition-colors"
                         style={{ border: '1px solid var(--border)', color: '#64748B', background: 'var(--surface)' }}
                       >
-                        Pomiń
+                        Skip
                       </button>
                     )}
                   </div>
-                  <p className="text-xs text-center" style={{ color: '#64748B' }}>Ctrl+Enter to submit</p>
+                  <p className="text-xs text-center" style={{ color: '#64748B' }}>
+                    {describeStage === 'translate' ? 'Stage 1/2: translation' : 'Stage 2/2: description'}
+                  </p>
+                  {describeStage === 'describe' && (
+                    <p className="text-xs text-center" style={{ color: '#64748B' }}>Ctrl+Enter to submit</p>
+                  )}
                 </div>
               )}
             </>
