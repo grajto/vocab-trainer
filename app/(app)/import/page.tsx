@@ -29,7 +29,7 @@ export default async function ImportPage() {
 
   return (
     <PageContainer maxWidth="640px">
-      <PageHeader title="Import fiszek (CSV)" description="Wklej dane w formacie CSV, aby masowo dodać karty" icon={Upload} />
+      <PageHeader title="Import fiszek (CSV)" icon={Upload} />
 
       {decks.docs.length === 0 ? (
         <div className="rounded-lg py-12 text-center" style={{ border: '1px solid var(--border)' }}>

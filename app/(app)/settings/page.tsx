@@ -55,7 +55,6 @@ export default function SettingsPage() {
     <PageContainer className="settings-container">
       <PageHeader
         title="Ustawienia"
-        description="Dostosuj swoją naukę do swoich potrzeb"
         icon={Settings2}
       />
 

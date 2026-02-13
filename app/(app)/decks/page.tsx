@@ -1,7 +1,10 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { BookOpen } from 'lucide-react'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
+import { PageHeader } from '../_components/PageHeader'
+import { PageContainer } from '../_components/PageContainer'
 export const dynamic = 'force-dynamic'
 
 export default async function DecksPage() {
@@ -40,9 +43,10 @@ export default async function DecksPage() {
   }
 
   return (
-    <div className="p-6 lg:p-8 max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold" style={{ color: 'var(--text)' }}>Decki</h2>
+    <PageContainer>
+      <PageHeader title="Decki" icon={BookOpen} />
+      
+      <div className="flex items-center justify-end mb-4">
         <Link href="/create" className="text-sm text-[var(--primary)] hover:opacity-80 font-medium">Utwórz zestaw</Link>
       </div>
 
@@ -60,6 +64,6 @@ export default async function DecksPage() {
           ))
         )}
       </div>
-    </div>
+    </PageContainer>
   )
 }

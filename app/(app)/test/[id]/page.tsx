@@ -24,7 +24,7 @@ export default async function TestDetailsPage({ params }: { params: Promise<{ id
 
   return (
     <PageContainer>
-      <PageHeader title="Szczegóły testu" description="Podsumowanie odpowiedzi i wyniku" icon={ClipboardList} />
+      <PageHeader title="Szczegóły testu" icon={ClipboardList} />
       <div className="rounded-xl border p-4" style={{ borderColor: 'var(--border)' }}>
         <p className="text-sm">Wynik: <b>{test.scorePercent}%</b> ({test.scoreCorrect}/{test.scoreTotal})</p>
       </div>

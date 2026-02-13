@@ -1,131 +1,106 @@
-'use client'
-
+import { useEffect, type ReactNode } from 'react'
 import { X } from 'lucide-react'
-import type { ReactNode } from 'react'
-import { useEffect, useRef } from 'react'
+import { IconSquare } from './IconSquare'
+
+export type ModalSize = 'sm' | 'md' | 'lg' | 'xl'
+
+export interface ModalProps {
+  isOpen: boolean
+  onClose: () => void
+  title: string
+  children: ReactNode
+  footer?: ReactNode
+  size?: ModalSize
+}
 
 export function Modal({
   isOpen,
   onClose,
   title,
   children,
-  maxWidth = '640px',
-}: {
-  isOpen: boolean
-  onClose: () => void
-  title: string
-  children: ReactNode
-  maxWidth?: string
-}) {
-  const overlayRef = useRef<HTMLDivElement>(null)
-
+  footer,
+  size = 'md',
+}: ModalProps) {
+  // Handle ESC key
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose()
-      }
+    if (!isOpen) return
+    
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
     }
-
+    
+    document.addEventListener('keydown', handleEsc)
+    return () => document.removeEventListener('keydown', handleEsc)
+  }, [isOpen, onClose])
+  
+  // Prevent body scroll when modal is open
+  useEffect(() => {
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape)
       document.body.style.overflow = 'hidden'
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleEscape)
+    } else {
       document.body.style.overflow = ''
     }
-  }, [isOpen, onClose])
-
-  if (!isOpen) return null
-
-  const handleOverlayClick = (e: React.MouseEvent) => {
-    if (e.target === overlayRef.current) {
-      onClose()
+    return () => {
+      document.body.style.overflow = ''
     }
+  }, [isOpen])
+  
+  if (!isOpen) return null
+  
+  const sizeStyles: Record<ModalSize, string> = {
+    sm: 'max-w-md',
+    md: 'max-w-lg',
+    lg: 'max-w-2xl',
+    xl: 'max-w-4xl',
   }
-
+  
   return (
     <div
-      ref={overlayRef}
-      onClick={handleOverlayClick}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(15, 23, 42, 0.4)',
-        zIndex: 100,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 'var(--xl)',
-      }}
+      className="fixed inset-0 flex items-center justify-center p-4"
+      style={{ zIndex: 'var(--z-modal)' }}
     >
+      {/* Backdrop */}
       <div
-        style={{
-          width: '100%',
-          maxWidth,
-          maxHeight: '90vh',
-          background: 'var(--surface)',
-          border: '1px solid var(--border)',
-          borderRadius: 'var(--card-radius)',
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-        }}
+        className="absolute inset-0 bg-black/50 transition-opacity"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      
+      {/* Modal */}
+      <div
+        className={`relative w-full ${sizeStyles[size]} max-h-[90vh] overflow-auto rounded-[var(--card-radius)] bg-[var(--surface)] shadow-[var(--shadow-lg)] transition-all`}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
       >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: 'var(--xl)',
-            borderBottom: '1px solid var(--border)',
-          }}
-        >
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-[var(--border)] px-6 py-4">
           <h2
-            style={{
-              margin: 0,
-              fontSize: '1.25rem',
-              fontWeight: 600,
-              color: 'var(--text)',
-            }}
+            id="modal-title"
+            className="text-lg font-semibold text-[var(--text)]"
           >
             {title}
           </h2>
           <button
             onClick={onClose}
-            style={{
-              width: 32,
-              height: 32,
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              border: '1px solid var(--border)',
-              borderRadius: 'var(--sm)',
-              background: 'transparent',
-              color: 'var(--text-muted)',
-              cursor: 'pointer',
-              transition: 'background 0.2s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--hover-bg)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent'
-            }}
+            className="rounded-lg p-1.5 text-[var(--text-muted)] transition-colors hover:bg-[var(--surface-muted)] hover:text-[var(--text)]"
+            aria-label="Zamknij"
           >
-            <X size={16} />
+            <X size={20} />
           </button>
         </div>
-        <div
-          style={{
-            flex: 1,
-            padding: 'var(--xl)',
-            overflowY: 'auto',
-          }}
-        >
+        
+        {/* Body */}
+        <div className="px-6 py-5">
           {children}
         </div>
+        
+        {/* Footer */}
+        {footer && (
+          <div className="flex justify-end gap-2 border-t border-[var(--border)] px-6 py-4">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   )

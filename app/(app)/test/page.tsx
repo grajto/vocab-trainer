@@ -21,7 +21,7 @@ export default async function TestPage() {
 
   return (
     <PageContainer>
-      <PageHeader title="Testy" description="Twórz testy z zestawów i folderów, śledź wyniki i ranking." icon={ClipboardCheck} />
+      <PageHeader title="Testy" icon={ClipboardCheck} />
       <TestList
         decks={decks.docs.map((d: any) => ({ id: String(d.id), name: d.name }))}
         folders={folders.docs.map((f: any) => ({ id: String(f.id), name: f.name }))}

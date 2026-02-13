@@ -106,7 +106,7 @@ export default async function LibraryPage() {
 
   return (
     <PageContainer>
-      <PageHeader title="Twoje zasoby" description="Zestawy i foldery w jednym miejscu" icon={FolderOpen} />
+      <PageHeader title="Twoje zasoby" icon={FolderOpen} />
 
       <LibraryTabs
         recentDeckId={recentDeckId}

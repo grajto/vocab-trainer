@@ -3,6 +3,7 @@ import { IconSquare } from './ui/IconSquare'
 
 export function PageHeader({
   title,
+  description,
   icon: Icon,
 }: {
   title: string
@@ -11,13 +12,16 @@ export function PageHeader({
 }) {
   return (
     <div className="flex items-center gap-3">
-      <IconSquare variant="primary" size={40}>
-        <Icon size={20} />
-      </IconSquare>
+      <IconSquare icon={Icon} variant="primary" size="md" />
       <div>
         <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>
           {title}
         </h1>
+        {description && (
+          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
+            {description}
+          </p>
+        )}
       </div>
     </div>
   )

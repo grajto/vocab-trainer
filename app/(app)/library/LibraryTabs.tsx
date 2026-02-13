@@ -119,7 +119,7 @@ export function LibraryTabs({
               className="flex items-center gap-3 rounded-xl p-3 transition-colors hover:bg-[var(--hover-bg)]"
               style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}
             >
-              <IconSquare variant="primary" size={36}><BookOpen size={18} /></IconSquare>
+              <IconSquare icon={BookOpen} variant="primary" size="sm" />
               <div className="min-w-0">
                 <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{recentDeck.name}</p>
                 <p className="text-xs" style={{ color: 'var(--muted)' }}>Ostatnio używany · {recentDeck.cardCount} słówek</p>
@@ -142,7 +142,7 @@ export function LibraryTabs({
                   className="flex items-center gap-3 rounded-xl p-3 transition-colors hover:bg-[var(--hover-bg)]"
                   style={{ border: '1px solid var(--border)' }}
                 >
-                  <IconSquare variant="primary" size={36}><BookOpen size={18} /></IconSquare>
+                  <IconSquare icon={BookOpen} variant="primary" size="sm" />
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{d.name}</p>
                     <p className="text-xs" style={{ color: 'var(--muted)' }}>Zestaw · {d.cardCount} słówek</p>
@@ -162,7 +162,7 @@ export function LibraryTabs({
               className="flex items-center gap-3 rounded-xl p-3 transition-colors hover:bg-[var(--hover-bg)]"
               style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}
             >
-              <IconSquare variant="muted" size={36}><FolderOpen size={18} /></IconSquare>
+              <IconSquare icon={FolderOpen} variant="secondary" size="sm" />
               <div className="min-w-0">
                 <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{recentFolder.name}</p>
                 <p className="text-xs" style={{ color: 'var(--muted)' }}>Ostatnio używany · {recentFolder.deckCount} zestawów</p>
@@ -209,7 +209,7 @@ export function LibraryTabs({
                 className="flex items-center gap-3 rounded-xl p-3 transition-colors hover:bg-[var(--hover-bg)]"
                 style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}
               >
-                <IconSquare variant="muted" size={36}><FolderOpen size={18} /></IconSquare>
+                <IconSquare icon={FolderOpen} variant="secondary" size="sm" />
                 <div className="min-w-0">
                   <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{f.name}</p>
                   <p className="text-xs" style={{ color: 'var(--muted)' }}>{f.deckCount} zestawów · {f.cardCount} słówek</p>

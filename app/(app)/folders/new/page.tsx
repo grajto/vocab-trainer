@@ -36,7 +36,7 @@ export default function NewFolderPage() {
 
   return (
     <PageContainer maxWidth="720px">
-      <PageHeader title="Nowy folder" description="Utwórz folder i organizuj zestawy tematycznie" icon={FolderPlus} />
+      <PageHeader title="Nowy folder" icon={FolderPlus} />
       <form onSubmit={submit} className="rounded-xl border p-5 space-y-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
         <div>
           <label className="mb-1 block text-sm font-medium">Nazwa folderu</label>

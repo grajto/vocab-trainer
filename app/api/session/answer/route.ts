@@ -192,7 +192,11 @@ export async function POST(req: NextRequest) {
 
     if (newCompleted >= session.targetCount) {
       const finishedAt = new Date().toISOString()
+      const durationMs = Math.max(0, new Date(finishedAt).getTime() - new Date(session.startedAt).getTime())
+      const durationSeconds = Math.round(durationMs / 1000)
+      
       sessionUpdate.endedAt = finishedAt
+      sessionUpdate.durationSeconds = durationSeconds
 
       if (session.mode === 'test' && linkedTestId) {
         try {
@@ -205,7 +209,7 @@ export async function POST(req: NextRequest) {
             data: {
               status: 'finished',
               finishedAt,
-              durationMs: Math.max(0, new Date(finishedAt).getTime() - new Date(session.startedAt).getTime()),
+              durationMs,
               scoreCorrect: correct,
               scoreTotal: total,
               scorePercent: total > 0 ? Math.round((correct / total) * 100) : 0,

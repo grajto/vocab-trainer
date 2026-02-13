@@ -204,11 +204,21 @@ export function FilterableCardsList({ cards, deckId }: Props) {
                 className="flex items-center gap-3 rounded-lg px-4 py-3"
                 style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}
               >
-                <IconSquare variant="muted" size={32}>
+                {/* Letter avatar - using div instead of IconSquare since we need custom content */}
+                <div 
+                  className="flex items-center justify-center flex-shrink-0"
+                  style={{ 
+                    width: '32px', 
+                    height: '32px', 
+                    borderRadius: 'var(--icon-radius)',
+                    background: 'var(--secondary-soft)',
+                    color: 'var(--secondary)'
+                  }}
+                >
                   <span className="text-xs font-semibold">
                     {card.front ? card.front.charAt(0).toUpperCase() : '?'}
                   </span>
-                </IconSquare>
+                </div>
                 <div className="grid flex-1 grid-cols-2 gap-4">
                   <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>
                     {card.front}

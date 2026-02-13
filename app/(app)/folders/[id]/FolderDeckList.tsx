@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
-import { BookOpen, Trash2 } from 'lucide-react'
+import { BookOpen } from 'lucide-react'
 import { IconSquare } from '../../_components/ui/IconSquare'
 import { pluralizeCards } from '@/src/lib/utils'
 
@@ -16,25 +16,10 @@ interface DeckItem {
   folderId?: string
 }
 
-interface FolderOption {
-  id: string
-  name: string
-}
-
-export function FolderDeckList({ decks, folders }: { decks: DeckItem[]; folders: FolderOption[] }) {
+export function FolderDeckList({ decks }: { decks: DeckItem[] }) {
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState<'date' | 'name' | 'last'>('date')
   const [items, setItems] = useState(decks)
-
-  async function updateDeckFolder(deckId: string, nextFolderId: string | null) {
-    await fetch(`/api/decks/${deckId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ folderId: nextFolderId }),
-    })
-    setItems(prev => prev.map(d => d.id === deckId ? { ...d, folderId: nextFolderId || '' } : d).filter(d => d.folderId !== ''))
-  }
 
   const filtered = useMemo(() => {
     const list = items.filter((deck) => deck.name.toLowerCase().includes(search.toLowerCase()))
@@ -65,24 +50,12 @@ export function FolderDeckList({ decks, folders }: { decks: DeckItem[]; folders:
           {filtered.map((deck) => (
             <div key={deck.id} className="flex items-center gap-3 rounded-[var(--card-radius)] px-4 py-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
               <Link href={`/decks/${deck.id}`} prefetch className="flex min-w-0 flex-1 items-center gap-3">
-                <IconSquare><BookOpen size={16} /></IconSquare>
+                <IconSquare icon={BookOpen} variant="primary" size="sm" />
                 <div className="min-w-0">
                   <p className="font-semibold text-sm" style={{ color: 'var(--text)' }}>{deck.name}</p>
                   {deck.cardCount !== undefined && <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{deck.cardCount} {pluralizeCards(deck.cardCount)}</p>}
                 </div>
               </Link>
-              <select
-                defaultValue={deck.folderId || ''}
-                onChange={(e) => updateDeckFolder(deck.id, e.target.value || null)}
-                className="rounded-lg border px-2 py-1 text-xs"
-                style={{ borderColor: 'var(--border)' }}
-              >
-                <option value="">Bez folderu</option>
-                {folders.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
-              </select>
-              <button type="button" onClick={() => updateDeckFolder(deck.id, null)} className="rounded-md p-1" style={{ color: 'var(--danger)' }} aria-label="Usuń z folderu">
-                <Trash2 size={14} />
-              </button>
             </div>
           ))}
         </div>

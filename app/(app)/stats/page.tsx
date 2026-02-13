@@ -13,7 +13,7 @@ export default async function StatsPage() {
 
   return (
     <PageContainer>
-      <PageHeader title="Statystyki" description="Twoje postępy w nauce" icon={BarChart3} />
+      <PageHeader title="Statystyki" icon={BarChart3} />
 
       <StatsView />
     </PageContainer>
