@@ -163,6 +163,14 @@ export async function POST(req: NextRequest) {
 
     const selectedCards = selectCardsForSession(cardsWithState, cardsWithoutState, count, 20, introToday)
 
+    // Validate we have enough cards (min: 5 required by Sessions schema)
+    if (selectedCards.length < 5) {
+      return NextResponse.json({ 
+        error: 'Not enough cards available. At least 5 cards are required to start a session.',
+        availableCards: selectedCards.length 
+      }, { status: 400 })
+    }
+
     // Precompute numeric card IDs
     const cardIdMap = new Map<string, number>()
     for (const card of selectedCards) {
