@@ -354,7 +354,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
       </div>
 
       {/* Import Modal */}
-      <Modal isOpen={showImport} onClose={() => setShowImport(false)} title="Importuj karty" maxWidth="700px">
+      <Modal isOpen={showImport} onClose={() => setShowImport(false)} title="Importuj karty" size="lg">
         <div className="space-y-5">
           <div className="flex items-start gap-3 px-4 py-3 rounded-lg" style={{ background: 'var(--surface2)', border: '1px solid var(--border)' }}>
             <Upload size={16} style={{ color: 'var(--text-muted)', marginTop: '2px', flexShrink: 0 }} />
