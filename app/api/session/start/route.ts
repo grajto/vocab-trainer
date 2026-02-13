@@ -5,6 +5,7 @@ import { requireAppToken } from '@/src/lib/requireAppToken'
 import { selectCardsForSession } from '@/src/lib/srs'
 import { parseNumericId } from '@/src/lib/parseNumericId'
 import { getStudySettings } from '@/src/lib/userSettings'
+import { getNeonPool } from '@/src/lib/db'
 
 export async function POST(req: NextRequest) {
   try {
@@ -166,26 +167,89 @@ export async function POST(req: NextRequest) {
       cardIdMap.set(String(card.cardId), parsedId)
     }
 
-    // Create review states for new cards
-    for (const card of selectedCards) {
-      if (!card.reviewStateId) {
-        const cardIdValue = cardIdMap.get(String(card.cardId))!
-        const rs = await payload.create({
-          collection: 'review-states',
-          data: {
-            owner: user.id,
-            card: cardIdValue,
-            level: 1,
-            dueAt: new Date().toISOString(),
-            introducedAt: new Date().toISOString(),
-            totalCorrect: 0,
-            totalWrong: 0,
-            todayCorrectCount: 0,
-            todayWrongCount: 0,
-          },
-        })
-        card.reviewStateId = rs.id
-        card.level = 1
+    // Create review states for new cards (batch insert optimization)
+    const cardsNeedingReviewState = selectedCards.filter(c => !c.reviewStateId)
+    
+    if (cardsNeedingReviewState.length > 0) {
+      try {
+        const pool = getNeonPool()
+        const now = new Date().toISOString()
+        const numericUserId = parseNumericId(user.id)
+        
+        if (numericUserId === null) {
+          return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 })
+        }
+        
+        // Build parameterized query for batch insert
+        const values = cardsNeedingReviewState.map((card, idx) => {
+          const cardIdValue = cardIdMap.get(String(card.cardId))!
+          const base = idx * 9
+          return `($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4}, $${base + 5}, $${base + 6}, $${base + 7}, $${base + 8}, $${base + 9})`
+        }).join(', ')
+        
+        // Flatten all parameters
+        const params: (number | string)[] = []
+        for (const card of cardsNeedingReviewState) {
+          const cardIdValue = cardIdMap.get(String(card.cardId))!
+          params.push(
+            numericUserId,
+            cardIdValue,
+            1, // level
+            now, // due_at
+            now, // introduced_at
+            0, // total_correct
+            0, // total_wrong
+            0, // today_correct_count
+            0  // today_wrong_count
+          )
+        }
+        
+        // Batch insert with RETURNING clause
+        const result = await pool.query(`
+          INSERT INTO review_states 
+          (owner_id, card_id, level, due_at, introduced_at, total_correct, total_wrong, today_correct_count, today_wrong_count)
+          VALUES ${values}
+          RETURNING id, card_id
+        `, params)
+        
+        // Map returned IDs back to cards
+        const cardIdToResultMap = new Map<number, number>()
+        for (const row of result.rows) {
+          cardIdToResultMap.set(Number(row.card_id), Number(row.id))
+        }
+        
+        for (const card of cardsNeedingReviewState) {
+          const cardIdValue = cardIdMap.get(String(card.cardId))!
+          const reviewStateId = cardIdToResultMap.get(cardIdValue)
+          if (reviewStateId) {
+            card.reviewStateId = reviewStateId
+            card.level = 1
+          }
+        }
+      } catch (err: unknown) {
+        console.error('Batch insert failed, falling back to sequential creation:', err)
+        // Fallback to sequential creation for backward compatibility
+        for (const card of cardsNeedingReviewState) {
+          if (!card.reviewStateId) {
+            const cardIdValue = cardIdMap.get(String(card.cardId))!
+            const rs = await payload.create({
+              collection: 'review-states',
+              data: {
+                owner: user.id,
+                card: cardIdValue,
+                level: 1,
+                dueAt: new Date().toISOString(),
+                introducedAt: new Date().toISOString(),
+                totalCorrect: 0,
+                totalWrong: 0,
+                todayCorrectCount: 0,
+                todayWrongCount: 0,
+              },
+            })
+            card.reviewStateId = rs.id
+            card.level = 1
+          }
+        }
       }
     }
 
@@ -347,17 +411,54 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    // Create session items
-    for (const task of tasks) {
-      await payload.create({
-        collection: 'session-items',
-        data: {
-          session: session.id,
-          card: task.cardId,
-          taskType: task.taskType,
-          promptShown: task.prompt,
-        },
-      })
+    // Create session items (batch insert optimization)
+    if (tasks.length > 0) {
+      try {
+        const pool = getNeonPool()
+        const numericSessionId = parseNumericId(session.id)
+        
+        if (numericSessionId === null) {
+          return NextResponse.json({ error: 'Invalid session ID' }, { status: 400 })
+        }
+        
+        // Build parameterized query for batch insert
+        const values = tasks.map((_, idx) => {
+          const base = idx * 4
+          return `($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4})`
+        }).join(', ')
+        
+        // Flatten all parameters with proper SQL escaping
+        const params: (number | string)[] = []
+        for (const task of tasks) {
+          params.push(
+            numericSessionId,
+            task.cardId,
+            task.taskType,
+            task.prompt // Already a string, parameterized query handles escaping
+          )
+        }
+        
+        // Batch insert
+        await pool.query(`
+          INSERT INTO session_items 
+          (session_id, card_id, task_type, prompt_shown)
+          VALUES ${values}
+        `, params)
+      } catch (err: unknown) {
+        console.error('Batch insert for session items failed, falling back to sequential creation:', err)
+        // Fallback to sequential creation for backward compatibility
+        for (const task of tasks) {
+          await payload.create({
+            collection: 'session-items',
+            data: {
+              session: session.id,
+              card: task.cardId,
+              taskType: task.taskType,
+              promptShown: task.prompt,
+            },
+          })
+        }
+      }
     }
 
     return NextResponse.json({
