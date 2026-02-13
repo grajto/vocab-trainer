@@ -38,6 +38,10 @@
   --button-radius: 999px;
   --icon-radius: 12px;
 
+  /* Additional tokens */
+  --card-bg: var(--surface);
+  --hover-bg: var(--surface-muted);
+
   /* Layout */
   --container-max: 1040px;
   --sidebar-w: 260px;
@@ -85,7 +89,6 @@
   --s-4: 20px;
   --s-5: var(--xl);
   --s-6: var(--2xl);
-  --hover-bg: #f8fafc;
   --container: var(--container-max);
 }
 

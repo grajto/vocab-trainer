@@ -3,6 +3,7 @@ import { IconSquare } from './ui/IconSquare'
 
 export function PageHeader({
   title,
+  description,
   icon: Icon,
 }: {
   title: string
@@ -18,6 +19,11 @@ export function PageHeader({
         <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>
           {title}
         </h1>
+        {description && (
+          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
+            {description}
+          </p>
+        )}
       </div>
     </div>
   )

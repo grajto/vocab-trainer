@@ -72,6 +72,10 @@ export default function LoginPage() {
             value={login}
             onChange={e => setLogin(e.target.value)}
             required
+            minLength={2}
+            maxLength={50}
+            placeholder="Wpisz swój login"
+            autoComplete="username"
             className="w-full rounded-[var(--radiusSm)] px-3 py-2.5 text-sm focus:outline-none"
             style={{ border: '1px solid var(--border)', color: 'var(--text)' }}
           />

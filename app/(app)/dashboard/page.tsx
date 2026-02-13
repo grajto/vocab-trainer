@@ -1,34 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { AlertCircle, ArrowRight, BarChart3, BookOpen, Calendar, Clock, Flame, FolderOpen, Play } from 'lucide-react'
+import { BarChart3, BookOpen, Clock, Flame, FolderOpen } from 'lucide-react'
 import { getUser } from '@/src/lib/getUser'
 import { getPayload } from '@/src/lib/getPayload'
 import { getStudySettings, isDailyGoalMet } from '@/src/lib/userSettings'
 import { IconSquare } from '../_components/ui/IconSquare'
 import { Card } from '../_components/ui/Card'
-import { Button } from '../_components/ui/Button'
 import { type ContinueItem } from './_components/ContinueCard'
 import { JumpBackInCarousel } from './_components/JumpBackInCarousel'
-import { StartSessionButton } from './_components/StartSessionButton'
 import { PageHeader } from '../_components/PageHeader'
 import { PageContainer } from '../_components/PageContainer'
 import { ProgressBar } from '../_components/ui/ProgressBar'
 
 export const dynamic = 'force-dynamic'
-
-
-type RecommendedDeck = {
-  id: string
-  title: string
-  reason: string
-  progressPercent: number
-  mode: string
-  modeLabel: string
-  targetCount: number
-  estimatedMinutes: number
-  direction: string
-}
 
 function getDayKey(date: Date) {
   return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
@@ -73,7 +58,7 @@ export default async function DashboardPage() {
           endedAt: { not_equals: null },
         },
         sort: '-startedAt',
-        limit: 0,
+        limit: 5000,
         depth: 0,
       }),
       payload.find({ collection: 'cards', where: { owner: { equals: user.id } }, limit: 5000, depth: 0 }),
@@ -213,92 +198,6 @@ export default async function DashboardPage() {
   const remainingMinutes = Math.max(0, minutesGoal - timeTodayMinutes)
   const sessionsProgress = Math.min(100, Math.round((sessionsToday.totalDocs / sessionsGoal) * 100))
   const minutesProgress = Math.min(100, Math.round((timeTodayMinutes / minutesGoal) * 100))
-
-  const last5Days = [4, 3, 2, 1, 0].map((offset) => {
-    const d = new Date(now)
-    d.setDate(now.getDate() - offset)
-    const stats = sessionsByDay.get(getDayKey(d)) ?? { sessions: 0, minutes: 0 }
-    return {
-      label: d.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit' }),
-      sessions: stats.sessions,
-      minutes: stats.minutes,
-      met: isDailyGoalMet(settings, stats.sessions, stats.minutes),
-    }
-  })
-
-  const modeLabelMap: Record<string, string> = {
-    abcd: 'ABCD',
-    translate: 'Tłumaczenie',
-    sentence: 'Zdania',
-    describe: 'Opis',
-    mixed: 'Mix',
-  }
-
-  // Karty do sekcji "Co powtórzyć dziś" z konkretami sesji
-  const recommendedDecks: RecommendedDeck[] = decks.docs
-    .map((deck: any) => {
-      const deckId = String(deck.id)
-      const meta = deckRecentMeta.get(deckId)
-      const dueRatio = Number(deck.progress ?? 0)
-      const progressPercent = Math.max(8, Math.min(100, Math.round(100 - dueRatio)))
-      const mode = meta?.mode ?? settings.defaultStudyMode
-      const targetCount = Math.max(10, Math.min(60, Number(meta?.targetCount ?? 20)))
-      const estimatedMinutes = Math.max(5, Number(meta?.avgMinutes ?? Math.round(targetCount * 0.4)))
-
-      return {
-        id: deckId,
-        title: deck.name,
-        reason: dueRatio > 40 ? 'Masz sporo zaległych kart' : 'Warto utrwalić materiał z ostatnich dni',
-        progressPercent,
-        mode,
-        modeLabel: modeLabelMap[mode] || 'Mix',
-        targetCount,
-        estimatedMinutes,
-        direction: meta?.direction ?? settings.defaultDirection,
-      }
-    })
-    .sort((a: RecommendedDeck, b: RecommendedDeck) => a.progressPercent - b.progressPercent)
-    .slice(0, 3)
-
-  // Calculate deck performance stats from recent sessions
-  const deckStats = new Map<string, { name: string; totalSessions: number; accuracy: number; lastUsed: Date }>()
-  for (const s of recentSessions.docs.slice(0, 15)) {
-    const deck = deckMap.get(String(s.deck))
-    if (!deck || !s.accuracy) continue
-    
-    const existing = deckStats.get(String(s.deck))
-    if (!existing) {
-      deckStats.set(String(s.deck), {
-        name: deck.name,
-        totalSessions: 1,
-        accuracy: Number(s.accuracy),
-        lastUsed: new Date(s.startedAt)
-      })
-    } else {
-      existing.totalSessions++
-      existing.accuracy = (existing.accuracy + Number(s.accuracy)) / 2
-      if (new Date(s.startedAt) > existing.lastUsed) {
-        existing.lastUsed = new Date(s.startedAt)
-      }
-    }
-  }
-
-  // Get hardest and easiest decks based on accuracy
-  const sortedDecks = Array.from(deckStats.entries())
-    .filter(([_, stats]) => stats.totalSessions >= 1)
-    .sort((a, b) => a[1].accuracy - b[1].accuracy)
-  
-  const hardestSets = sortedDecks.slice(0, 3).map(([id, stats]) => ({
-    name: stats.name,
-    accuracy: Math.round(stats.accuracy),
-    id
-  }))
-  
-  const easiestSets = sortedDecks.slice(-3).reverse().map(([id, stats]) => ({
-    name: stats.name,
-    accuracy: Math.round(stats.accuracy),
-    id
-  }))
 
   return (
     <PageContainer className="space-y-6 px-4 py-2 lg:px-0">
