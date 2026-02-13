@@ -136,7 +136,7 @@ export function LeftSidebar({
 
       <div className="space-y-5">
         {/* Simplified Daily Session Section */}
-        <section className="space-y-3 rounded-[var(--radius)] border p-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+        <section className="space-y-3 rounded-[var(--card-radius)] border p-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Codzienna sesja</h3>
           </div>
@@ -166,7 +166,7 @@ export function LeftSidebar({
             type="button"
             onClick={startDailySession}
             disabled={dailyLoading}
-            className="w-full flex min-h-[42px] items-center justify-center gap-2 rounded-[var(--radius)] px-4 text-sm font-semibold text-white transition-opacity disabled:opacity-60"
+            className="w-full flex min-h-[42px] items-center justify-center gap-2 rounded-[var(--card-radius)] px-4 text-sm font-semibold text-white transition-opacity disabled:opacity-60"
             style={{ background: 'linear-gradient(135deg, var(--primary), #4f46e5)' }}
           >
             <PlayCircle size={18} />

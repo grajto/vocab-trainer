@@ -99,7 +99,7 @@ export default function CalendarPage() {
         )}
       </div>
 
-      <div className="rounded-[var(--radius)] p-5" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
+      <div className="rounded-[var(--card-radius)] p-5" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
         {selected ? (
           <div className="space-y-4">
             <div>

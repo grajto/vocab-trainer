@@ -106,7 +106,7 @@ export function StatsView() {
           {Object.entries(levelDistribution).map(([lvl, count]) => (
             <div key={lvl} className="flex items-center gap-3">
               <span className="w-16 text-xs font-semibold">Poziom {lvl}</span>
-              <div className="h-2 flex-1 rounded-full" style={{ background: 'var(--surface2)' }}>
+              <div className="h-2 flex-1 rounded-full" style={{ background: 'var(--surface-muted)' }}>
                 <div
                   className="h-2 rounded-full"
                   style={{ width: `${Math.min(100, Number(count) * 4)}%`, background: 'var(--primary)' }}

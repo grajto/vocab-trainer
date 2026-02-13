@@ -98,7 +98,7 @@ export function FolderQuickModeButtons({ folderId, cardCount }: { folderId: stri
               disabled={loading || cardCount === 0 || (selectedMode !== null && selectedMode !== mode.id)}
               className="flex flex-col items-center gap-2 rounded-xl p-4 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
-                background: isTest ? '#fff8dd' : isSelected ? 'var(--primary-soft)' : 'var(--surface)',
+                background: isTest ? 'var(--warning-soft)' : isSelected ? 'var(--primary-soft)' : 'var(--surface)',
                 border: `1px solid ${isTest ? 'var(--warning)' : isSelected ? 'var(--primary)' : 'var(--border)'}`,
               }}
             >
@@ -106,7 +106,7 @@ export function FolderQuickModeButtons({ folderId, cardCount }: { folderId: stri
                 className="flex h-10 w-10 items-center justify-center rounded-lg"
                 style={{ background: isTest ? 'var(--warning)' : 'var(--primary-soft)' }}
               >
-                <Icon size={20} style={{ color: isTest ? '#fff' : mode.color }} />
+                <Icon size={20} style={{ color: isTest ? 'white' : mode.color }} />
               </div>
               <span
                 className="text-xs font-semibold"
@@ -203,7 +203,7 @@ export function FolderQuickModeButtons({ folderId, cardCount }: { folderId: stri
             onClick={handleStart}
             disabled={loading}
             className="w-full rounded-full py-3 text-sm font-semibold transition-all hover:opacity-90 disabled:opacity-50"
-            style={{ background: 'var(--primary)', color: '#fff' }}
+            style={{ background: 'var(--primary)', color: 'white' }}
           >
             {loading ? 'Ładowanie...' : 'Rozpocznij'}
           </button>
@@ -212,7 +212,7 @@ export function FolderQuickModeButtons({ folderId, cardCount }: { folderId: stri
 
       {showTestModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-          <div className="w-full max-w-sm space-y-4 rounded-xl bg-white p-5" style={{ border: '1px solid var(--border)' }}>
+          <div className="w-full max-w-sm space-y-4 rounded-xl bg-[var(--surface)] p-5" style={{ border: '1px solid var(--border)' }}>
             <div className="flex items-center justify-between">
               <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Ustawienia testu</p>
               <button onClick={() => setShowTestModal(false)} className="text-xs" style={{ color: 'var(--text-muted)' }}>Zamknij</button>

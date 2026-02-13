@@ -103,14 +103,14 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
         <SectionHeading title="Źródło" />
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
-            <label className={labelClass} style={{ color: 'var(--muted)' }}>Typ zasobu</label>
+            <label className={labelClass} style={{ color: 'var(--text-muted)' }}>Typ zasobu</label>
             <select value={resourceType} onChange={e => setResourceType(e.target.value as 'deck' | 'folder')} className={selectClass} style={selectStyle}>
               <option value="deck">Deck</option>
               <option value="folder">Folder</option>
             </select>
           </div>
           <div>
-            <label className={labelClass} style={{ color: 'var(--muted)' }}>{resourceType === 'deck' ? 'Deck' : 'Folder'}</label>
+            <label className={labelClass} style={{ color: 'var(--text-muted)' }}>{resourceType === 'deck' ? 'Deck' : 'Folder'}</label>
             <select value={resourceType === 'deck' ? deckId : folderId} onChange={e => resourceType === 'deck' ? setDeckId(e.target.value) : setFolderId(e.target.value)} className={selectClass} style={selectStyle}>
               {(resourceType === 'deck' ? decks : folders).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
             </select>
@@ -122,7 +122,7 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
       <Card>
         <SectionHeading title="Tryb ćwiczeń" />
         <div>
-          <label className={labelClass} style={{ color: 'var(--muted)' }}>Tryb</label>
+          <label className={labelClass} style={{ color: 'var(--text-muted)' }}>Tryb</label>
           <select value={mode} onChange={e => setMode(e.target.value)} className={selectClass} style={selectStyle}>
             <option value="translate">Wpisywanie</option>
             <option value="abcd">ABCD</option>
@@ -140,7 +140,7 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
 
         <div className="space-y-4">
           <div>
-            <label className={labelClass} style={{ color: 'var(--muted)' }}>Preferowany poziom słówek</label>
+            <label className={labelClass} style={{ color: 'var(--text-muted)' }}>Preferowany poziom słówek</label>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               {[1, 2, 3, 4].map(level => (
                 <button
@@ -151,8 +151,8 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
                   className="relative flex flex-col items-center justify-center gap-1.5 h-20 rounded-xl text-sm font-semibold transition-all"
                   style={{
                     border: `2px solid ${levels.includes(level) ? 'var(--primary)' : 'var(--border)'}`,
-                    background: levels.includes(level) ? 'var(--primaryBg)' : 'var(--surface)',
-                    color: levels.includes(level) ? 'var(--primary)' : 'var(--muted)',
+                    background: levels.includes(level) ? 'var(--primary-soft)' : 'var(--surface)',
+                    color: levels.includes(level) ? 'var(--primary)' : 'var(--text-muted)',
                     transform: levels.includes(level) ? 'scale(1.02)' : 'scale(1)',
                   }}
                 >
@@ -165,13 +165,13 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
 
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className={labelClass} style={{ color: 'var(--muted)', marginBottom: 0 }}>Długość sesji</label>
-              <span className="text-lg font-bold px-3 py-1 rounded-full" style={{ color: 'var(--primary)', background: 'var(--primaryBg)' }}>
+              <label className={labelClass} style={{ color: 'var(--text-muted)', marginBottom: 0 }}>Długość sesji</label>
+              <span className="text-lg font-bold px-3 py-1 rounded-full" style={{ color: 'var(--primary)', background: 'var(--primary-soft)' }}>
                 {targetCount} kart
               </span>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-xs font-medium" style={{ color: 'var(--muted)' }}>5</span>
+              <span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>5</span>
               <input 
                 type="range" 
                 min={5} 
@@ -181,7 +181,7 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
                 className="flex-1 accent-[var(--primary)]"
                 style={{ height: '6px' }}
               />
-              <span className="text-xs font-medium" style={{ color: 'var(--muted)' }}>35</span>
+              <span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>35</span>
             </div>
           </div>
 
@@ -199,7 +199,7 @@ export function StartSessionForm({ decks, folders }: { decks: Deck[]; folders: F
       </Card>
 
       {error && (
-        <div className="rounded-lg px-4 py-3 text-sm" style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fca5a5' }}>
+        <div className="rounded-lg px-4 py-3 text-sm" style={{ background: 'var(--danger-soft)', color: 'var(--danger)', border: '1px solid var(--danger)' }}>
           {error}
         </div>
       )}

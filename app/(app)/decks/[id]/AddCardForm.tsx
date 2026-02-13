@@ -77,7 +77,7 @@ export function AddCardForm({ deckId }: { deckId: string }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-[var(--radius)] p-5 space-y-4"
+      className="rounded-[var(--card-radius)] p-5 space-y-4"
       style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
     >
       <div className="flex items-center justify-between">
@@ -96,8 +96,8 @@ export function AddCardForm({ deckId }: { deckId: string }) {
 
       {error && (
         <p
-          className="text-sm rounded-[var(--radiusSm)] px-3 py-2"
-          style={{ color: '#dc2626', background: '#fef2f2', border: '1px solid #fecaca' }}
+          className="text-sm rounded-[var(--chip-radius)] px-3 py-2"
+          style={{ color: 'var(--danger)', background: 'var(--danger-soft)', border: '1px solid var(--danger)' }}
         >
           {error}
         </p>
@@ -145,7 +145,7 @@ export function AddCardForm({ deckId }: { deckId: string }) {
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-[var(--primary)] text-white text-sm px-4 py-2 rounded-[var(--radiusSm)] hover:brightness-90 disabled:opacity-50 transition-colors"
+        className="w-full bg-[var(--primary)] text-white text-sm px-4 py-2 rounded-[var(--chip-radius)] hover:brightness-90 disabled:opacity-50 transition-colors"
       >
         {loading ? 'Dodawanie…' : 'Dodaj słówko / hurtowo'}
       </button>

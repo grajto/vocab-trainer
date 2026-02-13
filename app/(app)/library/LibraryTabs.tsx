@@ -83,7 +83,7 @@ export function LibraryTabs({
 
   const tabClass = (active: boolean) =>
     `border-b-2 pb-2 text-sm font-semibold ${
-      active ? 'border-[var(--primary)] text-[var(--text)]' : 'border-transparent text-[var(--muted)] hover:opacity-80'
+      active ? 'border-[var(--primary)] text-[var(--text)]' : 'border-transparent text-[var(--text-muted)] hover:opacity-80'
     }`
 
   const actionBtnClass = 'rounded-full px-4 py-2 text-xs font-semibold'
@@ -97,16 +97,16 @@ export function LibraryTabs({
       </div>
 
       <div className="grid items-center gap-3 lg:grid-cols-[220px_minmax(0,1fr)]">
-        <p className="text-sm" style={{ color: 'var(--muted)' }}>{tab === 'decks' ? 'Ostatni zestaw' : 'Ostatni folder'}</p>
+        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{tab === 'decks' ? 'Ostatni zestaw' : 'Ostatni folder'}</p>
         <div className="relative w-full lg:justify-self-end lg:max-w-[500px]">
-          <Search className="absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: 'var(--gray400)' }} />
+          <Search className="absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: 'var(--text-soft)' }} />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={tab === 'decks' ? 'Wyszukaj zestaw' : 'Wyszukaj folder'}
             className="h-10 w-full rounded-full px-4 pr-12 text-sm focus:outline-none"
-            style={{ border: '1px solid var(--border)', background: 'var(--surface2)', color: 'var(--text)' }}
+            style={{ border: '1px solid var(--border)', background: 'var(--surface-muted)', color: 'var(--text)' }}
           />
         </div>
       </div>
@@ -122,7 +122,7 @@ export function LibraryTabs({
               <IconSquare icon={BookOpen} variant="primary" size="sm" />
               <div className="min-w-0">
                 <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{recentDeck.name}</p>
-                <p className="text-xs" style={{ color: 'var(--muted)' }}>Ostatnio używany · {recentDeck.cardCount} słówek</p>
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Ostatnio używany · {recentDeck.cardCount} słówek</p>
               </div>
             </Link>
           ) : null}
@@ -133,7 +133,7 @@ export function LibraryTabs({
               <Link href="/create" className={actionBtnClass} style={actionBtnStyle}>Dodaj zestaw</Link>
             </div>
             {filteredDecks.length === 0 ? (
-              <p className="text-sm" style={{ color: 'var(--muted)' }}>Brak zestawów.</p>
+              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Brak zestawów.</p>
             ) : (
               filteredDecks.map((d) => (
                 <Link
@@ -145,7 +145,7 @@ export function LibraryTabs({
                   <IconSquare icon={BookOpen} variant="primary" size="sm" />
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{d.name}</p>
-                    <p className="text-xs" style={{ color: 'var(--muted)' }}>Zestaw · {d.cardCount} słówek</p>
+                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Zestaw · {d.cardCount} słówek</p>
                   </div>
                 </Link>
               ))
@@ -165,7 +165,7 @@ export function LibraryTabs({
               <IconSquare icon={FolderOpen} variant="secondary" size="sm" />
               <div className="min-w-0">
                 <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{recentFolder.name}</p>
-                <p className="text-xs" style={{ color: 'var(--muted)' }}>Ostatnio używany · {recentFolder.deckCount} zestawów</p>
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Ostatnio używany · {recentFolder.deckCount} zestawów</p>
               </div>
             </Link>
           ) : null}
@@ -182,7 +182,7 @@ export function LibraryTabs({
           </div>
 
           {showCreateFolder && (
-            <form onSubmit={createFolder} className="flex gap-2 rounded-[var(--radius)] p-4" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
+            <form onSubmit={createFolder} className="flex gap-2 rounded-[var(--card-radius)] p-4" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
               <input
                 type="text"
                 value={folderName}
@@ -192,10 +192,10 @@ export function LibraryTabs({
                 className="h-10 flex-1 rounded-full px-3 text-sm focus:outline-none"
                 style={{ border: '1px solid var(--border)' }}
               />
-              <button type="submit" disabled={creating} className="h-10 rounded-full px-4 text-sm font-semibold" style={{ background: 'var(--primaryBg)', color: 'var(--primary)' }}>
+              <button type="submit" disabled={creating} className="h-10 rounded-full px-4 text-sm font-semibold" style={{ background: 'var(--primary-soft)', color: 'var(--primary)' }}>
                 {creating ? 'Tworzenie…' : 'Utwórz'}
               </button>
-              <button type="button" onClick={() => setShowCreateFolder(false)} className="h-10 rounded-full px-3 text-sm" style={{ border: '1px solid var(--border)', color: 'var(--muted)' }}>
+              <button type="button" onClick={() => setShowCreateFolder(false)} className="h-10 rounded-full px-3 text-sm" style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
                 Anuluj
               </button>
             </form>
@@ -212,7 +212,7 @@ export function LibraryTabs({
                 <IconSquare icon={FolderOpen} variant="secondary" size="sm" />
                 <div className="min-w-0">
                   <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{f.name}</p>
-                  <p className="text-xs" style={{ color: 'var(--muted)' }}>{f.deckCount} zestawów · {f.cardCount} słówek</p>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{f.deckCount} zestawów · {f.cardCount} słówek</p>
                 </div>
               </Link>
             ))}

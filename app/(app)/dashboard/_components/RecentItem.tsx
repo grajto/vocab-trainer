@@ -17,13 +17,13 @@ export function RecentItem({ href, title, meta, type }: RecentItemProps) {
     >
       <span
         className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md"
-        style={{ background: 'var(--primaryBg)', color: 'var(--primary)' }}
+        style={{ background: 'var(--primary-soft)', color: 'var(--primary)' }}
       >
         {type === 'deck' ? <BookOpen size={16} /> : <FolderOpen size={16} />}
       </span>
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold leading-5" style={{ color: 'var(--text)' }}>{title}</p>
-        <p className="text-xs leading-4" style={{ color: 'var(--muted)' }}>{meta}</p>
+        <p className="text-xs leading-4" style={{ color: 'var(--text-muted)' }}>{meta}</p>
       </div>
     </Link>
   )

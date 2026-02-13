@@ -442,7 +442,7 @@ export default function SessionPage() {
       <button
         type="button"
         onClick={onClick}
-        className="inline-flex items-center px-5 py-2.5 rounded-[var(--radiusSm)] text-sm font-semibold text-white transition-colors"
+        className="inline-flex items-center px-5 py-2.5 rounded-[var(--chip-radius)] text-sm font-semibold text-white transition-colors"
         style={{ background: 'var(--primary)' }}
       >
         Dalej (Enter)
@@ -825,7 +825,7 @@ export default function SessionPage() {
             <span className="text-sm" style={{ color: 'var(--text-muted)' }}>{tasks.length} pytań</span>
           </div>
           {testSubmitted && testScore ? (
-            <div className="rounded-[var(--radius)] p-8 space-y-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+            <div className="rounded-[var(--card-radius)] p-8 space-y-4" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
               <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>Wynik: {Math.round((testScore.correct / testScore.total) * 100)}%</p>
               <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Błędy: {testScore.total - testScore.correct}</p>
               {incorrect.length > 0 && (
@@ -844,7 +844,7 @@ export default function SessionPage() {
           ) : (
             <div className="space-y-4">
               {tasks.map((task, idx) => (
-                <div key={task.cardId} className="rounded-[var(--radius)] p-6 space-y-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                <div key={task.cardId} className="rounded-[var(--card-radius)] p-6 space-y-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>Pytanie {idx + 1}</p>
                     <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{idx + 1} / {tasks.length}</span>
@@ -853,7 +853,7 @@ export default function SessionPage() {
                   {task.taskType === 'abcd' && task.options ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {task.options.map(option => (
-                        <label key={option} className="flex items-center gap-2 text-sm rounded-[var(--radiusSm)] px-4 py-3 transition-colors cursor-pointer hover:bg-[var(--hover-bg)]" style={{ border: '1px solid var(--border)', color: 'var(--text)' }}>
+                        <label key={option} className="flex items-center gap-2 text-sm rounded-[var(--chip-radius)] px-4 py-3 transition-colors cursor-pointer hover:bg-[var(--hover-bg)]" style={{ border: '1px solid var(--border)', color: 'var(--text)' }}>
                           <input
                             type="radio"
                             name={`q-${task.cardId}`}
@@ -871,7 +871,7 @@ export default function SessionPage() {
                       type="text"
                       value={testAnswers[task.cardId] || ''}
                       onChange={e => setTestAnswers(prev => ({ ...prev, [task.cardId]: e.target.value }))}
-                      className="w-full rounded-[var(--radiusSm)] px-4 py-3 text-sm focus:outline-none"
+                      className="w-full rounded-[var(--chip-radius)] px-4 py-3 text-sm focus:outline-none"
                       style={{ border: '1px solid var(--border)', color: 'var(--text)', background: 'var(--surface)' }}
                       placeholder="Wpisz odpowiedź"
                     />
@@ -908,7 +908,7 @@ export default function SessionPage() {
                     })
                   })
                 }}
-                className="w-full py-3 rounded-[var(--radiusSm)] font-medium text-white transition-colors"
+                className="w-full py-3 rounded-[var(--chip-radius)] font-medium text-white transition-colors"
                 style={{ background: 'var(--primary)' }}
               >
                 Sprawdź
@@ -1023,7 +1023,7 @@ export default function SessionPage() {
             segments={Math.min(20, tasks.length)}
           />
         </div>
-        <div className="rounded-[var(--radius)] px-8 py-10 text-center" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+        <div className="rounded-[var(--card-radius)] px-8 py-10 text-center" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
           <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight mb-3" style={{ color: 'var(--text)' }}>
             {currentTask.prompt}
           </h2>
@@ -1052,7 +1052,7 @@ export default function SessionPage() {
 
           {typoState && !feedback && (
             <div className="space-y-4">
-              <div className="rounded-[var(--radiusSm)] px-5 py-4 text-sm" style={{ background: 'var(--warning-soft)', border: '1px solid var(--warning-soft)' }}>
+              <div className="rounded-[var(--chip-radius)] px-5 py-4 text-sm" style={{ background: 'var(--warning-soft)', border: '1px solid var(--warning-soft)' }}>
                 <p className="font-medium mb-2" style={{ color: 'var(--warning)' }}>One typo detected!</p>
                 <p style={{ color: 'var(--text)' }}>
                   Your answer: <span className="font-medium">{typoState.userAnswer}</span>
@@ -1064,14 +1064,14 @@ export default function SessionPage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => handleTypoDecision(true)}
-                  className="flex-1 text-white py-2.5 rounded-[var(--radiusSm)] text-sm font-medium transition-colors"
+                  className="flex-1 text-white py-2.5 rounded-[var(--chip-radius)] text-sm font-medium transition-colors"
                   style={{ background: 'var(--success)' }}
                 >
                   ✓ Accept
                 </button>
                 <button
                   onClick={() => handleTypoDecision(false)}
-                  className="flex-1 text-white py-2.5 rounded-[var(--radiusSm)] text-sm font-medium transition-colors"
+                  className="flex-1 text-white py-2.5 rounded-[var(--chip-radius)] text-sm font-medium transition-colors"
                   style={{ background: 'var(--danger)' }}
                 >
                   ✗ Reject
@@ -1115,7 +1115,7 @@ export default function SessionPage() {
                     </div>
                   )}
                   {currentTask.taskType === 'sentence' && sentenceStage === 'translate' && (
-                    <div className={`inline-block px-5 py-3 rounded-[var(--radiusSm)] text-sm font-medium`} style={{
+                    <div className={`inline-block px-5 py-3 rounded-[var(--chip-radius)] text-sm font-medium`} style={{
                       background: 'var(--success-soft)',
                       color: 'var(--success)',
                       border: '1px solid var(--success-soft)',
@@ -1127,7 +1127,7 @@ export default function SessionPage() {
               ) : (
                 <>
                   {/* Error panel with AI explanation */}
-                  <div className={`rounded-[var(--radiusSm)] p-4 text-sm`} style={{
+                  <div className={`rounded-[var(--chip-radius)] p-4 text-sm`} style={{
                     background: 'var(--danger-soft)',
                     color: 'var(--danger)',
                     border: '1px solid var(--danger-soft)',
@@ -1157,7 +1157,7 @@ export default function SessionPage() {
               {currentTask.taskType === 'sentence' && aiInfo && (
                 <div className="flex justify-center">
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-semibold" style={{
-                    background: aiInfo.used ? 'var(--success-soft)' : 'var(--surface2)',
+                    background: aiInfo.used ? 'var(--success-soft)' : 'var(--surface-muted)',
                     color: aiInfo.used ? 'var(--success)' : 'var(--text-muted)',
                     border: `1px solid ${aiInfo.used ? 'var(--success-soft)' : 'var(--border)'}`,
                   }}>
@@ -1178,7 +1178,7 @@ export default function SessionPage() {
                     onChange={e => setUserAnswer(e.target.value)}
                     placeholder="Type your answer…"
                     autoFocus
-                    className="w-full rounded-[var(--radiusSm)] px-4 py-3 text-center text-lg focus:outline-none transition-colors"
+                    className="w-full rounded-[var(--chip-radius)] px-4 py-3 text-center text-lg focus:outline-none transition-colors"
                     style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
                   />
                   <div className="flex gap-2">
@@ -1186,7 +1186,7 @@ export default function SessionPage() {
                       <button
                         type="button"
                         onClick={handleHintClick}
-                        className="min-w-[96px] px-4 py-3 rounded-[var(--radiusSm)] text-sm transition-colors"
+                        className="min-w-[96px] px-4 py-3 rounded-[var(--chip-radius)] text-sm transition-colors"
                         style={{ border: '1px solid var(--warning-soft)', color: 'var(--warning)', background: 'var(--warning-soft)' }}
                       >
                         Hint
@@ -1195,7 +1195,7 @@ export default function SessionPage() {
                     <button
                       type="submit"
                       disabled={!userAnswer.trim()}
-                      className="flex-1 text-white py-3 rounded-[var(--radiusSm)] text-sm font-medium disabled:opacity-40 transition-colors"
+                      className="flex-1 text-white py-3 rounded-[var(--chip-radius)] text-sm font-medium disabled:opacity-40 transition-colors"
                       style={{ background: 'var(--primary)' }}
                     >
                       Sprawdź
@@ -1225,7 +1225,7 @@ export default function SessionPage() {
                         })
                         advanceToNext(FEEDBACK_DELAY_WRONG)
                       }}
-                      className="min-w-[96px] px-4 py-3 rounded-[var(--radiusSm)] text-sm font-medium transition-colors"
+                      className="min-w-[96px] px-4 py-3 rounded-[var(--chip-radius)] text-sm font-medium transition-colors"
                       style={{ border: '1px solid var(--border)', color: 'var(--text-muted)', background: 'var(--surface)' }}
                     >
                       Skip
@@ -1241,7 +1241,7 @@ export default function SessionPage() {
                       key={idx}
                       onClick={() => handleAbcdSelect(opt)}
                       disabled={!!feedback}
-                      className="w-full text-left px-5 py-4 rounded-[var(--radiusSm)] text-sm transition-all"
+                      className="w-full text-left px-5 py-4 rounded-[var(--chip-radius)] text-sm transition-all"
                       style={{
                         border: `1px solid ${
                           feedback
@@ -1268,7 +1268,7 @@ export default function SessionPage() {
                           : 'var(--text)',
                       }}
                     >
-                      <span className="inline-flex items-center justify-center w-7 h-7 mr-3 rounded-full text-xs font-semibold" style={{ background: 'var(--surface2)', color: 'var(--text-muted)' }}>
+                      <span className="inline-flex items-center justify-center w-7 h-7 mr-3 rounded-full text-xs font-semibold" style={{ background: 'var(--surface-muted)', color: 'var(--text-muted)' }}>
                         {idx + 1}
                       </span>
                       {opt}
@@ -1307,7 +1307,7 @@ export default function SessionPage() {
                       }}
                       placeholder="Type translation..."
                       autoFocus
-                      className="w-full rounded-[var(--radiusSm)] px-4 py-3 text-center text-lg focus:outline-none transition-colors"
+                      className="w-full rounded-[var(--chip-radius)] px-4 py-3 text-center text-lg focus:outline-none transition-colors"
                       style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
                       disabled={loading}
                     />
@@ -1327,7 +1327,7 @@ export default function SessionPage() {
                       placeholder="Write a sentence using this word..."
                       autoFocus
                       rows={4}
-                      className="w-full rounded-[var(--radiusSm)] px-4 py-3 text-sm focus:outline-none resize-none transition-colors"
+                      className="w-full rounded-[var(--chip-radius)] px-4 py-3 text-sm focus:outline-none resize-none transition-colors"
                       style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
                       disabled={loading}
                     />
@@ -1339,7 +1339,7 @@ export default function SessionPage() {
                       <button
                         type="button"
                         onClick={handleHintClick}
-                        className="min-w-[96px] px-4 py-3 rounded-[var(--radiusSm)] text-sm transition-colors"
+                        className="min-w-[96px] px-4 py-3 rounded-[var(--chip-radius)] text-sm transition-colors"
                         style={{ border: '1px solid var(--warning-soft)', color: 'var(--warning)', background: 'var(--warning-soft)' }}
                       >
                         Hint
@@ -1353,7 +1353,7 @@ export default function SessionPage() {
                         }
                       }}
                       disabled={loading || (!sentenceNeedsAcknowledge && !userAnswer.trim())}
-                      className="flex-1 text-white py-3 rounded-[var(--radiusSm)] text-sm font-medium disabled:opacity-40 transition-colors"
+                      className="flex-1 text-white py-3 rounded-[var(--chip-radius)] text-sm font-medium disabled:opacity-40 transition-colors"
                       style={{ background: 'var(--primary)' }}
                     >
                       {loading ? 'Checking…' : sentenceNeedsAcknowledge ? 'Dalej' : 'Sprawdź'}
@@ -1388,7 +1388,7 @@ export default function SessionPage() {
                           setSentenceStage('translate')
                           advanceToNext(FEEDBACK_DELAY_WRONG)
                         }}
-                        className="min-w-[96px] px-4 py-3 rounded-[var(--radiusSm)] text-sm font-medium transition-colors"
+                        className="min-w-[96px] px-4 py-3 rounded-[var(--chip-radius)] text-sm font-medium transition-colors"
                         style={{ border: '1px solid var(--border)', color: 'var(--text-muted)', background: 'var(--surface)' }}
                       >
                         Skip
@@ -1427,7 +1427,7 @@ export default function SessionPage() {
                       }}
                       placeholder="Translate this word..."
                       autoFocus
-                      className="w-full rounded-[var(--radiusSm)] px-4 py-3 text-center text-lg focus:outline-none transition-colors"
+                      className="w-full rounded-[var(--chip-radius)] px-4 py-3 text-center text-lg focus:outline-none transition-colors"
                       style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
                       disabled={loading}
                     />
@@ -1447,7 +1447,7 @@ export default function SessionPage() {
                       placeholder="Napisz definicję własnymi słowami..."
                       autoFocus
                       rows={4}
-                      className="w-full rounded-[var(--radiusSm)] px-4 py-3 text-sm focus:outline-none resize-none transition-colors"
+                      className="w-full rounded-[var(--chip-radius)] px-4 py-3 text-sm focus:outline-none resize-none transition-colors"
                       style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
                       disabled={loading}
                     />
@@ -1457,7 +1457,7 @@ export default function SessionPage() {
                       <button
                         type="button"
                         onClick={handleHintClick}
-                        className="min-w-[96px] px-4 py-3 rounded-[var(--radiusSm)] text-sm transition-colors"
+                        className="min-w-[96px] px-4 py-3 rounded-[var(--chip-radius)] text-sm transition-colors"
                         style={{ border: '1px solid var(--warning-soft)', color: 'var(--warning)', background: 'var(--warning-soft)' }}
                       >
                         Hint
@@ -1471,7 +1471,7 @@ export default function SessionPage() {
                         }
                       }}
                       disabled={loading || (!userAnswer.trim())}
-                      className="flex-1 text-white py-3 rounded-[var(--radiusSm)] text-sm font-medium disabled:opacity-40 transition-colors"
+                      className="flex-1 text-white py-3 rounded-[var(--chip-radius)] text-sm font-medium disabled:opacity-40 transition-colors"
                       style={{ background: 'var(--primary)' }}
                     >
                       {loading ? 'Checking…' : describeStage === 'translate' ? 'Sprawdź' : 'Sprawdź opis'}
@@ -1508,7 +1508,7 @@ export default function SessionPage() {
                           setDescribeStage('translate')
                           advanceToNext(FEEDBACK_DELAY_WRONG_SLOW)
                         }}
-                        className="min-w-[96px] px-4 py-3 rounded-[var(--radiusSm)] text-sm font-medium transition-colors"
+                        className="min-w-[96px] px-4 py-3 rounded-[var(--chip-radius)] text-sm font-medium transition-colors"
                         style={{ border: '1px solid var(--border)', color: 'var(--text-muted)', background: 'var(--surface)' }}
                       >
                         Skip

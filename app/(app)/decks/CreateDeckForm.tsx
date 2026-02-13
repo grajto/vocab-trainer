@@ -46,25 +46,25 @@ export function CreateDeckForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-[var(--radius)] p-5 space-y-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+    <form onSubmit={handleSubmit} className="rounded-[var(--card-radius)] p-5 space-y-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
       <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>New Deck</p>
-      {error && <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{error}</p>}
+      {error && <p className="text-sm rounded-lg px-3 py-2" style={{ color: 'var(--danger)', background: 'var(--danger-soft)', border: '1px solid var(--danger)' }}>{error}</p>}
       <input
         type="text"
         value={name}
         onChange={e => setName(e.target.value)}
         placeholder="Deck name"
         required
-        className="w-full border border-[var(--border)] rounded-[var(--radiusSm)] px-3 py-2 text-sm focus:border-[var(--primary)] focus:outline-none transition-colors"
+        className="w-full border border-[var(--border)] rounded-[var(--chip-radius)] px-3 py-2 text-sm focus:border-[var(--primary)] focus:outline-none transition-colors"
       />
       <input
         type="text"
         value={description}
         onChange={e => setDescription(e.target.value)}
         placeholder="Description (optional)"
-        className="w-full border border-[var(--border)] rounded-[var(--radiusSm)] px-3 py-2 text-sm focus:border-[var(--primary)] focus:outline-none transition-colors"
+        className="w-full border border-[var(--border)] rounded-[var(--chip-radius)] px-3 py-2 text-sm focus:border-[var(--primary)] focus:outline-none transition-colors"
       />
-      <button type="submit" disabled={loading} className="bg-[var(--primary)] text-white text-sm px-4 py-2 rounded-[var(--radiusSm)] hover:brightness-90 disabled:opacity-50 transition-colors">
+      <button type="submit" disabled={loading} className="bg-[var(--primary)] text-white text-sm px-4 py-2 rounded-[var(--chip-radius)] hover:brightness-90 disabled:opacity-50 transition-colors">
         {loading ? 'Creating…' : 'Create Deck'}
       </button>
     </form>

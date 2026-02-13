@@ -99,7 +99,7 @@ export function EditDeckForm({ deck, folders }: Props) {
         </div>
       </div>
       {error && (
-        <p className="rounded-lg px-3 py-2 text-sm" style={{ background: '#fef2f2', color: '#b91c1c' }}>
+        <p className="rounded-lg px-3 py-2 text-sm" style={{ background: 'var(--danger-soft)', color: 'var(--danger-dark)' }}>
           {error}
         </p>
       )}

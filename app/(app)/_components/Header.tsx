@@ -53,18 +53,18 @@ export function Header({ username }: { username: string }) {
         {/* Search */}
         <div ref={searchRef} className="flex-1 max-w-2xl relative">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--gray400)]" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-soft)]" />
             <input
               type="text"
               value={query}
               onChange={e => setQuery(e.target.value)}
               onFocus={() => results.length > 0 && setShowResults(true)}
               placeholder="Szukaj zestawów, folderów, pytań"
-              className="w-full pl-10 pr-4 py-2.5 text-sm bg-[var(--surface)] border border-[var(--border)] rounded-full text-[var(--text)] placeholder:text-[var(--gray400)] focus:bg-[var(--surface)] focus:border-[var(--primary)] focus:outline-none transition-colors"
+              className="w-full pl-10 pr-4 py-2.5 text-sm bg-[var(--surface)] border border-[var(--border)] rounded-full text-[var(--text)] placeholder:text-[var(--text-soft)] focus:bg-[var(--surface)] focus:border-[var(--primary)] focus:outline-none transition-colors"
             />
           </div>
           {showResults && results.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius)] overflow-hidden z-50">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--card-radius)] overflow-hidden z-50">
               {results.map(r => (
                 <button
                   key={`${r.type}-${r.id}`}
@@ -73,9 +73,9 @@ export function Header({ username }: { username: string }) {
                     setShowResults(false)
                     setQuery('')
                   }}
-                  className="w-full text-left px-4 py-2.5 text-sm hover:bg-[var(--surface2)] flex items-center gap-2" style={{ color: 'var(--text)' }}
+                  className="w-full text-left px-4 py-2.5 text-sm hover:bg-[var(--surface-muted)] flex items-center gap-2" style={{ color: 'var(--text)' }}
                 >
-                  <span className="text-[10px] font-medium uppercase tracking-wide w-12" style={{ color: 'var(--gray400)' }}>{r.type}</span>
+                  <span className="text-[10px] font-medium uppercase tracking-wide w-12" style={{ color: 'var(--text-soft)' }}>{r.type}</span>
                   <span style={{ color: 'var(--text)' }}>{r.name}</span>
                 </button>
               ))}
@@ -93,14 +93,14 @@ export function Header({ username }: { username: string }) {
             {showCreate ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
           </button>
           {showCreate && (
-            <div className="absolute right-0 top-full mt-2 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius)] overflow-hidden z-50 w-48">
-              <Link href="/decks?create=true" onClick={() => setShowCreate(false)} className="block px-4 py-2.5 text-sm hover:bg-[var(--surface2)]" style={{ color: 'var(--text)' }}>
+            <div className="absolute right-0 top-full mt-2 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--card-radius)] overflow-hidden z-50 w-48">
+              <Link href="/decks?create=true" onClick={() => setShowCreate(false)} className="block px-4 py-2.5 text-sm hover:bg-[var(--surface-muted)]" style={{ color: 'var(--text)' }}>
                 Nowy zestaw
               </Link>
-              <Link href="/folders/new" onClick={() => setShowCreate(false)} className="block px-4 py-2.5 text-sm hover:bg-[var(--surface2)]" style={{ color: 'var(--text)' }}>
+              <Link href="/folders/new" onClick={() => setShowCreate(false)} className="block px-4 py-2.5 text-sm hover:bg-[var(--surface-muted)]" style={{ color: 'var(--text)' }}>
                 Nowy folder
               </Link>
-              <Link href="/import" onClick={() => setShowCreate(false)} className="block px-4 py-2.5 text-sm hover:bg-[var(--surface2)]" style={{ color: 'var(--text)' }}>
+              <Link href="/import" onClick={() => setShowCreate(false)} className="block px-4 py-2.5 text-sm hover:bg-[var(--surface-muted)]" style={{ color: 'var(--text)' }}>
                 Importuj CSV
               </Link>
             </div>
@@ -108,7 +108,7 @@ export function Header({ username }: { username: string }) {
         </div>
 
         {/* User */}
-        <span className="text-xs hidden sm:block" style={{ color: 'var(--muted)' }}>{username}</span>
+        <span className="text-xs hidden sm:block" style={{ color: 'var(--text-muted)' }}>{username}</span>
       </div>
     </header>
   )

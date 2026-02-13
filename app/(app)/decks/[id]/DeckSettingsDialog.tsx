@@ -60,7 +60,7 @@ export function DeckSettingsDialog({ deck, deckId, folders }: { deck: Deck; deck
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-          <div className="w-full max-w-md space-y-4 rounded-xl bg-white p-5" style={{ border: '1px solid var(--border)' }}>
+          <div className="w-full max-w-md space-y-4 rounded-xl bg-[var(--surface)] p-5" style={{ border: '1px solid var(--border)' }}>
             <div className="flex items-center justify-between">
               <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Ustawienia zestawu</p>
               <button onClick={() => setOpen(false)} className="text-xs" style={{ color: 'var(--text-muted)' }}>
@@ -105,7 +105,7 @@ export function DeckSettingsDialog({ deck, deckId, folders }: { deck: Deck; deck
               </label>
             )}
             {error && (
-              <p className="rounded-lg px-3 py-2 text-sm" style={{ background: '#fef2f2', color: '#b91c1c' }}>
+              <p className="rounded-lg px-3 py-2 text-sm" style={{ background: 'var(--danger-soft)', color: 'var(--danger-dark)' }}>
                 {error}
               </p>
             )}

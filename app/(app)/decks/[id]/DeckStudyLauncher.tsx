@@ -75,9 +75,9 @@ export function DeckStudyLauncher({ deckId, cardCount }: Props) {
               onClick={() => setMode(tile.id)}
               className="flex flex-col items-center gap-1.5 rounded-lg px-2 py-3 text-xs font-medium transition-colors"
               style={{
-                background: selected ? 'var(--primaryBg)' : 'var(--surface)',
+                background: selected ? 'var(--primary-soft)' : 'var(--surface)',
                 border: `1px solid ${selected ? 'var(--primary)' : 'var(--border)'}`,
-                color: selected ? 'var(--primary)' : 'var(--muted)',
+                color: selected ? 'var(--primary)' : 'var(--text-muted)',
               }}
             >
               <Icon size={18} />
@@ -90,7 +90,7 @@ export function DeckStudyLauncher({ deckId, cardCount }: Props) {
       {/* Controls row */}
       <div className="flex flex-wrap items-end gap-3">
         <div className="min-w-0 flex-1">
-          <label htmlFor="deck-word-count" className="mb-1.5 block text-xs font-medium" style={{ color: 'var(--muted)' }}>Liczba słówek</label>
+          <label htmlFor="deck-word-count" className="mb-1.5 block text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Liczba słówek</label>
           <input
             id="deck-word-count"
             type="number"
@@ -113,7 +113,7 @@ export function DeckStudyLauncher({ deckId, cardCount }: Props) {
         </button>
       </div>
 
-      {error ? <p className="rounded-lg px-3 py-2 text-sm text-red-600" style={{ background: '#fef2f2' }}>{error}</p> : null}
+      {error ? <p className="rounded-lg px-3 py-2 text-sm" style={{ background: 'var(--danger-soft)', color: 'var(--danger)' }}>{error}</p> : null}
     </section>
   )
 }

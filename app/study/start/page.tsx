@@ -38,7 +38,7 @@ export default async function StudyStartPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--surface2)' }}>
+    <div className="min-h-screen" style={{ background: 'var(--surface-muted)' }}>
       <nav className="backdrop-blur-sm px-6 py-4" style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <Link href="/dashboard" className="text-lg font-semibold tracking-tight" style={{ color: 'var(--primary)' }}>Dashboard</Link>
@@ -48,7 +48,7 @@ export default async function StudyStartPage() {
         <h2 className="text-xl font-semibold" style={{ color: 'var(--text)' }}>Start Learning</h2>
         {decks.docs.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-sm mb-2" style={{ color: 'var(--gray400)' }}>No decks available.</p>
+            <p className="text-sm mb-2" style={{ color: 'var(--text-soft)' }}>No decks available.</p>
             <Link href="/decks" className="text-sm underline underline-offset-2" style={{ color: 'var(--primary)' }}>Create a deck first</Link>
           </div>
         ) : (

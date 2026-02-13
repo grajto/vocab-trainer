@@ -1,7 +1,7 @@
 export function ProgressBar({
   value,
-  trackColor = '#e9edf7',
-  fill = 'linear-gradient(90deg, #22c55e 0%, #16a34a 100%)',
+  trackColor = 'var(--surface-muted)',
+  fill = 'linear-gradient(90deg, var(--success) 0%, var(--success-dark) 100%)',
   className = 'h-3',
 }: {
   value: number
