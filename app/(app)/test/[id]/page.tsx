@@ -25,12 +25,12 @@ export default async function TestDetailsPage({ params }: { params: Promise<{ id
   return (
     <PageContainer>
       <PageHeader title="Szczegóły testu" icon={ClipboardList} />
-      <div className="rounded-xl border p-4" style={{ borderColor: 'var(--border)' }}>
+      <div className="rounded-xl border p-4 border-[var(--border)]">
         <p className="text-sm">Wynik: <b>{test.scorePercent}%</b> ({test.scoreCorrect}/{test.scoreTotal})</p>
       </div>
       <div className="space-y-2">
         {answers.docs.map((a: any) => (
-          <div key={a.id} className="rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
+          <div key={a.id} className="rounded-lg border px-3 py-2 border-[var(--border)]">
             <p className="text-sm font-semibold">{typeof a.card === 'object' ? a.card.front : 'Słówko'}</p>
             <p className="text-xs">Tryb: {a.modeUsed} | Odpowiedź: {a.userAnswer || '—'} | {a.isCorrect ? '✅' : '❌'}</p>
           </div>

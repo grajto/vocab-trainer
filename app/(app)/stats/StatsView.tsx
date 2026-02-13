@@ -46,7 +46,7 @@ export function StatsView() {
   }, [query])
 
   if (!data) {
-    return <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{loading ? 'Ładowanie statystyk…' : 'Brak danych.'}</p>
+    return <p className="text-sm text-[var(--text-muted)]">{loading ? 'Ładowanie statystyk…' : 'Brak danych.'}</p>
   }
 
   const levelDistribution = deckId && data.selectedDeckStats?.levelDistribution
@@ -63,14 +63,13 @@ export function StatsView() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-xl border p-4" style={{ borderColor: 'var(--border)' }}>
+      <div className="rounded-xl border p-4 border-[var(--border)]">
         <p className="mb-3 text-sm font-semibold">Zakres statystyk</p>
         <div className="grid gap-3 sm:grid-cols-2">
           <select
             value={folderId}
             onChange={(e) => { setFolderId(e.target.value); setDeckId('') }}
-            className="rounded-lg border px-3 py-2 text-sm"
-            style={{ borderColor: 'var(--border)' }}
+            className="rounded-lg border px-3 py-2 text-sm border-[var(--border)]"
           >
             <option value="">Wszystkie foldery</option>
             {data.filters.folders.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
@@ -78,8 +77,7 @@ export function StatsView() {
           <select
             value={deckId}
             onChange={(e) => setDeckId(e.target.value)}
-            className="rounded-lg border px-3 py-2 text-sm"
-            style={{ borderColor: 'var(--border)' }}
+            className="rounded-lg border px-3 py-2 text-sm border-[var(--border)]"
           >
             <option value="">Wszystkie zestawy</option>
             {data.filters.decks.filter(d => !folderId || d.folderId === folderId).map((d) => (
@@ -90,17 +88,17 @@ export function StatsView() {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <div className="rounded-xl border p-4" style={{ borderColor: 'var(--border)' }}>
-          <p className="text-xs uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Sesje</p>
+        <div className="rounded-xl border p-4 border-[var(--border)]">
+          <p className="text-xs uppercase tracking-widest text-[var(--text-muted)]">Sesje</p>
           <p className="mt-2 text-2xl font-semibold">{data.global.totalSessions}</p>
         </div>
-        <div className="rounded-xl border p-4" style={{ borderColor: 'var(--border)' }}>
-          <p className="text-xs uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Czas</p>
+        <div className="rounded-xl border p-4 border-[var(--border)]">
+          <p className="text-xs uppercase tracking-widest text-[var(--text-muted)]">Czas</p>
           <p className="mt-2 text-2xl font-semibold">{data.global.totalMinutes} min</p>
         </div>
       </div>
 
-      <div className="rounded-xl border p-4" style={{ borderColor: 'var(--border)' }}>
+      <div className="rounded-xl border p-4 border-[var(--border)]">
         <p className="mb-3 text-sm font-semibold">Poziomy znajomości: {levelLabel}</p>
         <div className="space-y-2">
           {Object.entries(levelDistribution).map(([lvl, count]) => (

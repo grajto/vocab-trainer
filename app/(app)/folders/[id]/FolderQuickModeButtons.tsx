@@ -78,10 +78,10 @@ export function FolderQuickModeButtons({ folderId, cardCount }: { folderId: stri
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-1">
-        <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
+        <h3 className="text-sm font-semibold text-[var(--text)]">
           Szybki start (folder)
         </h3>
-        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{cardCount} słówek</p>
+        <p className="text-xs text-[var(--text-muted)]">{cardCount} słówek</p>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -121,7 +121,7 @@ export function FolderQuickModeButtons({ folderId, cardCount }: { folderId: stri
 
       {selectedMode && selectedMode !== 'test' && (
         <div>
-          <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--text)' }}>
+          <h3 className="text-sm font-semibold mb-3 text-[var(--text)]">
             Wybierz liczbę słówek
           </h3>
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
@@ -214,10 +214,10 @@ export function FolderQuickModeButtons({ folderId, cardCount }: { folderId: stri
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
           <div className="w-full max-w-sm space-y-4 rounded-xl bg-[var(--surface)] p-5" style={{ border: '1px solid var(--border)' }}>
             <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Ustawienia testu</p>
-              <button onClick={() => setShowTestModal(false)} className="text-xs" style={{ color: 'var(--text-muted)' }}>Zamknij</button>
+              <p className="text-sm font-semibold text-[var(--text)]">Ustawienia testu</p>
+              <button onClick={() => setShowTestModal(false)} className="text-xs text-[var(--text-muted)]">Zamknij</button>
             </div>
-            <div className="space-y-3 text-xs" style={{ color: 'var(--text)' }}>
+            <div className="space-y-3 text-xs text-[var(--text)]">
               <label className="space-y-1 font-medium">
                 Liczba pytań
                 <input
@@ -226,8 +226,7 @@ export function FolderQuickModeButtons({ folderId, cardCount }: { folderId: stri
                   max={35}
                   value={testCount}
                   onChange={(e) => setTestCount(Number(e.target.value))}
-                  className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
-                  style={{ borderColor: 'var(--border)' }}
+                  className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none border-[var(--border)]"
                   disabled={useAllWords}
                 />
               </label>

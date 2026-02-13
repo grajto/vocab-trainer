@@ -46,10 +46,10 @@ export default async function EditDeckPage({ params }: { params: Promise<{ id: s
           <Pencil size={20} />
         </span>
         <div>
-          <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>
+          <h1 className="text-xl font-bold text-[var(--text)]">
             Edytuj zestaw
           </h1>
-          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-xs text-[var(--text-muted)]">
             Zaktualizuj nazwę, folder i opis
           </p>
         </div>

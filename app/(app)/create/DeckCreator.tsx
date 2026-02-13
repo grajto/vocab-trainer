@@ -191,7 +191,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
         <SectionHeading title="Ustawienia zestawu" />
         <div className="space-y-4">
           <div>
-            <label className="flex items-center gap-2 text-xs font-medium mb-1.5" style={{ color: 'var(--text-muted)' }}>
+            <label className="flex items-center gap-2 text-xs font-medium mb-1.5 text-[var(--text-muted)]">
               <BookOpen size={14} />
               Nazwa zestawu *
             </label>
@@ -207,7 +207,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="flex items-center gap-2 text-xs font-medium mb-1.5" style={{ color: 'var(--text-muted)' }}>
+              <label className="flex items-center gap-2 text-xs font-medium mb-1.5 text-[var(--text-muted)]">
                 <FileText size={14} />
                 Opis (opcjonalnie)
               </label>
@@ -222,7 +222,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
             </div>
 
             <div>
-              <label className="flex items-center gap-2 text-xs font-medium mb-1.5" style={{ color: 'var(--text-muted)' }}>
+              <label className="flex items-center gap-2 text-xs font-medium mb-1.5 text-[var(--text-muted)]">
                 <FolderOpen size={14} />
                 Folder (opcjonalnie)
               </label>
@@ -243,8 +243,8 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
       {/* Cards table */}
       <div className="rounded-[var(--card-radius)] overflow-hidden" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
         <div className="px-5 py-3.5 flex items-center justify-between" style={{ borderBottom: '1px solid var(--border)' }}>
-          <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
-            Karty <span className="font-normal" style={{ color: 'var(--text-muted)' }}>({cards.filter(c => c.front && c.back).length} prawidłowych)</span>
+          <p className="text-sm font-semibold text-[var(--text)]">
+            Karty <span className="font-normal text-[var(--text-muted)]">({cards.filter(c => c.front && c.back).length} prawidłowych)</span>
           </p>
           <button 
             onClick={() => setShowImport(true)} 
@@ -266,15 +266,15 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
         </div>
 
         {/* Rows */}
-        <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
+        <div className="divide-y border-[var(--border)]">
           {cards.map((card, idx) => (
             <div key={card.id} className="grid grid-cols-1 sm:grid-cols-[3rem_1fr_1fr_1fr_3rem] gap-2 sm:gap-3 px-5 py-3 sm:py-2.5 group transition-colors" style={{ background: 'transparent' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--hover-bg)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
               <div className="flex items-center gap-2 sm:block">
-                <span className="text-sm font-semibold tabular-nums" style={{ color: 'var(--text-muted)' }}>#{idx + 1}</span>
-                <span className="sm:hidden text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Karta</span>
+                <span className="text-sm font-semibold tabular-nums text-[var(--text-muted)]">#{idx + 1}</span>
+                <span className="sm:hidden text-xs font-medium text-[var(--text-muted)]">Karta</span>
               </div>
               <div className="space-y-1">
-                <label className="sm:hidden block text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Przód (termin)</label>
+                <label className="sm:hidden block text-xs font-medium text-[var(--text-muted)]">Przód (termin)</label>
                 <input
                   ref={idx === cards.length - 1 ? lastInputRef : undefined}
                   type="text"
@@ -282,38 +282,34 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
                   onChange={e => updateCard(card.id, 'front', e.target.value)}
                   onKeyDown={e => handleKeyDown(e, card.id, 'front')}
                   placeholder="Termin"
-                  className="w-full text-sm border-0 bg-transparent px-2.5 py-1.5 focus:outline-none focus:bg-[var(--primary-soft)] rounded-md transition-colors"
-                  style={{ color: 'var(--text)' }}
+                  className="w-full text-sm border-0 bg-transparent px-2.5 py-1.5 focus:outline-none focus:bg-[var(--primary-soft)] rounded-md transition-colors text-[var(--text)]"
                 />
               </div>
               <div className="space-y-1">
-                <label className="sm:hidden block text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Tył (definicja)</label>
+                <label className="sm:hidden block text-xs font-medium text-[var(--text-muted)]">Tył (definicja)</label>
                 <input
                   type="text"
                   value={card.back}
                   onChange={e => updateCard(card.id, 'back', e.target.value)}
                   onKeyDown={e => handleKeyDown(e, card.id, 'back')}
                   placeholder="Definicja"
-                  className="w-full text-sm border-0 bg-transparent px-2.5 py-1.5 focus:outline-none focus:bg-[var(--primary-soft)] rounded-md transition-colors"
-                  style={{ color: 'var(--text)' }}
+                  className="w-full text-sm border-0 bg-transparent px-2.5 py-1.5 focus:outline-none focus:bg-[var(--primary-soft)] rounded-md transition-colors text-[var(--text)]"
                 />
               </div>
               <div className="space-y-1">
-                <label className="sm:hidden block text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Przykład</label>
+                <label className="sm:hidden block text-xs font-medium text-[var(--text-muted)]">Przykład</label>
                 <input
                   type="text"
                   value={card.examples}
                   onChange={e => updateCard(card.id, 'examples', e.target.value)}
                   placeholder="Przykładowe zdanie"
-                  className="w-full text-sm border-0 bg-transparent px-2.5 py-1.5 focus:outline-none focus:bg-[var(--primary-soft)] rounded-md transition-colors"
-                  style={{ color: 'var(--text)' }}
+                  className="w-full text-sm border-0 bg-transparent px-2.5 py-1.5 focus:outline-none focus:bg-[var(--primary-soft)] rounded-md transition-colors text-[var(--text)]"
                 />
               </div>
               <div className="flex items-center justify-end sm:justify-center">
                 <button
                   onClick={() => removeRow(card.id)}
-                  className="opacity-60 sm:opacity-0 group-hover:opacity-100 p-2 rounded-md transition-all hover:bg-[var(--danger-soft)]"
-                  style={{ color: 'var(--danger)' }}
+                  className="opacity-60 sm:opacity-0 group-hover:opacity-100 p-2 rounded-md transition-all hover:bg-[var(--danger-soft)] text-[var(--danger)]"
                   title="Usuń kartę"
                 >
                   <Trash2 size={16} />
@@ -359,8 +355,8 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
           <div className="flex items-start gap-3 px-4 py-3 rounded-lg" style={{ background: 'var(--surface-muted)', border: '1px solid var(--border)' }}>
             <Upload size={16} style={{ color: 'var(--text-muted)', marginTop: '2px', flexShrink: 0 }} />
             <div>
-              <p className="text-xs font-medium" style={{ color: 'var(--text)' }}>Wklej dane poniżej</p>
-              <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Każda linia to jedna karta. Oddziel termin od definicji wybranym separatorem.</p>
+              <p className="text-xs font-medium text-[var(--text)]">Wklej dane poniżej</p>
+              <p className="text-xs mt-1 text-[var(--text-muted)]">Każda linia to jedna karta. Oddziel termin od definicji wybranym separatorem.</p>
             </div>
           </div>
 
@@ -375,7 +371,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold mb-2" style={{ color: 'var(--text)' }}>Separator między terminem a definicją</label>
+              <label className="block text-xs font-semibold mb-2 text-[var(--text)]">Separator między terminem a definicją</label>
               <select value={termDel} onChange={e => setTermDel(e.target.value)} className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none" style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}>
                 <option value="tab">Tabulator</option>
                 <option value="comma">Przecinek</option>
@@ -383,7 +379,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold mb-2" style={{ color: 'var(--text)' }}>Separator między kartami</label>
+              <label className="block text-xs font-semibold mb-2 text-[var(--text)]">Separator między kartami</label>
               <select value={cardDel} onChange={e => setCardDel(e.target.value)} className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none" style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}>
                 <option value="newline">Nowa linia</option>
                 <option value="semicolon">Średnik</option>
@@ -393,17 +389,17 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
 
           {importPreview.length > 0 && (
             <div>
-              <p className="text-xs font-semibold mb-2" style={{ color: 'var(--text)' }}>Podgląd ({importPreview.length} kart)</p>
+              <p className="text-xs font-semibold mb-2 text-[var(--text)]">Podgląd ({importPreview.length} kart)</p>
               <div className="max-h-48 overflow-auto rounded-lg divide-y" style={{ border: '1px solid var(--border)' }}>
                 {importPreview.slice(0, 10).map((card, i) => (
                   <div key={i} className="px-4 py-2.5 text-sm flex gap-4 items-center hover:bg-[var(--hover-bg)] transition-colors">
-                    <span className="tabular-nums font-semibold w-8 text-center" style={{ color: 'var(--text-muted)' }}>#{i + 1}</span>
-                    <span className="font-medium flex-1" style={{ color: 'var(--text)' }}>{card.front}</span>
-                    <span className="flex-1" style={{ color: 'var(--text-muted)' }}>{card.back}</span>
+                    <span className="tabular-nums font-semibold w-8 text-center text-[var(--text-muted)]">#{i + 1}</span>
+                    <span className="font-medium flex-1 text-[var(--text)]">{card.front}</span>
+                    <span className="flex-1 text-[var(--text-muted)]">{card.back}</span>
                   </div>
                 ))}
                 {importPreview.length > 10 && (
-                  <p className="px-4 py-2.5 text-xs text-center" style={{ color: 'var(--text-muted)' }}>…oraz {importPreview.length - 10} więcej</p>
+                  <p className="px-4 py-2.5 text-xs text-center text-[var(--text-muted)]">…oraz {importPreview.length - 10} więcej</p>
                 )}
               </div>
             </div>

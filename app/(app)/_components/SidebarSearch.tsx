@@ -70,14 +70,13 @@ export function SidebarSearch() {
           }
         }}
       >
-        <Search size={18} style={{ color: 'var(--text-muted)' }} />
+        <Search size={18} className="text-[var(--text-muted)]" />
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
           onFocus={() => results.length > 0 && setShowResults(true)}
           placeholder="Szukaj…"
-          className="w-full border-0 bg-transparent text-sm placeholder:text-[var(--text-soft)] focus:outline-none"
-          style={{ color: 'var(--text)' }}
+          className="w-full border-0 bg-transparent text-sm placeholder:text-[var(--text-soft)] focus:outline-none text-[var(--text)]"
           aria-label="Szukaj"
         />
       </form>
@@ -107,8 +106,7 @@ export function SidebarSearch() {
                     setShowResults(false)
                     setQ('')
                   }}
-                  className="flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-[var(--hover-bg)]"
-                  style={{ color: 'var(--text)' }}
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-[var(--hover-bg)] text-[var(--text)]"
                 >
                   <span className="truncate font-medium">{r.name}</span>
                 </Link>
@@ -132,8 +130,7 @@ export function SidebarSearch() {
                     setShowResults(false)
                     setQ('')
                   }}
-                  className="flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-[var(--hover-bg)]"
-                  style={{ color: 'var(--text)' }}
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-[var(--hover-bg)] text-[var(--text)]"
                 >
                   <span className="truncate font-medium">{r.name}</span>
                 </Link>
@@ -157,12 +154,11 @@ export function SidebarSearch() {
                     setShowResults(false)
                     setQ('')
                   }}
-                  className="flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-[var(--hover-bg)]"
-                  style={{ color: 'var(--text)' }}
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-[var(--hover-bg)] text-[var(--text)]"
                 >
                   <span className="truncate font-medium">{r.name}</span>
                   {r.meta && (
-                    <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                    <span className="text-[11px] text-[var(--text-muted)]">
                       {r.meta}
                     </span>
                   )}

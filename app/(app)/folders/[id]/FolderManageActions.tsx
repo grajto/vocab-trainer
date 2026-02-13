@@ -30,7 +30,7 @@ export function FolderManageActions({ folderId, initialName }: { folderId: strin
   if (editing) {
     return (
       <div className="flex items-center gap-2">
-        <input value={name} onChange={(e) => setName(e.target.value)} className="rounded-lg border px-2 py-1 text-sm" style={{ borderColor: 'var(--border)' }} />
+        <input value={name} onChange={(e) => setName(e.target.value)} className="rounded-lg border px-2 py-1 text-sm border-[var(--border)]" />
         <button type="button" onClick={saveName} className="rounded-full px-3 py-1 text-xs font-semibold text-white" style={{ background: 'var(--primary)' }}>Zapisz</button>
       </div>
     )

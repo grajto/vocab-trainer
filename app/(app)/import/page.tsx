@@ -33,8 +33,8 @@ export default async function ImportPage() {
 
       {decks.docs.length === 0 ? (
         <div className="rounded-lg py-12 text-center" style={{ border: '1px solid var(--border)' }}>
-          <p className="mb-2 text-sm" style={{ color: 'var(--text-muted)' }}>Brak dostępnych zestawów.</p>
-          <Link href="/create" className="text-sm font-medium" style={{ color: 'var(--primary)' }}>Utwórz zestaw</Link>
+          <p className="mb-2 text-sm text-[var(--text-muted)]">Brak dostępnych zestawów.</p>
+          <Link href="/create" className="text-sm font-medium text-[var(--primary)]">Utwórz zestaw</Link>
         </div>
       ) : (
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

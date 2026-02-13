@@ -69,11 +69,11 @@ export default function NotificationsPage() {
       </div>
 
       {loading ? (
-        <p className="text-sm" style={{ color: 'var(--text-soft)' }}>Ładowanie powiadomień…</p>
+        <p className="text-sm text-[var(--text-soft)]">Ładowanie powiadomień…</p>
       ) : notifications.length === 0 ? (
         <div className="rounded-[var(--card-radius)] py-12 text-center" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
           <Bell className="mx-auto mb-3 h-10 w-10" style={{ color: 'var(--border)' }} />
-          <p className="text-sm" style={{ color: 'var(--text-soft)' }}>Brak nowych powiadomień.</p>
+          <p className="text-sm text-[var(--text-soft)]">Brak nowych powiadomień.</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -87,17 +87,17 @@ export default function NotificationsPage() {
                   <Icon className="h-3 w-3" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm" style={{ color: 'var(--text)' }}>{n.message}</p>
+                  <p className="text-sm text-[var(--text)]">{n.message}</p>
                 </div>
                 <Link href={ctaHref} prefetch className="whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold" style={{ background: 'var(--primary-soft)', color: 'var(--primary)' }}>
                   Start
                 </Link>
                 {!n.read ? (
-                  <button type="button" onClick={() => markRead(n.id)} className="rounded-md p-1 hover:bg-[var(--surface-muted)]" style={{ color: 'var(--text-soft)' }} aria-label="Oznacz jako przeczytane">
+                  <button type="button" onClick={() => markRead(n.id)} className="rounded-md p-1 hover:bg-[var(--surface-muted)] text-[var(--text-soft)]" aria-label="Oznacz jako przeczytane">
                     <CheckCheck size={16} />
                   </button>
                 ) : (
-                  <button type="button" className="rounded-md p-1" style={{ color: 'var(--text-soft)' }} aria-label="Przeczytane">
+                  <button type="button" className="rounded-md p-1 text-[var(--text-soft)]" aria-label="Przeczytane">
                     <MoreHorizontal size={16} />
                   </button>
                 )}

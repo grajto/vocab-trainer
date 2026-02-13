@@ -150,7 +150,7 @@ export function TestList({ decks, folders }: { decks: Item[]; folders: Item[] })
         
         {/* Źródło */}
         <div className="mb-4">
-          <label className="mb-2 flex items-center gap-2 text-xs font-semibold" style={{ color: 'var(--text)' }}>
+          <label className="mb-2 flex items-center gap-2 text-xs font-semibold text-[var(--text)]">
             <Database size={14} />
             Źródło
           </label>
@@ -193,7 +193,7 @@ export function TestList({ decks, folders }: { decks: Item[]; folders: Item[] })
               disabled={useAllWords} 
             />
           </div>
-          <label className="mt-3 flex items-center gap-2 text-xs font-semibold" style={{ color: 'var(--text)' }}>
+          <label className="mt-3 flex items-center gap-2 text-xs font-semibold text-[var(--text)]">
             <input type="checkbox" checked={useAllWords} onChange={(e) => setUseAllWords(e.target.checked)} />
             Wszystkie słowa (wszystkie zestawy i foldery)
           </label>
@@ -201,13 +201,13 @@ export function TestList({ decks, folders }: { decks: Item[]; folders: Item[] })
 
         {/* Tryby */}
         <div className="mb-4">
-          <label className="mb-2 flex items-center gap-2 text-xs font-semibold" style={{ color: 'var(--text)' }}>
+          <label className="mb-2 flex items-center gap-2 text-xs font-semibold text-[var(--text)]">
             <Layers size={14} />
             Tryby
           </label>
           <div className="grid grid-cols-2 gap-2 text-sm md:grid-cols-4">
             {['abcd', 'translate'].map((m) => (
-              <label key={m} className="flex items-center gap-2 rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
+              <label key={m} className="flex items-center gap-2 rounded-lg border px-3 py-2 border-[var(--border)]">
                 <input
                   type="checkbox"
                   checked={enabledModes.includes(m)}
@@ -221,16 +221,16 @@ export function TestList({ decks, folders }: { decks: Item[]; folders: Item[] })
 
         {/* Ustawienia */}
         <div className="mb-4">
-          <label className="mb-2 flex items-center gap-2 text-xs font-semibold" style={{ color: 'var(--text)' }}>
+          <label className="mb-2 flex items-center gap-2 text-xs font-semibold text-[var(--text)]">
             <Settings size={14} />
             Ustawienia
           </label>
           <div className="space-y-2 text-sm">
-            <label className="flex items-center gap-2 rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
+            <label className="flex items-center gap-2 rounded-lg border px-3 py-2 border-[var(--border)]">
               <input type="checkbox" checked={randomQuestionOrder} onChange={(e) => setRandomQuestionOrder(e.target.checked)} />
               Losowa kolejność pytań
             </label>
-            <label className="flex items-center gap-2 rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border)' }}>
+            <label className="flex items-center gap-2 rounded-lg border px-3 py-2 border-[var(--border)]">
               <input type="checkbox" checked={randomAnswerOrder} onChange={(e) => setRandomAnswerOrder(e.target.checked)} />
               Losowa kolejność odpowiedzi (ABCD)
             </label>
@@ -289,7 +289,7 @@ export function TestList({ decks, folders }: { decks: Item[]; folders: Item[] })
         </div>
 
         {loadingResults ? (
-          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Ładowanie…</p>
+          <p className="text-sm text-[var(--text-muted)]">Ładowanie…</p>
         ) : testsVisible.length === 0 ? (
           <EmptyState 
             icon={FileQuestion}
@@ -304,10 +304,10 @@ export function TestList({ decks, folders }: { decks: Item[]; folders: Item[] })
                   <div className="space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium truncate" style={{ color: 'var(--text)' }}>
+                        <p className="text-xs font-medium truncate text-[var(--text)]">
                           {t.sourceType === 'set' ? '📚' : '📁'} {t.sourceName}
                         </p>
-                        <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                        <p className="text-xs mt-0.5 text-[var(--text-muted)]">
                           {new Date(t.startedAt).toLocaleString('pl-PL', { 
                             day: '2-digit', 
                             month: '2-digit', 
@@ -321,8 +321,8 @@ export function TestList({ decks, folders }: { decks: Item[]; folders: Item[] })
                         {t.status === 'finished' ? 'Ukończony' : 'W trakcie'}
                       </Chip>
                     </div>
-                    <div className="flex items-center gap-4 text-xs" style={{ color: 'var(--text-muted)' }}>
-                      <span className="font-semibold text-lg" style={{ color: 'var(--primary)' }}>
+                    <div className="flex items-center gap-4 text-xs text-[var(--text-muted)]">
+                      <span className="font-semibold text-lg text-[var(--primary)]">
                         {t.scorePercent}%
                       </span>
                       <span>{t.scoreCorrect}/{t.scoreTotal}</span>
@@ -360,11 +360,11 @@ export function TestList({ decks, folders }: { decks: Item[]; folders: Item[] })
                       {medal || `#${idx + 1}`}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>
+                      <p className="text-sm font-semibold truncate text-[var(--text)]">
                         {r.deckName}
                       </p>
-                      <div className="flex items-center gap-3 text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                        <span className="font-semibold" style={{ color: 'var(--primary)' }}>{r.avgScore}%</span>
+                      <div className="flex items-center gap-3 text-xs mt-0.5 text-[var(--text-muted)]">
+                        <span className="font-semibold text-[var(--primary)]">{r.avgScore}%</span>
                         <span>{r.testsCount} {pluralizeTests(r.testsCount)}</span>
                         <span>{new Date(r.lastTest).toLocaleDateString('pl-PL')}</span>
                       </div>

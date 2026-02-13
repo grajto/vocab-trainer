@@ -75,12 +75,12 @@ export function FolderSettingsDialog({ folderId, initialName }: { folderId: stri
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
           <div className="w-full max-w-md space-y-4 rounded-xl bg-[var(--surface)] p-5" style={{ border: '1px solid var(--border)' }}>
             <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Ustawienia folderu</p>
-              <button onClick={() => setOpen(false)} className="text-xs" style={{ color: 'var(--text-muted)' }}>
+              <p className="text-sm font-semibold text-[var(--text)]">Ustawienia folderu</p>
+              <button onClick={() => setOpen(false)} className="text-xs text-[var(--text-muted)]">
                 Zamknij
               </button>
             </div>
-            <label className="space-y-1 text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
+            <label className="space-y-1 text-xs font-medium text-[var(--text-muted)]">
               Nazwa
               <input
                 value={name}

@@ -75,10 +75,10 @@ export default async function DeckDetailPage({ params }: { params: Promise<{ id:
             <BookOpen size={20} />
           </span>
           <div className="min-w-0">
-            <h1 className="truncate text-xl font-bold" style={{ color: 'var(--text)' }}>
+            <h1 className="truncate text-xl font-bold text-[var(--text)]">
               {deck.name}
             </h1>
-            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-xs text-[var(--text-muted)]">
               {cards.totalDocs} pojęć
             </p>
           </div>

@@ -102,7 +102,7 @@ export function FilterableCardsList({ cards, deckId }: Props) {
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
+        <h2 className="text-sm font-semibold text-[var(--text)]">
           Słówka ({filteredCards.length})
         </h2>
         <div className="flex items-center gap-2">
@@ -140,14 +140,13 @@ export function FilterableCardsList({ cards, deckId }: Props) {
         />
         <Search
           size={16}
-          className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-          style={{ color: 'var(--text-muted)' }}
+          className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text-muted)]"
         />
       </div>
 
       {/* Cards List */}
       {filteredCards.length === 0 ? (
-        <p className="py-8 text-center text-sm" style={{ color: 'var(--text-muted)' }}>
+        <p className="py-8 text-center text-sm text-[var(--text-muted)]">
           {searchTerm ? 'Nie znaleziono słówek' : 'Brak kart. Dodaj pierwszą kartę poniżej.'}
         </p>
       ) : (
@@ -220,10 +219,10 @@ export function FilterableCardsList({ cards, deckId }: Props) {
                   </span>
                 </div>
                 <div className="grid flex-1 grid-cols-2 gap-4">
-                  <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>
+                  <p className="text-sm font-medium text-[var(--text)]">
                     {card.front}
                   </p>
-                  <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                  <p className="text-sm text-[var(--text-muted)]">
                     {card.back}
                   </p>
                 </div>
@@ -232,8 +231,7 @@ export function FilterableCardsList({ cards, deckId }: Props) {
                   <button
                     type="button"
                     onClick={() => startEdit(card)}
-                    className="p-1.5 rounded hover:bg-[var(--hover-bg)] transition-colors"
-                    style={{ color: 'var(--text-soft)' }}
+                    className="p-1.5 rounded hover:bg-[var(--hover-bg)] transition-colors text-[var(--text-soft)]"
                     aria-label="Edytuj"
                   >
                     <Pencil size={16} />
@@ -241,8 +239,7 @@ export function FilterableCardsList({ cards, deckId }: Props) {
                   <button
                     type="button"
                     onClick={() => handleDelete(card.id)}
-                    className="p-1.5 rounded hover:bg-[var(--hover-bg)] transition-colors"
-                    style={{ color: 'var(--danger)' }}
+                    className="p-1.5 rounded hover:bg-[var(--hover-bg)] transition-colors text-[var(--danger)]"
                     aria-label="Usuń"
                   >
                     <Trash2 size={16} />

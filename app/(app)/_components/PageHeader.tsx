@@ -14,11 +14,11 @@ export function PageHeader({
     <div className="flex items-center gap-3">
       <IconSquare icon={Icon} variant="primary" size="md" />
       <div>
-        <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>
+        <h1 className="text-xl font-bold text-[var(--text)]">
           {title}
         </h1>
         {description && (
-          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-sm mt-1 text-[var(--text-muted)]">
             {description}
           </p>
         )}

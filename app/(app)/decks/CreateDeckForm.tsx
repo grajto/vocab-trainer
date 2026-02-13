@@ -47,7 +47,7 @@ export function CreateDeckForm() {
 
   return (
     <form onSubmit={handleSubmit} className="rounded-[var(--card-radius)] p-5 space-y-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-      <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>New Deck</p>
+      <p className="text-sm font-medium text-[var(--text)]">New Deck</p>
       {error && <p className="text-sm rounded-lg px-3 py-2" style={{ color: 'var(--danger)', background: 'var(--danger-soft)', border: '1px solid var(--danger)' }}>{error}</p>}
       <input
         type="text"

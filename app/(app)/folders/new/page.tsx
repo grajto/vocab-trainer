@@ -40,13 +40,13 @@ export default function NewFolderPage() {
       <form onSubmit={submit} className="rounded-xl border p-5 space-y-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
         <div>
           <label className="mb-1 block text-sm font-medium">Nazwa folderu</label>
-          <input value={name} onChange={(e) => setName(e.target.value)} required className="w-full rounded-lg border px-3 py-2 text-sm" style={{ borderColor: 'var(--border)' }} />
+          <input value={name} onChange={(e) => setName(e.target.value)} required className="w-full rounded-lg border px-3 py-2 text-sm border-[var(--border)]" />
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium">Opis (opcjonalnie)</label>
-          <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} className="w-full rounded-lg border px-3 py-2 text-sm" style={{ borderColor: 'var(--border)' }} />
+          <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} className="w-full rounded-lg border px-3 py-2 text-sm border-[var(--border)]" />
         </div>
-        {error ? <p className="text-sm" style={{ color: 'var(--danger)' }}>{error}</p> : null}
+        {error ? <p className="text-sm text-[var(--danger)]">{error}</p> : null}
         <button type="submit" disabled={loading} className="rounded-full px-4 py-2 text-sm font-semibold text-white" style={{ background: 'var(--primary)' }}>
           {loading ? 'Tworzenie…' : 'Utwórz folder'}
         </button>

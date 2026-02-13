@@ -45,8 +45,8 @@ export default async function AddDecksToFolderPage({ params }: { params: Promise
       />
 
       {decksNotInFolders.length === 0 ? (
-        <div className="rounded-xl border p-8 text-center" style={{ borderColor: 'var(--border)' }}>
-          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+        <div className="rounded-xl border p-8 text-center border-[var(--border)]">
+          <p className="text-sm text-[var(--text-muted)]">
             Nie masz żadnych zestawów poza folderami.
           </p>
         </div>
@@ -59,11 +59,11 @@ export default async function AddDecksToFolderPage({ params }: { params: Promise
               style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
             >
               <div className="min-w-0 flex-1">
-                <h3 className="font-semibold text-sm truncate" style={{ color: 'var(--text)' }}>
+                <h3 className="font-semibold text-sm truncate text-[var(--text)]">
                   {deck.name}
                 </h3>
                 {deck.description && (
-                  <p className="text-xs mt-1 line-clamp-2" style={{ color: 'var(--text-muted)' }}>
+                  <p className="text-xs mt-1 line-clamp-2 text-[var(--text-muted)]">
                     {deck.description}
                   </p>
                 )}

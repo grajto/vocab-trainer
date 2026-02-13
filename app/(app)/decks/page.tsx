@@ -52,12 +52,12 @@ export default async function DecksPage() {
 
       <div className="space-y-2">
         {decks.docs.length === 0 ? (
-          <p className="text-sm py-8 text-center" style={{ color: 'var(--text-soft)' }}>Brak zestawów. Utwórz pierwszy.</p>
+          <p className="text-sm py-8 text-center text-[var(--text-soft)]">Brak zestawów. Utwórz pierwszy.</p>
         ) : (
           decks.docs.map((deck: any) => (
             <Link key={deck.id} href={`/decks/${deck.id}`} prefetch={true} className="block bg-[var(--surface)] border border-[var(--border)] rounded-[var(--card-radius)] px-5 py-4 hover:border-[var(--primary)] transition-all">
-              <p className="font-medium" style={{ color: 'var(--text)' }}>{deck.name}</p>
-              <p className="text-xs mt-1" style={{ color: 'var(--text-soft)' }}>
+              <p className="font-medium text-[var(--text)]">{deck.name}</p>
+              <p className="text-xs mt-1 text-[var(--text-soft)]">
                 {cardCountByDeck.get(String(deck.id)) || 0} kart · {new Date(deck.createdAt || new Date()).toLocaleString('pl-PL', { month: 'long', year: 'numeric' })}
               </p>
             </Link>

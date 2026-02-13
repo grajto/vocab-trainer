@@ -128,8 +128,8 @@ export function LeftSidebar({
   const nav = (
     <aside className="flex h-full flex-col overflow-y-auto border-r px-[var(--sidebar-pad)] py-[var(--sidebar-pad)]" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
       <div className="mb-1 flex items-center justify-between px-2 lg:hidden">
-        <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Menu</span>
-        <button type="button" onClick={onClose} className="rounded-md p-1 hover:bg-[var(--surface-muted)]" style={{ color: 'var(--text-muted)' }} aria-label="Zamknij menu">
+        <span className="text-sm font-semibold text-[var(--text)]">Menu</span>
+        <button type="button" onClick={onClose} className="rounded-md p-1 hover:bg-[var(--surface-muted)] text-[var(--text-muted)]" aria-label="Zamknij menu">
           <X size={16} />
         </button>
       </div>
@@ -138,17 +138,17 @@ export function LeftSidebar({
         {/* Simplified Daily Session Section */}
         <section className="space-y-3 rounded-[var(--card-radius)] border p-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Codzienna sesja</h3>
+            <h3 className="text-sm font-semibold text-[var(--text)]">Codzienna sesja</h3>
           </div>
           
           {/* Progress Display */}
           <div className="space-y-2">
             <div className="flex items-baseline justify-between">
-              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Nowe słówka dzisiaj</span>
+              <span className="text-xs text-[var(--text-muted)]">Nowe słówka dzisiaj</span>
               {progressLoading ? (
-                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>...</span>
+                <span className="text-xs text-[var(--text-muted)]">...</span>
               ) : (
-                <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
+                <span className="text-sm font-semibold text-[var(--text)]">
                   {cardsCompleted}/{dailyGoal}
                 </span>
               )}
@@ -189,7 +189,7 @@ export function LeftSidebar({
           </div>
         </section>
 
-        <section className="space-y-2 border-t pt-4" style={{ borderColor: 'var(--border)' }}>
+        <section className="space-y-2 border-t pt-4 border-[var(--border)]">
           <p className={groupTitle}>Twoje foldery</p>
           <div className="space-y-1">
             {folders.slice(0, 8).map((f) => (
@@ -202,7 +202,7 @@ export function LeftSidebar({
           </div>
         </section>
 
-        <section className="space-y-2 border-t pt-4" style={{ borderColor: 'var(--border)' }}>
+        <section className="space-y-2 border-t pt-4 border-[var(--border)]">
           <p className={groupTitle}>Rozpocznij tutaj</p>
           <div className="space-y-1">
             <Link href="/study" onClick={onClose} className={itemClass(active('/study'))}><BookOpen size={16} />Ucz się</Link>
@@ -211,7 +211,7 @@ export function LeftSidebar({
           </div>
         </section>
 
-        <section className="border-t pt-4" style={{ borderColor: 'var(--border)' }}>
+        <section className="border-t pt-4 border-[var(--border)]">
           <SidebarSearch />
         </section>
       </div>

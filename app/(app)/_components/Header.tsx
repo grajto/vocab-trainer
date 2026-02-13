@@ -73,10 +73,10 @@ export function Header({ username }: { username: string }) {
                     setShowResults(false)
                     setQuery('')
                   }}
-                  className="w-full text-left px-4 py-2.5 text-sm hover:bg-[var(--surface-muted)] flex items-center gap-2" style={{ color: 'var(--text)' }}
+                  className="w-full text-left px-4 py-2.5 text-sm hover:bg-[var(--surface-muted)] flex items-center gap-2 text-[var(--text)]"
                 >
-                  <span className="text-[10px] font-medium uppercase tracking-wide w-12" style={{ color: 'var(--text-soft)' }}>{r.type}</span>
-                  <span style={{ color: 'var(--text)' }}>{r.name}</span>
+                  <span className="text-[10px] font-medium uppercase tracking-wide w-12 text-[var(--text-soft)]">{r.type}</span>
+                  <span className="text-[var(--text)]">{r.name}</span>
                 </button>
               ))}
             </div>
@@ -94,13 +94,13 @@ export function Header({ username }: { username: string }) {
           </button>
           {showCreate && (
             <div className="absolute right-0 top-full mt-2 bg-[var(--surface)] border border-[var(--border)] rounded-[var(--card-radius)] overflow-hidden z-50 w-48">
-              <Link href="/decks?create=true" onClick={() => setShowCreate(false)} className="block px-4 py-2.5 text-sm hover:bg-[var(--surface-muted)]" style={{ color: 'var(--text)' }}>
+              <Link href="/decks?create=true" onClick={() => setShowCreate(false)} className="block px-4 py-2.5 text-sm hover:bg-[var(--surface-muted)] text-[var(--text)]">
                 Nowy zestaw
               </Link>
-              <Link href="/folders/new" onClick={() => setShowCreate(false)} className="block px-4 py-2.5 text-sm hover:bg-[var(--surface-muted)]" style={{ color: 'var(--text)' }}>
+              <Link href="/folders/new" onClick={() => setShowCreate(false)} className="block px-4 py-2.5 text-sm hover:bg-[var(--surface-muted)] text-[var(--text)]">
                 Nowy folder
               </Link>
-              <Link href="/import" onClick={() => setShowCreate(false)} className="block px-4 py-2.5 text-sm hover:bg-[var(--surface-muted)]" style={{ color: 'var(--text)' }}>
+              <Link href="/import" onClick={() => setShowCreate(false)} className="block px-4 py-2.5 text-sm hover:bg-[var(--surface-muted)] text-[var(--text)]">
                 Importuj CSV
               </Link>
             </div>
@@ -108,7 +108,7 @@ export function Header({ username }: { username: string }) {
         </div>
 
         {/* User */}
-        <span className="text-xs hidden sm:block" style={{ color: 'var(--text-muted)' }}>{username}</span>
+        <span className="text-xs hidden sm:block text-[var(--text-muted)]">{username}</span>
       </div>
     </header>
   )

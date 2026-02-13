@@ -36,8 +36,8 @@ export default async function StudyPage() {
       {decks.docs.length === 0 ? (
         <Card>
           <div className="py-12 text-center">
-            <p className="mb-2 text-sm" style={{ color: 'var(--text-muted)' }}>Brak dostępnych zestawów.</p>
-            <Link href="/create" className="text-sm font-medium" style={{ color: 'var(--primary)' }}>Utwórz pierwszy zestaw</Link>
+            <p className="mb-2 text-sm text-[var(--text-muted)]">Brak dostępnych zestawów.</p>
+            <Link href="/create" className="text-sm font-medium text-[var(--primary)]">Utwórz pierwszy zestaw</Link>
           </div>
         </Card>
       ) : (

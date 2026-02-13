@@ -36,13 +36,12 @@ export function ContinueCard({ item, onRemove }: { item: ContinueItem; onRemove:
       />
       <div className="relative z-10">
         <div className="mb-4 flex items-start justify-between gap-3">
-          <h4 className="line-clamp-2 text-lg font-semibold tracking-tight leading-snug" style={{ color: 'var(--text)' }}>{item.deckName}</h4>
+          <h4 className="line-clamp-2 text-lg font-semibold tracking-tight leading-snug text-[var(--text)]">{item.deckName}</h4>
           <div className="relative">
             <button
               type="button"
               onClick={() => setMenuOpen(prev => !prev)}
-              className="rounded-md p-1 hover:bg-[var(--surface-muted)]"
-              style={{ color: 'var(--text-soft)' }}
+              className="rounded-md p-1 hover:bg-[var(--surface-muted)] text-[var(--text-soft)]"
               aria-label="Więcej opcji"
             >
               <MoreVertical size={16} />
@@ -58,8 +57,7 @@ export function ContinueCard({ item, onRemove }: { item: ContinueItem; onRemove:
                     setMenuOpen(false)
                     onRemove()
                   }}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-[var(--hover-bg)]"
-                  style={{ color: 'var(--danger)' }}
+                  className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-[var(--hover-bg)] text-[var(--danger)]"
                 >
                   <Trash2 size={14} />
                   Usuń z historii
@@ -71,7 +69,7 @@ export function ContinueCard({ item, onRemove }: { item: ContinueItem; onRemove:
 
         <div className="mb-3">
           <ProgressBar value={item.progressPercent} className="h-3" />
-          <p className="mt-2 text-xs font-semibold" style={{ color: 'var(--text)' }}>{item.progressMeta}</p>
+          <p className="mt-2 text-xs font-semibold text-[var(--text)]">{item.progressMeta}</p>
         </div>
       </div>
 
@@ -83,7 +81,7 @@ export function ContinueCard({ item, onRemove }: { item: ContinueItem; onRemove:
         >
           Kontynuuj
         </Link>
-        <span className="text-xs font-medium" style={{ color: 'var(--text-soft)' }}>{item.date}</span>
+        <span className="text-xs font-medium text-[var(--text-soft)]">{item.date}</span>
       </div>
     </SimpleCard>
   )

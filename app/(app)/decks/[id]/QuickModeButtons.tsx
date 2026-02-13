@@ -99,11 +99,11 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
     <div className="space-y-4 relative z-0">
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
+          <h3 className="text-sm font-semibold text-[var(--text)]">
             Wybierz tryb
           </h3>
           {selectedMode && (
-            <button onClick={handleReset} className="text-xs font-medium" style={{ color: 'var(--primary)' }}>
+            <button onClick={handleReset} className="text-xs font-medium text-[var(--primary)]">
               Zmień tryb
             </button>
           )}
@@ -139,7 +139,7 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
 
       {selectedMode && selectedMode !== 'test' && (
         <div>
-          <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--text)' }}>
+          <h3 className="text-sm font-semibold mb-3 text-[var(--text)]">
             Wybierz liczbę słówek
           </h3>
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
@@ -225,10 +225,10 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
           <div className="w-full max-w-sm space-y-4 rounded-xl bg-[var(--surface)] p-5" style={{ border: '1px solid var(--border)' }}>
             <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Ustawienia testu</p>
-              <button onClick={() => setShowTestModal(false)} className="text-xs" style={{ color: 'var(--text-muted)' }}>Zamknij</button>
+              <p className="text-sm font-semibold text-[var(--text)]">Ustawienia testu</p>
+              <button onClick={() => setShowTestModal(false)} className="text-xs text-[var(--text-muted)]">Zamknij</button>
             </div>
-            <div className="space-y-3 text-xs" style={{ color: 'var(--text)' }}>
+            <div className="space-y-3 text-xs text-[var(--text)]">
               <label className="space-y-1 font-medium">
                 Liczba pytań
                 <input
@@ -237,8 +237,7 @@ export function QuickModeButtons({ deckId, cardCount }: Props) {
                   max={35}
                   value={testCount}
                   onChange={(e) => setTestCount(Number(e.target.value))}
-                  className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
-                  style={{ borderColor: 'var(--border)' }}
+                  className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none border-[var(--border)]"
                   disabled={useAllWords}
                 />
               </label>

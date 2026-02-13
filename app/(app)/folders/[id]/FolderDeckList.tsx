@@ -43,7 +43,7 @@ export function FolderDeckList({ decks }: { decks: DeckItem[] }) {
 
       {filtered.length === 0 ? (
         <div className="text-center py-12 rounded-[var(--card-radius)]" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-          <p className="text-sm mb-2" style={{ color: 'var(--text-soft)' }}>Brak zestawów w folderze.</p>
+          <p className="text-sm mb-2 text-[var(--text-soft)]">Brak zestawów w folderze.</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -52,8 +52,8 @@ export function FolderDeckList({ decks }: { decks: DeckItem[] }) {
               <Link href={`/decks/${deck.id}`} prefetch className="flex min-w-0 flex-1 items-center gap-3">
                 <IconSquare icon={BookOpen} variant="primary" size="sm" />
                 <div className="min-w-0">
-                  <p className="font-semibold text-sm" style={{ color: 'var(--text)' }}>{deck.name}</p>
-                  {deck.cardCount !== undefined && <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{deck.cardCount} {pluralizeCards(deck.cardCount)}</p>}
+                  <p className="font-semibold text-sm text-[var(--text)]">{deck.name}</p>
+                  {deck.cardCount !== undefined && <p className="text-xs mt-0.5 text-[var(--text-muted)]">{deck.cardCount} {pluralizeCards(deck.cardCount)}</p>}
                 </div>
               </Link>
             </div>

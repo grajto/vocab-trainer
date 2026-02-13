@@ -55,7 +55,7 @@ export function EditDeckForm({ deck, folders }: Props) {
   const labelClass = 'text-xs font-medium mb-1 block'
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border p-5" style={{ borderColor: 'var(--border)' }}>
+    <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border p-5 border-[var(--border)]">
       <div>
         <label className={labelClass} style={{ color: 'var(--text-muted)' }}>
           Nazwa zestawu

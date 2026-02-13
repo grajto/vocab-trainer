@@ -58,14 +58,14 @@ export default function CalendarPage() {
           <button onClick={() => changeMonth(-1)} className="rounded-[var(--chip-radius)] p-2 hover:bg-[var(--surface-muted)]" style={{ border: '1px solid var(--border)' }}>
             <ChevronLeft className="w-4 h-4" />
           </button>
-          <span className="text-sm font-medium capitalize" style={{ color: 'var(--text)' }}>{monthName}</span>
+          <span className="text-sm font-medium capitalize text-[var(--text)]">{monthName}</span>
           <button onClick={() => changeMonth(1)} className="rounded-[var(--chip-radius)] p-2 hover:bg-[var(--surface-muted)]" style={{ border: '1px solid var(--border)' }}>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-2 text-xs" style={{ color: 'var(--text-soft)' }}>
+      <div className="grid grid-cols-7 gap-2 text-xs text-[var(--text-soft)]">
         {['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'Sb', 'Nd'].map(day => (
           <div key={day} className="text-center">{day}</div>
         ))}
@@ -103,27 +103,27 @@ export default function CalendarPage() {
         {selected ? (
           <div className="space-y-4">
             <div>
-              <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{selected.date}</p>
-              <p className="text-xs" style={{ color: 'var(--text-soft)' }}>{selected.sessions} sesji · {selected.minutes} min</p>
+              <p className="text-sm font-semibold text-[var(--text)]">{selected.date}</p>
+              <p className="text-xs text-[var(--text-soft)]">{selected.sessions} sesji · {selected.minutes} min</p>
             </div>
             {selected.items.length === 0 ? (
-              <p className="text-sm" style={{ color: 'var(--text-soft)' }}>Brak sesji.</p>
+              <p className="text-sm text-[var(--text-soft)]">Brak sesji.</p>
             ) : (
               <div className="space-y-2">
                 {selected.items.map(item => (
                   <div key={item.id} className="flex items-center justify-between text-sm">
                     <div>
-                      <p className="font-medium" style={{ color: 'var(--text)' }}>{item.deckName}</p>
-                      <p className="text-xs capitalize" style={{ color: 'var(--text-soft)' }}>{item.mode} · {item.minutes} min</p>
+                      <p className="font-medium text-[var(--text)]">{item.deckName}</p>
+                      <p className="text-xs capitalize text-[var(--text-soft)]">{item.mode} · {item.minutes} min</p>
                     </div>
-                    <span className="text-xs font-semibold" style={{ color: 'var(--primary)' }}>{item.accuracy ?? 0}%</span>
+                    <span className="text-xs font-semibold text-[var(--primary)]">{item.accuracy ?? 0}%</span>
                   </div>
                 ))}
               </div>
             )}
           </div>
         ) : (
-          <p className="text-sm" style={{ color: 'var(--text-soft)' }}>Kliknij dzień, aby zobaczyć szczegóły.</p>
+          <p className="text-sm text-[var(--text-soft)]">Kliknij dzień, aby zobaczyć szczegóły.</p>
         )}
       </div>
     </PageContainer>

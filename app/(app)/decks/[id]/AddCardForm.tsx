@@ -82,14 +82,14 @@ export function AddCardForm({ deckId }: { deckId: string }) {
     >
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
+          <p className="text-sm font-semibold text-[var(--text)]">
             Dodaj pojęcie
           </p>
-          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-xs text-[var(--text-muted)]">
             Krótkie etykiety i czyste pola
           </p>
         </div>
-        <a href="/import" className="text-xs font-semibold" style={{ color: 'var(--primary)' }}>
+        <a href="/import" className="text-xs font-semibold text-[var(--primary)]">
           Importuj
         </a>
       </div>
@@ -104,7 +104,7 @@ export function AddCardForm({ deckId }: { deckId: string }) {
       )}
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <label className="space-y-1 text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
+        <label className="space-y-1 text-xs font-medium text-[var(--text-muted)]">
           Przód
           <input
             type="text"
@@ -116,7 +116,7 @@ export function AddCardForm({ deckId }: { deckId: string }) {
             style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
           />
         </label>
-        <label className="space-y-1 text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
+        <label className="space-y-1 text-xs font-medium text-[var(--text-muted)]">
           Tył
           <input
             type="text"
@@ -130,7 +130,7 @@ export function AddCardForm({ deckId }: { deckId: string }) {
         </label>
       </div>
 
-      <label className="space-y-1 text-xs font-medium block" style={{ color: 'var(--text-muted)' }}>
+      <label className="space-y-1 text-xs font-medium block text-[var(--text-muted)]">
         Hurtowe dodawanie (linia: przód;tył)
         <textarea
           value={bulk}

@@ -75,9 +75,9 @@ export default async function FolderPage({ params }: { params: Promise<{ id: str
           ['Czas nauki', `${totalMinutes} min`],
           ['Liczba sesji', totalSessions],
         ].map((s) => (
-          <div key={String(s[0])} className="rounded-xl border p-3" style={{ borderColor: 'var(--border)' }}>
-            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{s[0]}</p>
-            <p className="text-lg font-semibold" style={{ color: 'var(--text)' }}>{String(s[1])}</p>
+          <div key={String(s[0])} className="rounded-xl border p-3 border-[var(--border)]">
+            <p className="text-xs text-[var(--text-muted)]">{s[0]}</p>
+            <p className="text-lg font-semibold text-[var(--text)]">{String(s[1])}</p>
           </div>
         ))}
       </div>
