@@ -170,6 +170,7 @@ export default async function DashboardPage() {
 
     if ((s.endedAt === null || completed < target) && !jumpBackIn.find((item) => item.resumeHref.endsWith(String(s.id)))) {
       jumpBackIn.push({
+        sessionId: String(s.id),
         deckId: String(deck.id),
         deckName: deck.name,
         progressPercent,

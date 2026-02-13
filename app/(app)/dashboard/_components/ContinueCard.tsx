@@ -1,9 +1,13 @@
+'use client'
+
 import Link from 'next/link'
-import { MoreVertical } from 'lucide-react'
+import { MoreVertical, Trash2 } from 'lucide-react'
+import { useState } from 'react'
 import { SimpleCard } from './SimpleCard'
 import { ProgressBar } from '../../_components/ui/ProgressBar'
 
 export type ContinueItem = {
+  sessionId: string
   deckId?: string
   deckName: string
   progressPercent: number
@@ -15,7 +19,8 @@ export type ContinueItem = {
   direction?: string
 }
 
-export function ContinueCard({ item }: { item: ContinueItem }) {
+export function ContinueCard({ item, onRemove }: { item: ContinueItem; onRemove: () => void }) {
+  const [menuOpen, setMenuOpen] = useState(false)
   return (
     <SimpleCard className="relative overflow-hidden p-5 min-h-[220px] flex flex-col justify-between">
       {/* Decorative shape in bottom right */}
@@ -32,9 +37,36 @@ export function ContinueCard({ item }: { item: ContinueItem }) {
       <div className="relative z-10">
         <div className="mb-4 flex items-start justify-between gap-3">
           <h4 className="line-clamp-2 text-lg font-semibold tracking-tight leading-snug" style={{ color: 'var(--text)' }}>{item.deckName}</h4>
-          <button type="button" className="rounded-md p-1 hover:bg-[#f8fafc]" style={{ color: 'var(--gray400)' }} aria-label="Więcej opcji">
-            <MoreVertical size={16} />
-          </button>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setMenuOpen(prev => !prev)}
+              className="rounded-md p-1 hover:bg-[#f8fafc]"
+              style={{ color: 'var(--gray400)' }}
+              aria-label="Więcej opcji"
+            >
+              <MoreVertical size={16} />
+            </button>
+            {menuOpen && (
+              <div
+                className="absolute right-0 top-7 z-10 w-48 rounded-lg border bg-white shadow-sm"
+                style={{ borderColor: 'var(--border)' }}
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuOpen(false)
+                    onRemove()
+                  }}
+                  className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-[var(--hover-bg)]"
+                  style={{ color: '#ef4444' }}
+                >
+                  <Trash2 size={14} />
+                  Usuń z historii
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="mb-3">
