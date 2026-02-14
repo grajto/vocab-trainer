@@ -306,8 +306,8 @@ export default function SettingsPage() {
           ].map((item) => (
             <label
               key={item.key}
-              className="flex items-center justify-between rounded-xl border px-3 py-2 cursor-pointer"
-              style={{ borderColor: 'var(--border)' }}
+              className="flex items-center justify-between rounded-[var(--radius)] px-3 py-2 cursor-pointer transition-colors"
+              style={{ background: 'var(--surface)' }}
             >
               <span className="text-sm" style={{ color: 'var(--text)' }}>
                 {item.label}
@@ -324,7 +324,7 @@ export default function SettingsPage() {
       </section>
 
       {/* Save Button */}
-      <div className="mt-8 flex items-center justify-between gap-4 p-4 rounded-xl border" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--card-bg)' }}>
+      <div className="mt-8 flex items-center justify-between gap-4 p-4 rounded-[var(--radius)]" style={{ backgroundColor: 'var(--surface-muted)' }}>
         <div className="flex-1">
           <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>
             Zapisz zmiany
@@ -338,7 +338,7 @@ export default function SettingsPage() {
             saveSettings().catch(() => toast.error('Błąd zapisu'))
           }}
           disabled={saving}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all"
+          className="flex items-center gap-2 px-4 py-2 rounded-[var(--radius)] font-medium transition-all"
           style={{
             backgroundColor: saved ? 'var(--success)' : 'var(--primary)',
             color: 'white',

@@ -136,7 +136,7 @@ export function LeftSidebar({
 
       <div className="space-y-5">
         {/* Simplified Daily Session Section */}
-        <section className="space-y-3 rounded-[var(--radius)] border p-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+        <section className="space-y-3 rounded-[var(--radius)] p-4" style={{ background: 'var(--surface)' }}>
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Codzienna sesja</h3>
           </div>
@@ -144,7 +144,7 @@ export function LeftSidebar({
           {/* Progress Display */}
           <div className="space-y-2">
             <div className="flex items-baseline justify-between">
-              <span className="text-xs" style={{ color: 'var(--muted)' }}>Nowe słówka dzisiaj</span>
+              <span className="text-xs" style={{ color: 'var(--muted)' }}>Dobrze wpisane słówka dzisiaj</span>
               {progressLoading ? (
                 <span className="text-xs" style={{ color: 'var(--muted)' }}>...</span>
               ) : (

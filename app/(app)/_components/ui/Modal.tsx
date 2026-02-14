@@ -68,7 +68,7 @@ export function Modal({
       
       {/* Modal */}
       <div
-        className={`relative w-full ${sizeStyles[size]} max-h-[90vh] overflow-auto rounded-[var(--card-radius)] bg-[var(--surface)] shadow-[var(--shadow-lg)] transition-all`}
+        className={`relative w-full ${sizeStyles[size]} max-h-[90vh] overflow-auto rounded-[var(--card-radius)] bg-[var(--surface)] transition-all`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"

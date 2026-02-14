@@ -49,7 +49,7 @@ export function ContinueCard({ item, onRemove }: { item: ContinueItem; onRemove:
             </button>
             {menuOpen && (
               <div
-                className="absolute right-0 top-7 z-10 w-48 rounded-lg border shadow-sm"
+                className="absolute right-0 top-7 z-10 w-48 rounded-[var(--card-radius)] border"
                 style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
               >
                 <button

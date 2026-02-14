@@ -86,7 +86,7 @@ export function LibraryTabs({
       active ? 'border-[var(--primary)] text-[var(--text)]' : 'border-transparent text-[var(--muted)] hover:opacity-80'
     }`
 
-  const actionBtnClass = 'rounded-full px-4 py-2 text-xs font-semibold'
+  const actionBtnClass = 'rounded-[var(--button-radius)] px-4 py-2 text-xs font-semibold transition-colors hover:bg-[var(--surface-hover)]'
   const actionBtnStyle = { border: '1px solid var(--border)', color: 'var(--text)' }
 
   return (

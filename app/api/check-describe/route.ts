@@ -55,18 +55,19 @@ export async function POST(req: NextRequest) {
           content: `Tryb described: użytkownik MA OPISAĆ znaczenie słowa (definicja/opis), a nie ułożyć przypadkowe zdanie.
 
 Oceń opis słowa pod kątem:
-1) zgodności znaczenia,
-2) sensowności definicji/opisu,
-3) czy opis nie jest przypadkowym zdaniem bez definicji.
+1) czy sens jest poprawny (nawet jeśli są drobne błędy gramatyczne),
+2) czy użytkownik próbuje opisać znaczenie (a nie pisze losowe zdanie bez definicji),
+3) bądź TOLERANCYJNY - zaakceptuj każdy opis który ma sens i odnosi się do znaczenia słowa.
 
 Zwróć WYŁĄCZNIE JSON:
 {"ok":true/false,"issue_type":"meaning"|"not_definition"|"spam"|"other","message_pl":string,"suggested_fix":string|null}
 
 Zasady:
-- toleruj drobne błędy interpunkcji i stylu,
-- jeśli sens opisu jest poprawny -> ok=true,
-- message_pl max 200 znaków, suggested_fix max 120 znaków.
-- jeśli ok=true: issue_type="other", suggested_fix=null.`,
+- toleruj błędy interpunkcji, stylu, gramatyki - skup się na tym czy sens jest poprawny,
+- jeśli użytkownik próbuje opisać słowo (nawet prosto) -> ok=true,
+- message_pl max 200 znaków, suggested_fix max 120 znaków,
+- jeśli ok=true: issue_type="other", suggested_fix=null,
+- odrzuć tylko jeśli: brak sensu, całkowicie błędne znaczenie, spam, lub brak próby opisu.`,
         },
         {
           role: 'user',
