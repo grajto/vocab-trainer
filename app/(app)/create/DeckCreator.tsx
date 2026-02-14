@@ -191,7 +191,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
         <SectionHeading title="Ustawienia zestawu" />
         <div className="space-y-4">
           <div>
-            <label className="flex items-center gap-2 text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>
+            <label className="flex items-center gap-2 text-xs font-medium mb-1.5" style={{ color: 'var(--text-muted)' }}>
               <BookOpen size={14} />
               Nazwa zestawu *
             </label>
@@ -200,14 +200,14 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="np. Słownictwo angielskie B2"
-              className="w-full rounded-[var(--radiusSm)] px-3 py-2.5 text-sm focus:outline-none"
-              style={{ border: '1px solid var(--border)', color: 'var(--text)' }}
+              className="w-full rounded-[var(--radius)] px-3 py-2.5 text-sm focus:outline-none"
+              style={{ border: '1px solid var(--border)', color: 'var(--text)', background: 'var(--surface)' }}
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="flex items-center gap-2 text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>
+              <label className="flex items-center gap-2 text-xs font-medium mb-1.5" style={{ color: 'var(--text-muted)' }}>
                 <FileText size={14} />
                 Opis (opcjonalnie)
               </label>
@@ -216,20 +216,20 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
                 value={description}
                 onChange={e => setOpis(e.target.value)}
                 placeholder="Opcjonalny opis"
-                className="w-full rounded-[var(--radiusSm)] px-3 py-2.5 text-sm focus:outline-none"
-                style={{ border: '1px solid var(--border)', color: 'var(--text)' }}
+                className="w-full rounded-[var(--radius)] px-3 py-2.5 text-sm focus:outline-none"
+                style={{ border: '1px solid var(--border)', color: 'var(--text)', background: 'var(--surface)' }}
               />
             </div>
 
             <div>
-              <label className="flex items-center gap-2 text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>
+              <label className="flex items-center gap-2 text-xs font-medium mb-1.5" style={{ color: 'var(--text-muted)' }}>
                 <FolderOpen size={14} />
                 Folder (opcjonalnie)
               </label>
               <select
                 value={folderId}
                 onChange={e => setFolderId(e.target.value)}
-                className="w-full rounded-[var(--radiusSm)] px-3 py-2.5 text-sm focus:outline-none"
+                className="w-full rounded-[var(--radius)] px-3 py-2.5 text-sm focus:outline-none"
                 style={{ border: '1px solid var(--border)', color: 'var(--text)', background: 'var(--surface)' }}
               >
                 <option value="">Bez folderu</option>
@@ -248,8 +248,8 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
           </p>
           <button 
             onClick={() => setShowImport(true)} 
-            className="flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-[var(--radiusSm)] transition-all hover:bg-[var(--hover-bg)]" 
-            style={{ color: 'var(--text)', border: '1px solid var(--border)' }}
+            className="flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-[var(--radius)] transition-all hover:bg-[var(--surface-hover)]" 
+            style={{ color: 'var(--text)', border: '1px solid var(--border)', background: 'var(--surface)' }}
           >
             <Upload size={14} />
             Importuj
@@ -257,7 +257,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
         </div>
 
         {/* Header */}
-        <div className="hidden sm:grid sm:grid-cols-[3rem_1fr_1fr_1fr_3rem] gap-3 px-5 py-2.5 text-[10px] font-semibold uppercase tracking-wider" style={{ background: 'var(--surface2)', color: 'var(--text-muted)' }}>
+        <div className="hidden sm:grid sm:grid-cols-[3rem_1fr_1fr_1fr_3rem] gap-3 px-5 py-2.5 text-[10px] font-semibold uppercase tracking-wider" style={{ background: 'var(--surface-muted)', color: 'var(--text-muted)' }}>
           <span>#</span>
           <span>Przód (termin)</span>
           <span>Tył (definicja)</span>
@@ -268,7 +268,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
         {/* Rows */}
         <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
           {cards.map((card, idx) => (
-            <div key={card.id} className="grid grid-cols-1 sm:grid-cols-[3rem_1fr_1fr_1fr_3rem] gap-2 sm:gap-3 px-5 py-3 sm:py-2.5 group transition-colors" style={{ background: 'transparent' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--hover-bg)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+            <div key={card.id} className="grid grid-cols-1 sm:grid-cols-[3rem_1fr_1fr_1fr_3rem] gap-2 sm:gap-3 px-5 py-3 sm:py-2.5 group transition-colors hover:bg-[var(--surface-hover)]" style={{ background: 'transparent' }}>
               <div className="flex items-center gap-2 sm:block">
                 <span className="text-sm font-semibold tabular-nums" style={{ color: 'var(--text-muted)' }}>#{idx + 1}</span>
                 <span className="sm:hidden text-xs font-medium" style={{ color: 'var(--text-muted)' }}>Karta</span>
@@ -282,7 +282,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
                   onChange={e => updateCard(card.id, 'front', e.target.value)}
                   onKeyDown={e => handleKeyDown(e, card.id, 'front')}
                   placeholder="Termin"
-                  className="w-full text-sm border-0 bg-transparent px-2.5 py-1.5 focus:outline-none focus:bg-[var(--primaryBg)] rounded-md transition-colors"
+                  className="w-full text-sm border-0 bg-transparent px-2.5 py-1.5 focus:outline-none focus:bg-[var(--primary-soft)] rounded-[var(--radius)] transition-colors"
                   style={{ color: 'var(--text)' }}
                 />
               </div>
@@ -294,7 +294,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
                   onChange={e => updateCard(card.id, 'back', e.target.value)}
                   onKeyDown={e => handleKeyDown(e, card.id, 'back')}
                   placeholder="Definicja"
-                  className="w-full text-sm border-0 bg-transparent px-2.5 py-1.5 focus:outline-none focus:bg-[var(--primaryBg)] rounded-md transition-colors"
+                  className="w-full text-sm border-0 bg-transparent px-2.5 py-1.5 focus:outline-none focus:bg-[var(--primary-soft)] rounded-[var(--radius)] transition-colors"
                   style={{ color: 'var(--text)' }}
                 />
               </div>
@@ -305,7 +305,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
                   value={card.examples}
                   onChange={e => updateCard(card.id, 'examples', e.target.value)}
                   placeholder="Przykładowe zdanie"
-                  className="w-full text-sm border-0 bg-transparent px-2.5 py-1.5 focus:outline-none focus:bg-[var(--primaryBg)] rounded-md transition-colors"
+                  className="w-full text-sm border-0 bg-transparent px-2.5 py-1.5 focus:outline-none focus:bg-[var(--primary-soft)] rounded-[var(--radius)] transition-colors"
                   style={{ color: 'var(--text)' }}
                 />
               </div>
@@ -324,7 +324,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
         </div>
 
         <div className="px-5 py-3.5" style={{ borderTop: '1px solid var(--border)' }}>
-          <button onClick={addRow} className="w-full py-2.5 rounded-lg text-sm font-medium transition-all hover:bg-[var(--hover-bg)]" style={{ border: '1px dashed var(--border)', color: 'var(--text-muted)' }}>
+          <button onClick={addRow} className="w-full py-2.5 rounded-[var(--radius)] text-sm font-medium transition-all hover:bg-[var(--surface-hover)]" style={{ border: '1px dashed var(--border)', color: 'var(--text-muted)', background: 'var(--surface)' }}>
             <span className="flex items-center justify-center gap-2">
               <Plus size={16} />
               Dodaj kolejną kartę
@@ -337,8 +337,8 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
       <div className="flex items-center justify-between gap-4 pt-2">
         <button 
           onClick={() => router.back()} 
-          className="px-5 py-2.5 rounded-lg text-sm font-medium transition-all hover:bg-[var(--hover-bg)]" 
-          style={{ color: 'var(--text)', border: '1px solid var(--border)' }}
+          className="px-5 py-2.5 rounded-[var(--radius)] text-sm font-medium transition-all hover:bg-[var(--surface-hover)]" 
+          style={{ color: 'var(--text)', border: '1px solid var(--border)', background: 'var(--surface)' }}
         >
           Anuluj
         </button>
@@ -356,7 +356,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
       {/* Import Modal */}
       <Modal isOpen={showImport} onClose={() => setShowImport(false)} title="Importuj karty" size="lg">
         <div className="space-y-5">
-          <div className="flex items-start gap-3 px-4 py-3 rounded-lg" style={{ background: 'var(--surface2)', border: '1px solid var(--border)' }}>
+          <div className="flex items-start gap-3 px-4 py-3 rounded-[var(--radius)]" style={{ background: 'var(--surface-muted)', border: '1px solid var(--border)' }}>
             <Upload size={16} style={{ color: 'var(--text-muted)', marginTop: '2px', flexShrink: 0 }} />
             <div>
               <p className="text-xs font-medium" style={{ color: 'var(--text)' }}>Wklej dane poniżej</p>
@@ -369,14 +369,14 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
             onChange={e => setImportText(e.target.value)}
             placeholder={`Wklej swoje dane tutaj...\n\nPrzykład (rozdzielone tabulatorem):\nhello\tcześć\ndog\tpies\ncat\tkot`}
             rows={10}
-            className="w-full rounded-lg px-4 py-3 text-sm focus:outline-none resize-none font-mono"
+            className="w-full rounded-[var(--radius)] px-4 py-3 text-sm focus:outline-none resize-none font-mono"
             style={{ border: '1px solid var(--border)', color: 'var(--text)', background: 'var(--surface)' }}
           />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold mb-2" style={{ color: 'var(--text)' }}>Separator między terminem a definicją</label>
-              <select value={termDel} onChange={e => setTermDel(e.target.value)} className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none" style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}>
+              <select value={termDel} onChange={e => setTermDel(e.target.value)} className="w-full rounded-[var(--radius)] px-3 py-2.5 text-sm focus:outline-none" style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}>
                 <option value="tab">Tabulator</option>
                 <option value="comma">Przecinek</option>
                 <option value="semicolon">Średnik</option>
@@ -384,7 +384,7 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
             </div>
             <div>
               <label className="block text-xs font-semibold mb-2" style={{ color: 'var(--text)' }}>Separator między kartami</label>
-              <select value={cardDel} onChange={e => setCardDel(e.target.value)} className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none" style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}>
+              <select value={cardDel} onChange={e => setCardDel(e.target.value)} className="w-full rounded-[var(--radius)] px-3 py-2.5 text-sm focus:outline-none" style={{ border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}>
                 <option value="newline">Nowa linia</option>
                 <option value="semicolon">Średnik</option>
               </select>
@@ -394,9 +394,9 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
           {importPreview.length > 0 && (
             <div>
               <p className="text-xs font-semibold mb-2" style={{ color: 'var(--text)' }}>Podgląd ({importPreview.length} kart)</p>
-              <div className="max-h-48 overflow-auto rounded-lg divide-y" style={{ border: '1px solid var(--border)' }}>
+              <div className="max-h-48 overflow-auto rounded-[var(--radius)] divide-y" style={{ border: '1px solid var(--border)' }}>
                 {importPreview.slice(0, 10).map((card, i) => (
-                  <div key={i} className="px-4 py-2.5 text-sm flex gap-4 items-center hover:bg-[var(--hover-bg)] transition-colors">
+                  <div key={i} className="px-4 py-2.5 text-sm flex gap-4 items-center hover:bg-[var(--surface-hover)] transition-colors">
                     <span className="tabular-nums font-semibold w-8 text-center" style={{ color: 'var(--text-muted)' }}>#{i + 1}</span>
                     <span className="font-medium flex-1" style={{ color: 'var(--text)' }}>{card.front}</span>
                     <span className="flex-1" style={{ color: 'var(--text-muted)' }}>{card.back}</span>
@@ -412,8 +412,8 @@ export function DeckCreator({ folders }: { folders: Array<{ id: string; name: st
           <div className="flex justify-end gap-3 pt-2">
             <button 
               onClick={() => setShowImport(false)} 
-              className="px-5 py-2.5 rounded-lg text-sm font-medium transition-all hover:bg-[var(--hover-bg)]" 
-              style={{ color: 'var(--text)', border: '1px solid var(--border)' }}
+              className="px-5 py-2.5 rounded-[var(--radius)] text-sm font-medium transition-all hover:bg-[var(--surface-hover)]" 
+              style={{ color: 'var(--text)', border: '1px solid var(--border)', background: 'var(--surface)' }}
             >
               Anuluj
             </button>
