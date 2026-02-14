@@ -1060,49 +1060,46 @@ button, input { font: inherit; }
 }
 
 .settings-header {
-  margin-bottom: var(--s-6);
+  margin-bottom: var(--spacing-xl);
 }
 
 .settings-title {
   font-size: 32px;
   font-weight: 700;
-  color: var(--text-heading);
-  margin: 0 0 var(--s-2);
+  color: var(--text);
+  margin: 0 0 var(--spacing-sm);
 }
 
 .settings-subtitle {
   font-size: 16px;
-  color: var(--muted);
+  color: var(--text-muted);
   margin: 0;
 }
 
 .settings-loading {
   text-align: center;
-  padding: var(--s-6);
-  color: var(--muted);
+  padding: var(--spacing-xl);
+  color: var(--text-muted);
 }
 
 .settings-section {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  padding: var(--s-5);
-  margin-bottom: var(--s-4);
+  background: var(--surface-muted);
+  border-radius: var(--card-radius);
+  padding: var(--spacing-xl);
+  margin-bottom: var(--spacing-lg);
 }
 
 .settings-section-header {
   display: flex;
   align-items: center;
-  gap: var(--s-2);
-  margin-bottom: var(--s-4);
-  padding-bottom: var(--s-3);
-  border-bottom: 1px solid var(--border);
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
 }
 
 .settings-section-header h2 {
   font-size: 18px;
   font-weight: 600;
-  color: var(--text-heading);
+  color: var(--text);
   margin: 0;
 }
 
@@ -1113,29 +1110,34 @@ button, input { font: inherit; }
 .settings-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: var(--s-4);
-  margin-bottom: var(--s-4);
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
 }
 
 .settings-grid-3 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--s-4);
+  gap: var(--spacing-lg);
 }
 
 .settings-field {
   display: flex;
   flex-direction: column;
-  gap: var(--s-2);
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.settings-field:last-child {
+  margin-bottom: 0;
 }
 
 .settings-field label {
   display: flex;
   align-items: center;
-  gap: var(--s-2);
+  gap: var(--spacing-sm);
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-heading);
+  color: var(--text);
 }
 
 .settings-field label svg {
@@ -1148,7 +1150,7 @@ button, input { font: inherit; }
   width: 100%;
   padding: 10px 14px;
   border: 1px solid var(--border);
-  border-radius: var(--radiusSm);
+  border-radius: var(--radius);
   background: var(--surface);
   color: var(--text);
   font-size: 14px;
@@ -1163,14 +1165,14 @@ button, input { font: inherit; }
 
 .settings-hint {
   font-size: 12px;
-  color: var(--muted);
+  color: var(--text-muted);
   margin: 0;
 }
 
 .settings-slider-container {
   display: flex;
   align-items: center;
-  gap: var(--s-2);
+  gap: var(--spacing-sm);
 }
 
 .settings-slider {
@@ -1178,8 +1180,8 @@ button, input { font: inherit; }
   height: 6px;
   -webkit-appearance: none;
   appearance: none;
-  background: var(--surface2);
-  border-radius: var(--r-pill);
+  background: var(--surface-hover);
+  border-radius: var(--radius);
   outline: none;
 }
 
@@ -1191,6 +1193,11 @@ button, input { font: inherit; }
   background: var(--primary);
   border-radius: 50%;
   cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.settings-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
 }
 
 .settings-slider::-moz-range-thumb {
@@ -1200,6 +1207,11 @@ button, input { font: inherit; }
   border: none;
   border-radius: 50%;
   cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.settings-slider::-moz-range-thumb:hover {
+  transform: scale(1.1);
 }
 
 .settings-slider-value {
@@ -1213,28 +1225,29 @@ button, input { font: inherit; }
 .settings-actions {
   display: flex;
   align-items: center;
-  gap: var(--s-3);
-  padding-top: var(--s-4);
+  gap: var(--spacing-md);
+  padding-top: var(--spacing-lg);
 }
 
 .settings-save-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--s-2);
+  gap: var(--spacing-sm);
   padding: 12px 24px;
-  background: var(--primaryBg);
+  background: var(--primary-soft);
   color: var(--primary);
-  border: 1px solid #d7ddff;
+  border: 1px solid transparent;
   border-radius: var(--radius);
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .settings-save-btn:hover:not(:disabled) {
-  background: #e4e9ff;
+  background: var(--primary);
+  color: white;
 }
 
 .settings-save-btn:disabled {
@@ -1243,23 +1256,23 @@ button, input { font: inherit; }
 }
 
 .settings-save-btn--saved {
-  background: var(--primaryHover);
+  background: var(--success);
   color: #fff;
 }
 
 .settings-status {
   font-size: 14px;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .settings-stepper-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border: 1px solid var(--border);
-  border-radius: var(--radiusSm);
+  border-radius: var(--radius);
   background: var(--surface);
   color: var(--text);
   font-size: 16px;
@@ -1269,7 +1282,7 @@ button, input { font: inherit; }
 }
 
 .settings-stepper-btn:hover {
-  background: var(--hover-bg);
+  background: var(--primary-soft);
   border-color: var(--primary);
   color: var(--primary);
 }
@@ -1283,8 +1296,8 @@ button, input { font: inherit; }
   font-size: 15px;
   font-weight: 600;
   color: var(--primary);
-  background: var(--primaryBg);
-  border-radius: var(--radiusSm);
+  background: var(--primary-soft);
+  border-radius: var(--radius);
 }
 
 .settings-radio-group {
@@ -1298,15 +1311,19 @@ button, input { font: inherit; }
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: var(--radiusSm);
+  border: 1px solid transparent;
+  background: var(--surface);
+  border-radius: var(--radius);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .settings-radio-label:hover {
-  background: var(--hover-bg);
-  border-color: var(--primary);
+  background: var(--surface-hover);
+}
+
+.settings-radio-label input[type="radio"]:checked ~ * {
+  color: var(--primary);
 }
 
 .settings-radio-label input[type="radio"] {
