@@ -49,6 +49,11 @@ export async function GET() {
       cardsCompleted,
       minutesSpent,
       sessionsCompleted: sessions.docs.length,
+    }, {
+      headers: {
+        // Use private cache to prevent CDN from caching user-specific data
+        'Cache-Control': 'private, max-age=30',
+      },
     })
   } catch (error) {
     console.error('Daily progress fetch error:', error)

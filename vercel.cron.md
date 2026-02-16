@@ -1,16 +1,26 @@
 # Vercel Cron Configuration
 
-## Current Setup (Free Plan)
-- **Schedule**: Daily at midnight UTC (`0 0 * * *`)
-- **Limitation**: Vercel Free plan allows only 1 cron job per day
+## Current Setup (Pro Plan)
+- **Schedule**: Every 5 minutes (`*/5 * * * *`)
 - **Purpose**: Keep Neon database warm to prevent cold starts
+- **Rationale**: Aggressive warmup schedule ensures database stays consistently warm for optimal performance
 
 ## Why Database Warmup Matters
-- **Neon Behavior**: Database suspends after 5 minutes of inactivity
+- **Neon Behavior**: Database can suspend after periods of inactivity
 - **Cold Start Impact**: 5-10 seconds delay when database needs to wake up
 - **User Experience**: First session start after idle period can be very slow
 
-## Recommended for Paid Plans
+## Schedule Options by Plan
+
+### Free Plan
+```json
+{
+  "schedule": "0 0 * * *"
+}
+```
+- Runs once daily at midnight UTC
+- Limitation: Vercel Free plan allows only 1 cron job per day
+- Minimal protection against cold starts
 
 ### Hobby Plan
 ```json
@@ -22,22 +32,26 @@
 - Keeps database warmer during active usage periods
 - Reduces likelihood of cold starts
 
-### Pro Plan
+### Pro Plan (Current)
 ```json
 {
   "schedule": "*/5 * * * *"
 }
 ```
-- Runs every 5 minutes
+- Runs every 5 minutes (288 times per day)
 - Database stays consistently warm
 - Minimal cold start impact
+- Trade-off: Higher execution count but much better UX
 
 ## Implementation Notes
 
 The warmup endpoint (`/api/warmup`) performs a simple query to wake the database:
-- Fetches 1 deck with minimal depth
+- Edge runtime for fast execution
+- Minimal query (`SELECT 1`) to wake the DB
+- Region-pinned to `fra1` (close to Neon EU)
 - Returns latency measurement for monitoring
 - Includes `Cache-Control: no-store` header to prevent caching
+- Public endpoint (no auth) for Vercel cron compatibility
 
 ## Alternative Solutions
 

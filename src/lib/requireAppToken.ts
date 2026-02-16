@@ -1,11 +1,23 @@
 import 'server-only'
-import { timingSafeEqual } from 'crypto'
 
 function getCookieToken(req: Request): string | null {
   const cookieHeader = req.headers.get('cookie')
   if (!cookieHeader) return null
   const match = cookieHeader.match(/(?:^|;\s*)app-token=([^;]+)/)
   return match ? decodeURIComponent(match[1]) : null
+}
+
+/**
+ * Edge-compatible timing-safe string comparison.
+ * Compares two strings in constant time to prevent timing attacks.
+ */
+function timingSafeCompare(a: string, b: string): boolean {
+  if (a.length !== b.length) return false
+  let result = 0
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i)
+  }
+  return result === 0
 }
 
 export function requireAppToken(req: Request): boolean {
@@ -17,13 +29,6 @@ export function requireAppToken(req: Request): boolean {
   const incomingToken = headerToken || cookieToken
   if (!incomingToken) return false
 
-  const expected = Buffer.from(appToken)
-  const actual = Buffer.from(incomingToken)
-  if (expected.length !== actual.length) return false
-
-  try {
-    return timingSafeEqual(expected, actual)
-  } catch {
-    return false
-  }
+  // Use timing-safe comparison to prevent timing attacks
+  return timingSafeCompare(appToken, incomingToken)
 }

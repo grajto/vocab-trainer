@@ -1,13 +1,23 @@
-import { NextResponse } from 'next/server'
-import { getPayload } from '@/src/lib/getPayload'
+import { NextRequest, NextResponse } from 'next/server'
+import { getNeonSql } from '@/src/lib/db'
 
-export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
+export const preferredRegion = ['fra1']
 
-export async function GET() {
-  const payload = await getPayload()
+export async function GET(req: NextRequest) {
   const start = Date.now()
-  await payload.find({ collection: 'decks', limit: 1, depth: 0 })
-  return NextResponse.json({ ok: true, latencyMs: Date.now() - start }, {
-    headers: { 'Cache-Control': 'no-store' },
-  })
+
+  try {
+    const sql = getNeonSql()
+    // Minimal query to wake DB
+    await sql`SELECT 1 AS ok`
+    const ms = Date.now() - start
+
+    const res = NextResponse.json({ ok: true, latencyMs: ms })
+    res.headers.set('Cache-Control', 'no-store')
+    return res
+  } catch (e) {
+    const ms = Date.now() - start
+    return NextResponse.json({ ok: false, error: 'warmup_failed', latencyMs: ms }, { status: 500 })
+  }
 }
