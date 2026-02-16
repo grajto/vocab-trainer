@@ -51,7 +51,8 @@ export async function GET() {
       sessionsCompleted: sessions.docs.length,
     }, {
       headers: {
-        'Cache-Control': 's-maxage=30, stale-while-revalidate=300',
+        // Use private cache to prevent CDN from caching user-specific data
+        'Cache-Control': 'private, max-age=30',
       },
     })
   } catch (error) {
