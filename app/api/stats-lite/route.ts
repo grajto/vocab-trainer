@@ -13,11 +13,13 @@ export async function GET(req: NextRequest) {
   const sql = getNeonSql()
 
   // Combine multiple aggregates into a single query for better performance
+  // Use date range that allows index usage on timestamp column
   const [stats] = await sql`
     SELECT 
       (SELECT COUNT(*)::int FROM cards) AS "cardsCount",
       (SELECT COUNT(*)::int FROM sessions) AS "sessionsCount",
-      (SELECT COUNT(*)::int FROM review_states WHERE due_at::date <= now()::date) AS "dueToday"
+      (SELECT COUNT(*)::int FROM review_states 
+       WHERE due_at <= date_trunc('day', now()) + interval '1 day') AS "dueToday"
   `
 
   const res = NextResponse.json({
