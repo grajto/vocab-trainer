@@ -7,6 +7,8 @@ import { parseNumericId } from '@/src/lib/parseNumericId'
 import { getStudySettings } from '@/src/lib/userSettings'
 import { getNeonPool } from '@/src/lib/db'
 
+export const preferredRegion = ['fra1']
+
 export async function POST(req: NextRequest) {
   try {
     if (!requireAppToken(req)) {
