@@ -49,6 +49,10 @@ export async function GET() {
       cardsCompleted,
       minutesSpent,
       sessionsCompleted: sessions.docs.length,
+    }, {
+      headers: {
+        'Cache-Control': 's-maxage=30, stale-while-revalidate=300',
+      },
     })
   } catch (error) {
     console.error('Daily progress fetch error:', error)
